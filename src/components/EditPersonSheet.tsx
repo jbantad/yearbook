@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon, PlusIcon } from './icons'
+import { ColorSwatchPicker } from './ColorSwatchPicker'
 import type { Json, Tables } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 
@@ -20,9 +21,11 @@ export function EditPersonSheet({
   onDeleted: () => void
 }) {
   const { user } = useAuth()
+  const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [people, setPeople] = useState<Person[]>([])
   const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
+  const [color, setColor] = useState(data.color as string | undefined)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
@@ -71,8 +74,12 @@ export function EditPersonSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
+      const nextData = { ...data, color }
       const nextLayout = { ...layout, r: rotation }
-      const { error: updateErr } = await supabase.from('blocks').update({ layout: nextLayout as unknown as Json }).eq('id', block.id)
+      const { error: updateErr } = await supabase
+        .from('blocks')
+        .update({ data: nextData as unknown as Json, layout: nextLayout as unknown as Json })
+        .eq('id', block.id)
       if (updateErr) throw updateErr
       onSaved()
     } catch (err) {
@@ -137,6 +144,11 @@ export function EditPersonSheet({
               <button type="button" className="cta" style={{ margin: 0, width: 'auto', padding: '11px 16px' }} onClick={addPerson} disabled={busy}>Add</button>
             </div>
           )}
+
+          <div className="field">
+            <label>Color</label>
+            <ColorSwatchPicker value={color} onChange={setColor} />
+          </div>
 
           <div className="field">
             <label>Rotation</label>

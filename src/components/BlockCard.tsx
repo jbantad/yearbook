@@ -1,5 +1,6 @@
 import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
+import { resolveColor } from '../lib/colorPresets'
 import type { Tables } from '../lib/database.types'
 import polaroidClassic from '../assets/polaroid-frame.png'
 import polaroidTall from '../assets/polaroid-frame-tall.png'
@@ -59,13 +60,14 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   }
 
   if (block.type === 'note') {
+    const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
     return (
       <button
         className="card scrap"
-        style={{ width: 168, background: BLOCK_COLORS.note.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
+        style={{ width: 168, background: noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        <div className="badge" style={{ background: BLOCK_COLORS.note.fg }}>
+        <div className="badge" style={{ background: noteColor.fg }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4.5 19 9l-9.5 9.5-5 1 1-5Z" /></svg>
         </div>
         <div className="cap">{(data.text as string) || ''}</div>
@@ -74,9 +76,10 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   }
 
   if (block.type === 'place') {
+    const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
     return (
       <button className="place" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
-        <PlaceIcon />
+        <PlaceIcon color={placeColor.fg} />
         <div className="place-name">{block.place?.name ?? 'a place'}</div>
       </button>
     )
@@ -106,18 +109,19 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'gratitude') {
     const items = Array.isArray(data.items) ? (data.items as string[]) : []
+    const gratColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.gratitude)
     return (
       <button
         className="card scrap"
-        style={{ width: 170, background: BLOCK_COLORS.gratitude.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
+        style={{ width: 170, background: gratColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        <div className="badge" style={{ background: BLOCK_COLORS.gratitude.fg }}>
+        <div className="badge" style={{ background: gratColor.fg }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20.5S3.5 15.4 3.5 9.4A4.9 4.9 0 0 1 12 6a4.9 4.9 0 0 1 8.5 3.4c0 6-8.5 11.1-8.5 11.1Z" /></svg>
         </div>
         <div className="glabel">grateful for</div>
-        {items.length === 0 && <div className="gitem"><i />today</div>}
-        {items.map((it, i) => <div className="gitem" key={i}><i />{it}</div>)}
+        {items.length === 0 && <div className="gitem"><i style={{ background: gratColor.fg }} />today</div>}
+        {items.map((it, i) => <div className="gitem" key={i}><i style={{ background: gratColor.fg }} />{it}</div>)}
       </button>
     )
   }
@@ -178,9 +182,10 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'person') {
     const names = block.people?.map((p) => p.display_name).join(', ') || 'someone'
+    const personColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.person)
     return (
       <button className="tag" style={{ transform: `rotate(${rot}deg)`, border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
-        <div className="av">{names[0]?.toUpperCase()}</div>
+        <div className="av" style={{ background: personColor.soft, color: personColor.fg }}>{names[0]?.toUpperCase()}</div>
         <span>with {names}</span>
       </button>
     )

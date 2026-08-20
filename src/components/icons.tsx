@@ -13,9 +13,9 @@ export function NoteIcon() {
     </svg>
   )
 }
-export function PlaceIcon() {
+export function PlaceIcon({ color }: { color?: string } = {}) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={color ? { color } : undefined}>
       <path d="M12 21s-6.5-6.1-6.5-11A6.5 6.5 0 0 1 18.5 10c0 4.9-6.5 11-6.5 11Z" />
       <circle cx="12" cy="10" r="2.3" />
     </svg>
@@ -83,17 +83,6 @@ export function EditIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4.5 1.5L5 15Z" />
       <path d="M14.5 5.5l3 3" />
-    </svg>
-  )
-}
-export function PaletteIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3a9 8.5 0 1 0 0 17c1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H16a5 4.5 0 0 0 5-4.5C21 5.8 17 3 12 3Z" />
-      <circle cx="7.5" cy="11" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="9.5" cy="7" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="14.5" cy="7" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="16.5" cy="11" r="1.15" fill="currentColor" stroke="none" />
     </svg>
   )
 }

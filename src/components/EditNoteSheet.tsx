@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
+import { ColorSwatchPicker } from './ColorSwatchPicker'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 
@@ -19,6 +20,7 @@ export function EditNoteSheet({
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [text, setText] = useState((data.text as string) || '')
+  const [color, setColor] = useState(data.color as string | undefined)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +30,7 @@ export function EditNoteSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData = { ...data, text }
+      const nextData = { ...data, text, color }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -67,6 +69,11 @@ export function EditNoteSheet({
           <div className="field">
             <label>Note</label>
             <textarea value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+          </div>
+
+          <div className="field">
+            <label>Color</label>
+            <ColorSwatchPicker value={color} onChange={setColor} />
           </div>
 
           <div className="field">

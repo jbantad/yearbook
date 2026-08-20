@@ -11,7 +11,7 @@ import { EditPersonSheet } from '../components/EditPersonSheet'
 import { EditGratitudeSheet } from '../components/EditGratitudeSheet'
 import { EditTextSheet } from '../components/EditTextSheet'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
-import { BackIcon, PaletteIcon } from '../components/icons'
+import { BackIcon } from '../components/icons'
 import { defaultBlockPosition } from '../lib/hash'
 import type { Json } from '../lib/database.types'
 
@@ -46,9 +46,15 @@ function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJo
   function onPointerUp(e: React.PointerEvent) {
     if (!dragRef.current) return
     e.currentTarget.releasePointerCapture(e.pointerId)
+    const { startX, startY } = dragRef.current
+    const moved = Math.hypot(e.clientX - startX, e.clientY - startY)
     dragRef.current = null
     setDragging(false)
     onMoved(block.id, pos)
+    // setPointerCapture above routes the native click event to this wrapper
+    // instead of letting it bubble from the block underneath, so a tap
+    // (negligible movement) has to trigger the click behavior explicitly here.
+    if (moved < 6) onClick?.()
   }
 
   return (
@@ -162,7 +168,6 @@ export function DayPage() {
           <div className="pg">DAY PAGE</div>
         </div>
         <div className="right">
-          <button onClick={() => navigate('/customize')} aria-label="Customize"><PaletteIcon /></button>
           <button onClick={() => navigate(`/day/${shiftDate(date, -1)}`)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg>
           </button>
