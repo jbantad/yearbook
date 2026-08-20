@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export function AuthPage() {
-  const { signInWithPassword, signUp } = useAuth()
+  const { session, signInWithPassword, signUp } = useAuth()
+  const navigate = useNavigate()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirmSent, setConfirmSent] = useState(false)
+
+  useEffect(() => {
+    if (session) navigate('/', { replace: true })
+  }, [session, navigate])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
