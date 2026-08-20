@@ -5,11 +5,19 @@ import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { BlockCard, type BlockWithJoins } from '../components/BlockCard'
 import { EditPhotoSheet } from '../components/EditPhotoSheet'
+import { EditNoteSheet } from '../components/EditNoteSheet'
+import { EditPlaceSheet } from '../components/EditPlaceSheet'
+import { EditPersonSheet } from '../components/EditPersonSheet'
+import { EditGratitudeSheet } from '../components/EditGratitudeSheet'
+import { EditTextSheet } from '../components/EditTextSheet'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
 import { BackIcon, PaletteIcon } from '../components/icons'
 import { defaultBlockPosition } from '../lib/hash'
+import type { Json } from '../lib/database.types'
 
 type Pos = { x: number; y: number }
+
+const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'person', 'gratitude', 'text'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -76,7 +84,8 @@ export function DayPage() {
   const [blocks, setBlocks] = useState<BlockWithJoins[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
-  const [editingPhoto, setEditingPhoto] = useState<BlockWithJoins | null>(null)
+  const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
+  const [addingText, setAddingText] = useState(false)
 
   async function load() {
     if (!user || !date) return
@@ -98,14 +107,14 @@ export function DayPage() {
     setPageNumber(page.page_number)
     const { data } = await supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(display_name))')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(id, display_name))')
       .eq('page_id', page.id)
       .order('captured_at', { ascending: true })
     const withPeople = (data ?? []).map((b) => ({
       ...b,
-      people: ((b as { people?: { person: { display_name: string } | null }[] }).people ?? [])
+      people: ((b as { people?: { person: { id: string; display_name: string } | null }[] }).people ?? [])
         .map((p) => p.person)
-        .filter((p): p is { display_name: string } => !!p),
+        .filter((p): p is { id: string; display_name: string } => !!p),
     }))
     setBlocks(withPeople as unknown as BlockWithJoins[])
     setLoading(false)
@@ -127,6 +136,19 @@ export function DayPage() {
     await getOrCreateDayPage(user.id, date)
     await load()
     setCreating(false)
+  }
+
+  async function addText(style: 'headline' | 'label') {
+    if (!user || !pageId) return
+    setAddingText(false)
+    const { data: created, error } = await supabase
+      .from('blocks')
+      .insert({ user_id: user.id, page_id: pageId, type: 'text', data: { style, content: '' } as unknown as Json })
+      .select('*')
+      .single()
+    if (error || !created) return
+    await load()
+    setEditingBlock({ ...created, people: [] } as unknown as BlockWithJoins)
   }
 
   if (!date) return null
@@ -171,18 +193,73 @@ export function DayPage() {
             block={b}
             index={i}
             onMoved={handleMoved}
-            onClick={b.type === 'photo' ? () => setEditingPhoto(b) : undefined}
+            onClick={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
+
+        {!loading && pageId && (
+          addingText ? (
+            <div className="add-text-bar">
+              <button className="headline-btn" onClick={() => addText('headline')}>Add headline</button>
+              <button className="label-btn" onClick={() => addText('label')}>Add label</button>
+            </div>
+          ) : (
+            <div className="add-text-bar" style={{ left: 'auto' }}>
+              <button className="label-btn" onClick={() => setAddingText(true)} style={{ flex: 'none', width: 40, height: 40, borderRadius: '50%', padding: 0 }} aria-label="Add text">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
+          )
+        )}
       </div>
 
-      {editingPhoto && (
+      {editingBlock?.type === 'photo' && (
         <EditPhotoSheet
-          block={editingPhoto}
-          onClose={() => setEditingPhoto(null)}
-          onSaved={() => { setEditingPhoto(null); load() }}
-          onDeleted={() => { setEditingPhoto(null); load() }}
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'note' && (
+        <EditNoteSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'place' && (
+        <EditPlaceSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'person' && (
+        <EditPersonSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'gratitude' && (
+        <EditGratitudeSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'text' && (
+        <EditTextSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
         />
       )}
 

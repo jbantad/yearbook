@@ -14,7 +14,7 @@ const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
 export type BlockWithJoins = Tables<'blocks'> & {
   place?: { name: string } | null
   movie?: { title: string; poster_path: string | null; rating: number | null } | null
-  people?: { display_name: string }[]
+  people?: { id: string; display_name: string }[]
 }
 
 function EditButton({ onEdit }: { onEdit: () => void }) {
@@ -158,6 +158,20 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
             )}
           </>
         )}
+      </button>
+    )
+  }
+
+  if (block.type === 'text') {
+    const style = (data.style as string) || 'headline'
+    const content = (data.content as string) || (style === 'label' ? 'LABEL' : 'headline')
+    return (
+      <button
+        className={style === 'label' ? 'label-el' : 'headline-el'}
+        style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }}
+        onClick={onClick}
+      >
+        {content}
       </button>
     )
   }
