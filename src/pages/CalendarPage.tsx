@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { hashRotation } from '../lib/hash'
+import { getOrCreateDayPage } from '../components/FileToPageSheet'
 
 type Summary = { summary_date: string; block_count: number }
 
@@ -12,6 +13,14 @@ function pad(n: number) { return String(n).padStart(2, '0') }
 export function CalendarPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [creating, setCreating] = useState<string | null>(null)
+
+  async function createAndOpen(iso: string) {
+    if (!user || creating) return
+    setCreating(iso)
+    await getOrCreateDayPage(user.id, iso)
+    navigate(`/day/${iso}`)
+  }
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
     return { year: d.getFullYear(), month: d.getMonth() } // month 0-indexed
@@ -73,7 +82,9 @@ export function CalendarPage() {
           if (!summary || summary.block_count === 0) {
             return (
               <div className={`cell ${isToday ? 'today' : ''}`} key={i}>
-                <div className="empty-slot"><span>{c.day}</span></div>
+                <button className="empty-slot" onClick={() => createAndOpen(c.iso!)} disabled={creating === c.iso} aria-label={`Create page for day ${c.day}`}>
+                  <span>{c.day}</span>
+                </button>
               </div>
             )
           }

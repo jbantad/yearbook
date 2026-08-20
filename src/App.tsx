@@ -6,8 +6,8 @@ import { DayPage } from './pages/DayPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { QuestsPage } from './pages/QuestsPage'
 import { ShelvesPage } from './pages/ShelvesPage'
-import { PeoplePage } from './pages/PeoplePage'
 import { PersonDetailPage } from './pages/PersonDetailPage'
+import { CustomizePage } from './pages/CustomizePage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -26,8 +26,8 @@ function App() {
         <Route path="/calendar" element={<RequireAuth><CalendarPage /></RequireAuth>} />
         <Route path="/quests" element={<RequireAuth><QuestsPage /></RequireAuth>} />
         <Route path="/shelves" element={<RequireAuth><ShelvesPage /></RequireAuth>} />
-        <Route path="/people" element={<RequireAuth><PeoplePage /></RequireAuth>} />
         <Route path="/people/:id" element={<RequireAuth><PersonDetailPage /></RequireAuth>} />
+        <Route path="/customize" element={<RequireAuth><CustomizePage /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

@@ -14,6 +14,8 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [posterFile, setPosterFile] = useState<File | null>(null)
+  const [posterPreview, setPosterPreview] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -24,6 +26,25 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+  }
+
+  function pickPoster(file: File | undefined) {
+    if (!file) return
+    setPosterFile(file)
+    setPosterPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
+  }
+
+  async function uploadToPhotos(file: File): Promise<string> {
+    if (!user) throw new Error('not signed in')
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`
+    const { error: uploadErr } = await supabase.storage.from('photos').upload(path, file, { contentType: file.type || undefined })
+    if (uploadErr) throw uploadErr
+    const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
+    return pub.publicUrl
   }
 
   async function submit(e: React.FormEvent) {
@@ -38,16 +59,7 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
 
       if (type === 'photo') {
         data = { caption: text }
-        if (photoFile) {
-          const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
-          const path = `${user.id}/${crypto.randomUUID()}.${ext}`
-          const { error: uploadErr } = await supabase.storage.from('photos').upload(path, photoFile, {
-            contentType: photoFile.type || undefined,
-          })
-          if (uploadErr) throw uploadErr
-          const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
-          data.photo_url = pub.publicUrl
-        }
+        if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
       if (type === 'note') data = { text }
       if (type === 'meal') data = { dish: text, description: secondary }
@@ -75,9 +87,10 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
       }
 
       if (type === 'movie') {
+        const poster_path = posterFile ? await uploadToPhotos(posterFile) : null
         const { data: created, error: movieErr } = await supabase
           .from('movies')
-          .insert({ title: text })
+          .insert({ title: text, poster_path })
           .select('id')
           .single()
         if (movieErr) throw movieErr
@@ -208,10 +221,28 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
               </>
             )}
             {type === 'movie' && (
-              <div className="field">
-                <label>Title</label>
-                <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
-              </div>
+              <>
+                <div className="field" style={{ display: 'flex', gap: 14 }}>
+                  <label
+                    style={{
+                      flexShrink: 0, width: 90, aspectRatio: '2 / 3', borderRadius: 10, overflow: 'hidden', cursor: 'pointer',
+                      background: posterPreview ? `url(${posterPreview}) center/cover no-repeat` : 'var(--paper-alt)',
+                      border: posterPreview ? 'none' : '1.5px dashed var(--line)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                    }}
+                  >
+                    {!posterPreview && (
+                      <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic', padding: '0 6px', textTransform: 'none', letterSpacing: 'normal' }}>tap for poster</span>
+                    )}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPoster(e.target.files?.[0])} />
+                  </label>
+                  <div style={{ flex: 1 }}>
+                    <label>Title</label>
+                    <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                    <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>poster is optional — fixed 2:3, same shape as a real one</div>
+                  </div>
+                </div>
+              </>
             )}
             {type === 'person' && (
               <>

@@ -69,7 +69,7 @@ export function PersonDetailPage() {
         })}
       </div>
 
-      <TabBar active="profile" />
+      <TabBar active="shelves" />
     </div>
   )
 }

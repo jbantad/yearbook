@@ -6,6 +6,7 @@ import { TabBar } from '../components/TabBar'
 import { BlockCard, type BlockWithJoins } from '../components/BlockCard'
 import { AddSheet } from '../components/AddSheet'
 import { FileToPageSheet } from '../components/FileToPageSheet'
+import { EditPhotoSheet } from '../components/EditPhotoSheet'
 import { PlusIcon } from '../components/icons'
 
 export function LoosePile() {
@@ -15,13 +16,14 @@ export function LoosePile() {
   const [loading, setLoading] = useState(true)
   const [addOpen, setAddOpen] = useState(false)
   const [fileTarget, setFileTarget] = useState<BlockWithJoins | null>(null)
+  const [editingPhoto, setEditingPhoto] = useState<BlockWithJoins | null>(null)
 
   async function load() {
     if (!user) return
     setLoading(true)
     const { data } = await supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title)')
+      .select('*, place:places(name), movie:movies(title, poster_path)')
       .eq('user_id', user.id)
       .is('page_id', null)
       .order('captured_at', { ascending: false })
@@ -51,7 +53,12 @@ export function LoosePile() {
           <div className="empty-state">Nothing in the pile yet — tap + to capture a moment.</div>
         )}
         {blocks.map((b) => (
-          <BlockCard key={b.id} block={b} onClick={() => setFileTarget(b)} />
+          <BlockCard
+            key={b.id}
+            block={b}
+            onClick={() => setFileTarget(b)}
+            onEdit={b.type === 'photo' ? () => setEditingPhoto(b) : undefined}
+          />
         ))}
       </div>
 
@@ -78,6 +85,15 @@ export function LoosePile() {
             load()
             navigate(`/day/${pageDate}`)
           }}
+        />
+      )}
+
+      {editingPhoto && (
+        <EditPhotoSheet
+          block={editingPhoto}
+          onClose={() => setEditingPhoto(null)}
+          onSaved={() => { setEditingPhoto(null); load() }}
+          onDeleted={() => { setEditingPhoto(null); load() }}
         />
       )}
 

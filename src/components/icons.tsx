@@ -78,6 +78,32 @@ export function PlusIcon() {
     </svg>
   )
 }
+export function EditIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4.5 1.5L5 15Z" />
+      <path d="M14.5 5.5l3 3" />
+    </svg>
+  )
+}
+export function PaletteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3a9 8.5 0 1 0 0 17c1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H16a5 4.5 0 0 0 5-4.5C21 5.8 17 3 12 3Z" />
+      <circle cx="7.5" cy="11" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="7" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="14.5" cy="7" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="16.5" cy="11" r="1.15" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+export function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+    </svg>
+  )
+}
 
 export const BLOCK_ICONS: Record<string, () => React.ReactElement> = {
   photo: PhotoIcon,
@@ -90,13 +116,13 @@ export const BLOCK_ICONS: Record<string, () => React.ReactElement> = {
 }
 
 export const BLOCK_COLORS: Record<string, { fg: string; soft: string }> = {
-  photo: { fg: 'var(--amber)', soft: 'var(--amber-soft)' },
-  note: { fg: 'var(--sage)', soft: 'var(--sage-soft)' },
-  place: { fg: 'var(--dusk)', soft: 'var(--dusk-soft)' },
-  meal: { fg: 'var(--rose)', soft: 'var(--rose-soft)' },
-  movie: { fg: 'var(--plum)', soft: 'var(--plum-soft)' },
-  person: { fg: 'var(--teal)', soft: 'var(--teal-soft)' },
-  gratitude: { fg: 'var(--blush)', soft: 'var(--blush-soft)' },
+  photo: { fg: 'var(--block-photo)', soft: 'var(--block-photo-soft)' },
+  note: { fg: 'var(--block-note)', soft: 'var(--block-note-soft)' },
+  place: { fg: 'var(--block-place)', soft: 'var(--block-place-soft)' },
+  meal: { fg: 'var(--block-meal)', soft: 'var(--block-meal-soft)' },
+  movie: { fg: 'var(--block-movie)', soft: 'var(--block-movie-soft)' },
+  person: { fg: 'var(--block-person)', soft: 'var(--block-person-soft)' },
+  gratitude: { fg: 'var(--block-gratitude)', soft: 'var(--block-gratitude-soft)' },
 }
 
 export const BLOCK_LABELS: Record<string, string> = {

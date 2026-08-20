@@ -4,7 +4,9 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { BlockCard, type BlockWithJoins } from '../components/BlockCard'
-import { BackIcon } from '../components/icons'
+import { EditPhotoSheet } from '../components/EditPhotoSheet'
+import { getOrCreateDayPage } from '../components/FileToPageSheet'
+import { BackIcon, PaletteIcon } from '../components/icons'
 import { defaultBlockPosition } from '../lib/hash'
 
 type Pos = { x: number; y: number }
@@ -15,7 +17,7 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
   return defaultBlockPosition(block.id, index)
 }
 
-function DraggableBlock({ block, index, onMoved }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void }) {
+function DraggableBlock({ block, index, onMoved, onEdit }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void; onEdit?: () => void }) {
   const base = blockPosition(block, index)
   const [pos, setPos] = useState(base)
   const [dragging, setDragging] = useState(false)
@@ -50,7 +52,7 @@ function DraggableBlock({ block, index, onMoved }: { block: BlockWithJoins; inde
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <BlockCard block={block} />
+      <BlockCard block={block} onEdit={onEdit} />
     </div>
   )
 }
@@ -73,39 +75,52 @@ export function DayPage() {
   const [pageNumber, setPageNumber] = useState<number | null>(null)
   const [blocks, setBlocks] = useState<BlockWithJoins[]>([])
   const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [editingPhoto, setEditingPhoto] = useState<BlockWithJoins | null>(null)
 
-  useEffect(() => {
+  async function load() {
     if (!user || !date) return
     setLoading(true)
-    supabase
+    const { data: page } = await supabase
       .from('pages')
       .select('id, page_number')
       .eq('user_id', user.id)
       .eq('kind', 'day')
       .eq('page_date', date)
       .maybeSingle()
-      .then(async ({ data: page }) => {
-        if (!page) {
-          setPageId(null)
-          setBlocks([])
-          setLoading(false)
-          return
-        }
-        setPageId(page.id)
-        setPageNumber(page.page_number)
-        const { data } = await supabase
-          .from('blocks')
-          .select('*, place:places(name), movie:movies(title)')
-          .eq('page_id', page.id)
-          .order('captured_at', { ascending: true })
-        setBlocks((data ?? []) as unknown as BlockWithJoins[])
-        setLoading(false)
-      })
+    if (!page) {
+      setPageId(null)
+      setBlocks([])
+      setLoading(false)
+      return
+    }
+    setPageId(page.id)
+    setPageNumber(page.page_number)
+    const { data } = await supabase
+      .from('blocks')
+      .select('*, place:places(name), movie:movies(title, poster_path)')
+      .eq('page_id', page.id)
+      .order('captured_at', { ascending: true })
+    setBlocks((data ?? []) as unknown as BlockWithJoins[])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, date])
 
   async function handleMoved(id: string, pos: Pos) {
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, layout: { ...(b.layout as object), ...pos } } : b)))
     await supabase.from('blocks').update({ layout: pos }).eq('id', id)
+  }
+
+  async function createPage() {
+    if (!user || !date) return
+    setCreating(true)
+    await getOrCreateDayPage(user.id, date)
+    await load()
+    setCreating(false)
   }
 
   if (!date) return null
@@ -119,6 +134,7 @@ export function DayPage() {
           <div className="pg">DAY PAGE</div>
         </div>
         <div className="right">
+          <button onClick={() => navigate('/customize')} aria-label="Customize"><PaletteIcon /></button>
           <button onClick={() => navigate(`/day/${shiftDate(date, -1)}`)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg>
           </button>
@@ -131,14 +147,38 @@ export function DayPage() {
       <div className="page-canvas">
         {loading && <div className="empty-state">loading…</div>}
         {!loading && !pageId && (
-          <div className="empty-state">No page for this day yet. File a moment here from the Loose Pile.</div>
+          <div className="empty-state">
+            No page for this day yet.
+            <div style={{ marginTop: 12 }}>
+              <button className="cta" style={{ width: 'auto', padding: '10px 20px' }} onClick={createPage} disabled={creating}>
+                {creating ? 'Creating…' : 'Create this page'}
+              </button>
+            </div>
+          </div>
         )}
         {!loading && pageId && blocks.length === 0 && (
-          <div className="empty-state">This page is empty so far.</div>
+          <div className="empty-state">This page is empty so far. File a moment here from the Loose Pile.</div>
         )}
-        {blocks.map((b, i) => <DraggableBlock key={b.id} block={b} index={i} onMoved={handleMoved} />)}
+        {blocks.map((b, i) => (
+          <DraggableBlock
+            key={b.id}
+            block={b}
+            index={i}
+            onMoved={handleMoved}
+            onEdit={b.type === 'photo' ? () => setEditingPhoto(b) : undefined}
+          />
+        ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
       </div>
+
+      {editingPhoto && (
+        <EditPhotoSheet
+          block={editingPhoto}
+          onClose={() => setEditingPhoto(null)}
+          onSaved={() => { setEditingPhoto(null); load() }}
+          onDeleted={() => { setEditingPhoto(null); load() }}
+        />
+      )}
 
       <TabBar active="today" />
     </div>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-type TabKey = 'today' | 'calendar' | 'quests' | 'shelves' | 'profile'
+type TabKey = 'today' | 'calendar' | 'quests' | 'shelves'
 
 const TABS: { key: TabKey; to: string; label: string; icon: React.ReactNode }[] = [
   {
@@ -46,17 +46,6 @@ const TABS: { key: TabKey; to: string; label: string; icon: React.ReactNode }[] 
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
         <path d="M3.5 10.5h17M8 3.5v7M13.5 3.5v7" />
-      </svg>
-    ),
-  },
-  {
-    key: 'profile',
-    to: '/people',
-    label: 'You',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8.5" r="3.75" />
-        <path d="M4.5 20c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6" />
       </svg>
     ),
   },
