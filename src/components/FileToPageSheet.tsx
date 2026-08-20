@@ -2,10 +2,14 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { BlockWithJoins } from './BlockCard'
-import { CheckIcon, ChevronIcon } from './icons'
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function formatDate(iso: string) {
+  const d = new Date(iso + 'T00:00:00')
+  return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 export async function getOrCreateDayPage(userId: string, dateISO: string) {
@@ -36,7 +40,7 @@ export function FileToPageSheet({
   onFiled: (dateISO: string) => void
 }) {
   const { user } = useAuth()
-  const [customDate, setCustomDate] = useState(false)
+  const [mode, setMode] = useState<'today' | 'custom'>('today')
   const [date, setDate] = useState(todayISO())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -63,40 +67,27 @@ export function FileToPageSheet({
         <h2>File to a page</h2>
         <div className="sub">choose where this moment lives</div>
 
-        {!customDate ? (
-          <>
-            <button className="opt-row sel" onClick={() => fileTo(todayISO())} disabled={busy}>
-              <div className="thumb">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 9.5h17M8 3v4M16 3v4" /></svg>
-              </div>
-              <div className="body">
-                <div className="name">Today</div>
-                <div className="hint">matches when it was captured</div>
-              </div>
-              <div className="radio"><CheckIcon /></div>
-            </button>
-            <button className="opt-row" onClick={() => setCustomDate(true)} disabled={busy}>
-              <div className="thumb">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 9.5h17M8 3v4M16 3v4" /><path d="M8 14h2M8 17h5" /></svg>
-              </div>
-              <div className="body">
-                <div className="name">Choose a different day</div>
-                <div className="hint">another date on the calendar</div>
-              </div>
-              <ChevronIcon />
-            </button>
-          </>
+        <div className="segmented">
+          <button type="button" className={`seg${mode === 'today' ? ' sel' : ''}`} onClick={() => setMode('today')} disabled={busy}>Today</button>
+          <button type="button" className={`seg${mode === 'custom' ? ' sel' : ''}`} onClick={() => setMode('custom')} disabled={busy}>Choose a date</button>
+        </div>
+
+        {mode === 'today' ? (
+          <div className="dest-card">
+            <div className="day">{formatDate(todayISO())}</div>
+            <div className="hint">matches when it was captured</div>
+          </div>
         ) : (
           <div className="field">
             <label>Date</label>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            <button className="cta" style={{ marginTop: 14 }} onClick={() => fileTo(date)} disabled={busy}>
-              {busy ? 'Filing…' : 'File to this page'}
-            </button>
           </div>
         )}
 
         {error && <div className="auth-error">{error}</div>}
+        <button className="cta" onClick={() => fileTo(mode === 'today' ? todayISO() : date)} disabled={busy}>
+          {busy ? 'Filing…' : 'File to this page'}
+        </button>
         <button className="cancel" onClick={onClose}>Cancel</button>
       </div>
     </div>
