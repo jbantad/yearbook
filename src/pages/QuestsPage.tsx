@@ -61,7 +61,6 @@ export function QuestsPage() {
     <div className="screen">
       <div className="header">
         <h1>Quests</h1>
-        <div className="sub">goals that turn into stickers</div>
       </div>
 
       <div className="body" style={{ padding: '0 18px 100px', display: 'flex', flexDirection: 'column', gap: 16 }}>

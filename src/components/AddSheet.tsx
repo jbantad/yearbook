@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS } from './icons'
+import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
@@ -16,6 +16,10 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [posterFile, setPosterFile] = useState<File | null>(null)
   const [posterPreview, setPosterPreview] = useState<string | null>(null)
+  const [rating, setRating] = useState(0)
+  const [showTitle, setShowTitle] = useState(true)
+  const [mealPhotoFile, setMealPhotoFile] = useState<File | null>(null)
+  const [mealPhotoPreview, setMealPhotoPreview] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,6 +36,15 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
     if (!file) return
     setPosterFile(file)
     setPosterPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
+  }
+
+  function pickMealPhoto(file: File | undefined) {
+    if (!file) return
+    setMealPhotoFile(file)
+    setMealPhotoPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
@@ -62,7 +75,10 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
       if (type === 'note') data = { text }
-      if (type === 'meal') data = { dish: text, description: secondary }
+      if (type === 'meal') {
+        data = { dish: text, description: secondary }
+        if (mealPhotoFile) data.photo_url = await uploadToPhotos(mealPhotoFile)
+      }
       if (type === 'gratitude') data = { items: text.split('\n').map((s) => s.trim()).filter(Boolean) }
 
       if (type === 'place') {
@@ -90,11 +106,12 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
         const poster_path = posterFile ? await uploadToPhotos(posterFile) : null
         const { data: created, error: movieErr } = await supabase
           .from('movies')
-          .insert({ title: text, poster_path })
+          .insert({ title: text, poster_path, rating: rating > 0 ? rating : null })
           .select('id')
           .single()
         if (movieErr) throw movieErr
         movie_id = created.id
+        data = { show_title: showTitle }
       }
 
       let personId: string | null = null
@@ -218,6 +235,22 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   <label>Notes (optional)</label>
                   <input value={secondary} onChange={(e) => setSecondary(e.target.value)} />
                 </div>
+                <div className="field">
+                  <label>Photo (optional)</label>
+                  <label
+                    style={{
+                      display: 'flex', width: '100%', height: 120, borderRadius: 10, overflow: 'hidden', cursor: 'pointer',
+                      background: mealPhotoPreview ? `url(${mealPhotoPreview}) center/cover no-repeat` : 'var(--paper-alt)',
+                      border: mealPhotoPreview ? 'none' : '1.5px dashed var(--line)',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {!mealPhotoPreview && (
+                      <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>
+                    )}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickMealPhoto(e.target.files?.[0])} />
+                  </label>
+                </div>
               </>
             )}
             {type === 'movie' && (
@@ -241,6 +274,25 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                     <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
                     <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>poster is optional — fixed 2:3, same shape as a real one</div>
                   </div>
+                </div>
+                <div className="field">
+                  <label>Your rating</label>
+                  <div className="stars-row">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button type="button" key={n} onClick={() => setRating((r) => (r === n ? 0 : n))} aria-label={`${n} stars`}>
+                        <StarIcon filled={n <= rating} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="toggle-row">
+                  <div>
+                    <div className="lbl">Show title on poster</div>
+                    <div className="hint">overlay the title text on the block</div>
+                  </div>
+                  <button type="button" className={`switch${showTitle ? ' on' : ''}`} onClick={() => setShowTitle((s) => !s)} aria-label="Toggle title visibility">
+                    <div className="knob" />
+                  </button>
                 </div>
               </>
             )}

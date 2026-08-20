@@ -4,6 +4,16 @@ import { useAuth } from '../context/AuthContext'
 import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
+import { hashRotation } from '../lib/hash'
+import polaroidClassic from '../assets/polaroid-frame.png'
+import polaroidTall from '../assets/polaroid-frame-tall.png'
+import polaroidSquare from '../assets/polaroid-frame-square.png'
+
+const FRAMES: { key: string; label: string; src: string }[] = [
+  { key: 'classic', label: 'Classic', src: polaroidClassic },
+  { key: 'tall', label: 'Tall', src: polaroidTall },
+  { key: 'square', label: 'Square', src: polaroidSquare },
+]
 
 export function EditPhotoSheet({
   block,
@@ -18,7 +28,10 @@ export function EditPhotoSheet({
 }) {
   const { user } = useAuth()
   const data = (block.data ?? {}) as Record<string, unknown>
+  const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [caption, setCaption] = useState((data.caption as string) || '')
+  const [frame, setFrame] = useState((data.frame as string) || 'classic')
+  const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>((data.photo_url as string) || null)
   const [busy, setBusy] = useState(false)
@@ -39,7 +52,7 @@ export function EditPhotoSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData: Record<string, unknown> = { ...data, caption }
+      const nextData: Record<string, unknown> = { ...data, caption, frame }
       if (photoFile) {
         const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`
@@ -48,7 +61,11 @@ export function EditPhotoSheet({
         const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
         nextData.photo_url = pub.publicUrl
       }
-      const { error: updateErr } = await supabase.from('blocks').update({ data: nextData as unknown as Json }).eq('id', block.id)
+      const nextLayout = { ...layout, r: rotation }
+      const { error: updateErr } = await supabase
+        .from('blocks')
+        .update({ data: nextData as unknown as Json, layout: nextLayout as unknown as Json })
+        .eq('id', block.id)
       if (updateErr) throw updateErr
       onSaved()
     } catch (err) {
@@ -96,6 +113,36 @@ export function EditPhotoSheet({
           <div className="field">
             <label>Caption</label>
             <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="made it right as the sky went pink" />
+          </div>
+
+          <div className="field">
+            <label>Frame</label>
+            <div className="frame-picker">
+              {FRAMES.map((f) => (
+                <button
+                  type="button"
+                  key={f.key}
+                  className={`frame-opt${frame === f.key ? ' sel' : ''}`}
+                  onClick={() => setFrame(f.key)}
+                >
+                  <div className="sw" style={{ backgroundImage: `url(${f.src})` }} />
+                  <span>{f.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Rotation</label>
+            <div className="rotate-row">
+              <button type="button" onClick={() => setRotation((r) => r - 4)} aria-label="Rotate left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
+              </button>
+              <span className="rotate-val">{Math.round(rotation)}°</span>
+              <button type="button" onClick={() => setRotation((r) => r + 4)} aria-label="Rotate right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
+              </button>
+            </div>
           </div>
 
           {error && <div className="auth-error">{error}</div>}

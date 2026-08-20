@@ -23,11 +23,17 @@ export function LoosePile() {
     setLoading(true)
     const { data } = await supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path)')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(display_name))')
       .eq('user_id', user.id)
       .is('page_id', null)
       .order('captured_at', { ascending: false })
-    setBlocks((data ?? []) as unknown as BlockWithJoins[])
+    const withPeople = (data ?? []).map((b) => ({
+      ...b,
+      people: ((b as { people?: { person: { display_name: string } | null }[] }).people ?? [])
+        .map((p) => p.person)
+        .filter((p): p is { display_name: string } => !!p),
+    }))
+    setBlocks(withPeople as unknown as BlockWithJoins[])
     setLoading(false)
   }
 
@@ -40,11 +46,8 @@ export function LoosePile() {
 
   return (
     <div className="screen">
-      <div className="header scalloped">
+      <div className="header">
         <h1>Loose Pile</h1>
-        <div className="sub">
-          {loading ? 'loading…' : `${blocks.length} moment${blocks.length === 1 ? '' : 's'} waiting to be paged`}
-        </div>
         <div className="avatar">{initial}</div>
       </div>
 

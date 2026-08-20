@@ -1,10 +1,19 @@
 import { hashRotation } from '../lib/hash'
-import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
+import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
 import type { Tables } from '../lib/database.types'
+import polaroidClassic from '../assets/polaroid-frame.png'
+import polaroidTall from '../assets/polaroid-frame-tall.png'
+import polaroidSquare from '../assets/polaroid-frame-square.png'
+
+const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
+  classic: { w: 168, h: 132, src: polaroidClassic },
+  tall: { w: 132, h: 186, src: polaroidTall },
+  square: { w: 150, h: 164, src: polaroidSquare },
+}
 
 export type BlockWithJoins = Tables<'blocks'> & {
   place?: { name: string } | null
-  movie?: { title: string; poster_path: string | null } | null
+  movie?: { title: string; poster_path: string | null; rating: number | null } | null
   people?: { display_name: string }[]
 }
 
@@ -22,19 +31,21 @@ function EditButton({ onEdit }: { onEdit: () => void }) {
 }
 
 export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; onClick?: () => void; onEdit?: () => void }) {
-  const rot = hashRotation(block.id)
+  const layout = (block.layout ?? {}) as { r?: number }
+  const rot = typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
   const data = (block.data ?? {}) as Record<string, unknown>
 
   if (block.type === 'photo') {
     const caption = (data.caption as string) || 'a moment'
     const photoUrl = data.photo_url as string | undefined
+    const frame = FRAME_SIZES[(data.frame as string) || 'classic'] ?? FRAME_SIZES.classic
     return (
       <div
         className="card polaroid"
-        style={{ width: 168, height: 132, transform: `rotate(${rot}deg)`, cursor: onClick ? 'pointer' : 'default' }}
+        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg)`, cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        <div className="frame-img" />
+        <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
         <div
           className="photo-art"
           style={photoUrl
@@ -72,16 +83,23 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   }
 
   if (block.type === 'meal') {
+    const mealPhoto = data.photo_url as string | undefined
     return (
       <button
         className="card ticket"
-        style={{ width: 150, transform: `rotate(${rot}deg)`, borderRadius: 4, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
+        style={{
+          width: 150, transform: `rotate(${rot}deg)`, borderRadius: 4, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
+          padding: mealPhoto ? 0 : undefined, overflow: mealPhoto ? 'hidden' : undefined,
+        }}
         onClick={onClick}
       >
+        {mealPhoto && (
+          <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundImage: `url(${mealPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        )}
         <div className="badge" style={{ background: BLOCK_COLORS.meal.fg }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3v6M9 3v6M11 3v7M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8" /></svg>
         </div>
-        <div className="cap">{(data.dish as string) || (data.description as string) || 'a meal'}</div>
+        <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
       </button>
     )
   }
@@ -106,6 +124,8 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'movie') {
     const poster = block.movie?.poster_path
+    const rating = block.movie?.rating
+    const showTitle = data.show_title !== false
     return (
       <button
         className="card scrap"
@@ -118,7 +138,12 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         {poster ? (
           <>
             <div style={{ width: '100%', aspectRatio: '2 / 3', backgroundImage: `url(${poster})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-            <div className="cap" style={{ padding: '8px 10px' }}>{block.movie?.title ?? 'a movie'}</div>
+            {showTitle && <div className="cap" style={{ padding: '8px 10px 0' }}>{block.movie?.title ?? 'a movie'}</div>}
+            {rating != null && (
+              <div className="stars" style={{ padding: showTitle ? '5px 10px 8px' : '8px 10px' }}>
+                {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= rating} />)}
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -126,6 +151,11 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
               <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5 5 4h3l-1.6 4.5M9 8.5 10.6 4h3l-1.6 4.5M15.6 8.5 17.2 4H20l-2 4.5M3 8.5h18v9.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /></svg>
             </div>
             <div className="cap">{block.movie?.title ?? 'a movie'}</div>
+            {rating != null && (
+              <div className="stars">
+                {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= rating} />)}
+              </div>
+            )}
           </>
         )}
       </button>

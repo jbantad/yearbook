@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
-import { MealIcon, MovieIcon, PlaceIcon, ChevronIcon, PlusIcon } from '../components/icons'
+import { MealIcon, MovieIcon, PlaceIcon, ChevronIcon, PlusIcon, StarIcon } from '../components/icons'
 import type { Tables } from '../lib/database.types'
 
 type Shelf = 'movie' | 'place' | 'meal' | 'person'
-type Block = Tables<'blocks'> & { place?: { name: string } | null; movie?: { title: string; poster_path: string | null } | null }
+type Block = Tables<'blocks'> & { place?: { name: string } | null; movie?: { title: string; poster_path: string | null; rating: number | null } | null }
 type Person = Tables<'people'> & { count: number }
 
 export function ShelvesPage() {
@@ -45,7 +45,7 @@ export function ShelvesPage() {
     setLoading(true)
     supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path)')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating)')
       .eq('user_id', user.id)
       .eq('type', shelf)
       .order('captured_at', { ascending: false })
@@ -71,9 +71,11 @@ export function ShelvesPage() {
   return (
     <div className="screen">
       <div className="header">
-        <h1>Shelves</h1>
-        <div className="sub">
-          {loading ? 'loading…' : shelf === 'person' ? `${people.length} people tagged` : `${blocks.length} ${shelf === 'movie' ? 'watched' : shelf === 'meal' ? 'logged' : 'visited'}`}
+        <div className="row">
+          <h1>Shelves</h1>
+          <div className="stat">
+            {loading ? 'loading…' : shelf === 'person' ? `${people.length} people tagged` : `${blocks.length} ${shelf === 'movie' ? 'watched' : shelf === 'meal' ? 'logged' : 'visited'}`}
+          </div>
         </div>
       </div>
 
@@ -141,7 +143,13 @@ export function ShelvesPage() {
                   </div>
                   <div className="stub">
                     <div className="t">{title || 'untitled'}</div>
-                    <div className="d">{dateStr}</div>
+                    {shelf === 'movie' && b.movie?.rating != null ? (
+                      <div className="stars" style={{ marginTop: 4 }}>
+                        {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= (b.movie?.rating ?? 0)} />)}
+                      </div>
+                    ) : (
+                      <div className="d">{dateStr}</div>
+                    )}
                   </div>
                 </div>
               )

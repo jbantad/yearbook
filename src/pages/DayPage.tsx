@@ -17,7 +17,7 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
   return defaultBlockPosition(block.id, index)
 }
 
-function DraggableBlock({ block, index, onMoved, onEdit }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void; onEdit?: () => void }) {
+function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void; onClick?: () => void }) {
   const base = blockPosition(block, index)
   const [pos, setPos] = useState(base)
   const [dragging, setDragging] = useState(false)
@@ -52,7 +52,7 @@ function DraggableBlock({ block, index, onMoved, onEdit }: { block: BlockWithJoi
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <BlockCard block={block} onEdit={onEdit} />
+      <BlockCard block={block} onClick={onClick} />
     </div>
   )
 }
@@ -98,10 +98,16 @@ export function DayPage() {
     setPageNumber(page.page_number)
     const { data } = await supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path)')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(display_name))')
       .eq('page_id', page.id)
       .order('captured_at', { ascending: true })
-    setBlocks((data ?? []) as unknown as BlockWithJoins[])
+    const withPeople = (data ?? []).map((b) => ({
+      ...b,
+      people: ((b as { people?: { person: { display_name: string } | null }[] }).people ?? [])
+        .map((p) => p.person)
+        .filter((p): p is { display_name: string } => !!p),
+    }))
+    setBlocks(withPeople as unknown as BlockWithJoins[])
     setLoading(false)
   }
 
@@ -165,7 +171,7 @@ export function DayPage() {
             block={b}
             index={i}
             onMoved={handleMoved}
-            onEdit={b.type === 'photo' ? () => setEditingPhoto(b) : undefined}
+            onClick={b.type === 'photo' ? () => setEditingPhoto(b) : undefined}
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
