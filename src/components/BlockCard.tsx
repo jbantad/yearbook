@@ -26,6 +26,7 @@ export function BlockCard({ block, onClick }: { block: BlockWithJoins; onClick?:
 
   if (block.type === 'photo') {
     const caption = (data.caption as string) || 'a moment'
+    const photoUrl = data.photo_url as string | undefined
     return (
       <button
         className="card polaroid"
@@ -33,7 +34,12 @@ export function BlockCard({ block, onClick }: { block: BlockWithJoins; onClick?:
         onClick={onClick}
       >
         <div className="frame-img" />
-        <div className="photo-art" style={{ background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` }} />
+        <div
+          className="photo-art"
+          style={photoUrl
+            ? { backgroundImage: `url(${photoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` }}
+        />
         <div className="cap">{caption}</div>
       </button>
     )

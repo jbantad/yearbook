@@ -12,8 +12,19 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
   const [type, setType] = useState<BlockType | null>(null)
   const [text, setText] = useState('')
   const [secondary, setSecondary] = useState('')
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function pickPhoto(file: File | undefined) {
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -25,7 +36,19 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
       let place_id: string | null = null
       let movie_id: string | null = null
 
-      if (type === 'photo') data = { caption: text }
+      if (type === 'photo') {
+        data = { caption: text }
+        if (photoFile) {
+          const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+          const path = `${user.id}/${crypto.randomUUID()}.${ext}`
+          const { error: uploadErr } = await supabase.storage.from('photos').upload(path, photoFile, {
+            contentType: photoFile.type || undefined,
+          })
+          if (uploadErr) throw uploadErr
+          const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
+          data.photo_url = pub.publicUrl
+        }
+      }
       if (type === 'note') data = { text }
       if (type === 'meal') data = { dish: text, description: secondary }
       if (type === 'gratitude') data = { items: text.split('\n').map((s) => s.trim()).filter(Boolean) }
@@ -132,13 +155,33 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
             <div className="sub">captured now, ready to file to a page</div>
 
             {type === 'photo' && (
-              <div className="field">
-                <label>Caption</label>
-                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="made it right as the sky went pink" autoFocus />
-                <div style={{ fontSize: 11.5, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>
-                  photo upload isn't wired up yet — this placeholder gets a generated background
+              <>
+                <div className="field">
+                  <label>Photo</label>
+                  <label
+                    style={{
+                      width: '100%', height: 150, borderRadius: 10, overflow: 'hidden', cursor: 'pointer',
+                      background: photoPreview ? `url(${photoPreview}) center/cover no-repeat` : 'var(--paper-alt)',
+                      border: photoPreview ? 'none' : '1.5px dashed var(--line)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {!photoPreview && (
+                      <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => pickPhoto(e.target.files?.[0])}
+                    />
+                  </label>
                 </div>
-              </div>
+                <div className="field">
+                  <label>Caption</label>
+                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="made it right as the sky went pink" />
+                </div>
+              </>
             )}
             {type === 'note' && (
               <div className="field">
