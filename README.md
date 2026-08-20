@@ -49,9 +49,6 @@ In the Cloudflare dashboard, **Create a Worker → connect this Git repo**:
    only works within each table's RLS policies.
 4. Deploy. Every push to the connected branch triggers a new build.
 
-`public/_redirects` is also included for compatibility if you ever deploy this to
-classic Cloudflare Pages instead.
-
 ## What's implemented vs. stubbed
 
 Implemented and wired to Supabase: auth, loose pile, adding a block (photo/note/place/
