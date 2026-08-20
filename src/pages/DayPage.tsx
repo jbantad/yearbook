@@ -1,10 +1,59 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { BlockCard, type BlockWithJoins } from '../components/BlockCard'
 import { BackIcon } from '../components/icons'
+import { defaultBlockPosition } from '../lib/hash'
+
+type Pos = { x: number; y: number }
+
+function blockPosition(block: BlockWithJoins, index: number): Pos {
+  const layout = (block.layout ?? {}) as { x?: number; y?: number }
+  if (typeof layout.x === 'number' && typeof layout.y === 'number') return { x: layout.x, y: layout.y }
+  return defaultBlockPosition(block.id, index)
+}
+
+function DraggableBlock({ block, index, onMoved }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void }) {
+  const base = blockPosition(block, index)
+  const [pos, setPos] = useState(base)
+  const [dragging, setDragging] = useState(false)
+  const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
+
+  useEffect(() => { setPos(base) }, [base.x, base.y])
+
+  function onPointerDown(e: React.PointerEvent) {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragRef.current = { startX: e.clientX, startY: e.clientY, origin: pos }
+    setDragging(true)
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    if (!dragRef.current) return
+    const { startX, startY, origin } = dragRef.current
+    setPos({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
+  }
+  function onPointerUp(e: React.PointerEvent) {
+    if (!dragRef.current) return
+    e.currentTarget.releasePointerCapture(e.pointerId)
+    dragRef.current = null
+    setDragging(false)
+    onMoved(block.id, pos)
+  }
+
+  return (
+    <div
+      className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
+      style={{ left: pos.x, top: pos.y }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    >
+      <BlockCard block={block} />
+    </div>
+  )
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -54,6 +103,11 @@ export function DayPage() {
       })
   }, [user, date])
 
+  async function handleMoved(id: string, pos: Pos) {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, layout: { ...(b.layout as object), ...pos } } : b)))
+    await supabase.from('blocks').update({ layout: pos }).eq('id', id)
+  }
+
   if (!date) return null
 
   return (
@@ -82,7 +136,7 @@ export function DayPage() {
         {!loading && pageId && blocks.length === 0 && (
           <div className="empty-state">This page is empty so far.</div>
         )}
-        {blocks.map((b) => <BlockCard key={b.id} block={b} />)}
+        {blocks.map((b, i) => <DraggableBlock key={b.id} block={b} index={i} onMoved={handleMoved} />)}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
       </div>
 
