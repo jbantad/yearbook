@@ -87,11 +87,12 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'meal') {
     const mealPhoto = data.photo_url as string | undefined
+    const mealColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.meal)
     return (
       <button
         className="card ticket"
         style={{
-          width: 150, transform: `rotate(${rot}deg)`, borderRadius: 4, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
+          width: 150, background: mealPhoto ? undefined : mealColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 4, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
           padding: mealPhoto ? 0 : undefined, overflow: mealPhoto ? 'hidden' : undefined,
         }}
         onClick={onClick}
@@ -99,10 +100,10 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         {mealPhoto && (
           <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundImage: `url(${mealPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         )}
-        <div className="badge" style={{ background: BLOCK_COLORS.meal.fg }}>
+        <div className="badge" style={{ background: mealColor.fg }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3v6M9 3v6M11 3v7M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8" /></svg>
         </div>
-        <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
+        <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined, color: mealPhoto ? undefined : mealColor.fg }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
       </button>
     )
   }
@@ -130,12 +131,13 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const poster = block.movie?.poster_path
     const rating = block.movie?.rating
     const showTitle = data.show_title !== false
+    const movieColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.movie)
     return (
       <button
         className="card scrap"
         style={{
           width: 168, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
-          background: poster ? 'none' : BLOCK_COLORS.movie.soft, padding: poster ? 0 : undefined, overflow: poster ? 'hidden' : undefined,
+          background: poster ? 'none' : movieColor.soft, padding: poster ? 0 : undefined, overflow: poster ? 'hidden' : undefined,
         }}
         onClick={onClick}
       >
@@ -151,7 +153,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
           </>
         ) : (
           <>
-            <div className="badge" style={{ background: BLOCK_COLORS.movie.fg }}>
+            <div className="badge" style={{ background: movieColor.fg }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5 5 4h3l-1.6 4.5M9 8.5 10.6 4h3l-1.6 4.5M15.6 8.5 17.2 4H20l-2 4.5M3 8.5h18v9.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /></svg>
             </div>
             <div className="cap">{block.movie?.title ?? 'a movie'}</div>

@@ -9,6 +9,8 @@ import { EditNoteSheet } from '../components/EditNoteSheet'
 import { EditPlaceSheet } from '../components/EditPlaceSheet'
 import { EditPersonSheet } from '../components/EditPersonSheet'
 import { EditGratitudeSheet } from '../components/EditGratitudeSheet'
+import { EditMealSheet } from '../components/EditMealSheet'
+import { EditMovieSheet } from '../components/EditMovieSheet'
 import { EditTextSheet } from '../components/EditTextSheet'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
 import { BackIcon } from '../components/icons'
@@ -17,7 +19,7 @@ import type { Json } from '../lib/database.types'
 
 type Pos = { x: number; y: number }
 
-const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'person', 'gratitude', 'text'])
+const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'person', 'gratitude', 'text', 'meal', 'movie'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -253,6 +255,22 @@ export function DayPage() {
       )}
       {editingBlock?.type === 'gratitude' && (
         <EditGratitudeSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'meal' && (
+        <EditMealSheet
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); load() }}
+          onDeleted={() => { setEditingBlock(null); load() }}
+        />
+      )}
+      {editingBlock?.type === 'movie' && (
+        <EditMovieSheet
           block={editingBlock}
           onClose={() => setEditingBlock(null)}
           onSaved={() => { setEditingBlock(null); load() }}
