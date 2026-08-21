@@ -7,7 +7,7 @@ import type { Enums, Json } from '../lib/database.types'
 type BlockType = Enums<'block_type'>
 const TYPES: BlockType[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude']
 
-export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; onCreated: () => void; pageId?: string | null }) {
   const { user } = useAuth()
   const [type, setType] = useState<BlockType | null>(null)
   const [text, setText] = useState('')
@@ -138,7 +138,7 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
 
       const { data: block, error: blockErr } = await supabase
         .from('blocks')
-        .insert({ user_id: user.id, type, data: data as unknown as Json, place_id, movie_id })
+        .insert({ user_id: user.id, type, data: data as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
         .select('id')
         .single()
       if (blockErr) throw blockErr
@@ -182,7 +182,7 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
         ) : (
           <form onSubmit={submit}>
             <h2>{BLOCK_LABELS[type]}</h2>
-            <div className="sub">captured now, ready to file to a page</div>
+            <div className="sub">{pageId ? 'added straight to this page' : 'captured now, ready to file to a page'}</div>
 
             {type === 'photo' && (
               <>
@@ -316,7 +316,7 @@ export function AddSheet({ onClose, onCreated }: { onClose: () => void; onCreate
             )}
 
             {error && <div className="auth-error">{error}</div>}
-            <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Add to pile'}</button>
+            <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}</button>
             <button type="button" className="cancel" onClick={() => setType(null)}>Back</button>
           </form>
         )}

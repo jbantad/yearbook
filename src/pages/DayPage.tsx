@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { BlockCard, type BlockWithJoins } from '../components/BlockCard'
+import { AddSheet } from '../components/AddSheet'
 import { EditPhotoSheet } from '../components/EditPhotoSheet'
 import { EditNoteSheet } from '../components/EditNoteSheet'
 import { EditPlaceSheet } from '../components/EditPlaceSheet'
@@ -13,7 +14,7 @@ import { EditMealSheet } from '../components/EditMealSheet'
 import { EditMovieSheet } from '../components/EditMovieSheet'
 import { EditTextSheet } from '../components/EditTextSheet'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
-import { BackIcon } from '../components/icons'
+import { BackIcon, PlusIcon } from '../components/icons'
 import { defaultBlockPosition } from '../lib/hash'
 import type { Json } from '../lib/database.types'
 
@@ -94,6 +95,7 @@ export function DayPage() {
   const [creating, setCreating] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addingText, setAddingText] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
 
   async function load() {
     if (!user || !date) return
@@ -212,7 +214,7 @@ export function DayPage() {
               <button className="label-btn" onClick={() => addText('label')}>Add label</button>
             </div>
           ) : (
-            <div className="add-text-bar" style={{ left: 'auto' }}>
+            <div className="add-text-bar" style={{ right: 'auto' }}>
               <button className="label-btn" onClick={() => setAddingText(true)} style={{ flex: 'none', width: 40, height: 40, borderRadius: '50%', padding: 0 }} aria-label="Add text">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
               </button>
@@ -220,6 +222,20 @@ export function DayPage() {
           )
         )}
       </div>
+
+      {pageId && (
+        <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
+          <PlusIcon />
+        </button>
+      )}
+
+      {addOpen && (
+        <AddSheet
+          pageId={pageId}
+          onClose={() => setAddOpen(false)}
+          onCreated={() => { setAddOpen(false); load() }}
+        />
+      )}
 
       {editingBlock?.type === 'photo' && (
         <EditPhotoSheet

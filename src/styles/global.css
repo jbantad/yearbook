@@ -227,7 +227,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: oklch(15% 0 0); padding: 0; text-align: left;
 }
 
-.add-text-bar { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; gap: 8px; z-index: 15; }
+.add-text-bar { position: absolute; left: 14px; right: 96px; bottom: 14px; display: flex; gap: 8px; z-index: 15; }
 .add-text-bar button {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;
   padding: 10px; border-radius: 22px; border: none; box-shadow: 0 6px 14px oklch(30% 0.03 50 / 0.2);
