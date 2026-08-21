@@ -441,6 +441,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .chips { display: flex; gap: 8px; padding: 12px 22px 14px; flex-shrink: 0; }
 .chip { font-size: 13px; padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--line-on-photo); color: var(--ink-on-photo-soft); background: none; }
+.chip svg { width: 14px; height: 14px; flex-shrink: 0; }
 .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
 .header .chip { border-color: oklch(80% 0.02 85 / 0.4); color: oklch(88% 0.02 85 / 0.9); }
 .header .chip.active { background: oklch(97% 0.01 85); color: var(--ink); border-color: oklch(97% 0.01 85); }

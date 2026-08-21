@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
+import { BookIcon } from '../components/icons'
 import { hashRotation } from '../lib/hash'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
 
@@ -68,6 +69,7 @@ export function CalendarPage() {
         <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
           <button className="chip" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })}>‹ prev</button>
           <button className="chip" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })}>next ›</button>
+          <button className="chip" onClick={() => navigate('/albums')} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><BookIcon /> Albums</button>
         </div>
       </div>
 
