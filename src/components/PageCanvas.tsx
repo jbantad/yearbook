@@ -12,6 +12,7 @@ import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { PlusIcon } from './icons'
 import { defaultBlockPosition } from '../lib/hash'
+import { useSwipeGesture } from '../lib/useSwipeGesture'
 import type { Json } from '../lib/database.types'
 
 type Pos = { x: number; y: number }
@@ -78,6 +79,9 @@ export function PageCanvas({
   loading,
   emptyMessage,
   onReload,
+  onSwipeLeft,
+  onSwipeRight,
+  onDoubleTap,
 }: {
   userId: string | undefined
   pageId: string | null
@@ -86,10 +90,14 @@ export function PageCanvas({
   loading: boolean
   emptyMessage: string
   onReload: () => void
+  onSwipeLeft?: () => void
+  onSwipeRight?: () => void
+  onDoubleTap?: () => void
 }) {
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addingText, setAddingText] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
+  const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
   async function handleMoved(id: string, pos: Pos) {
     await supabase.from('blocks').update({ layout: pos }).eq('id', id)
@@ -110,7 +118,11 @@ export function PageCanvas({
 
   return (
     <>
-      <div className="page-canvas">
+      <div
+        className="page-canvas"
+        onPointerDown={swipe.onPointerDown}
+        onPointerUp={swipe.onPointerUp}
+      >
         {loading && <div className="empty-state">loading…</div>}
         {!loading && pageId && blocks.length === 0 && (
           <div className="empty-state">{emptyMessage}</div>

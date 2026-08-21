@@ -7,6 +7,7 @@ import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
 import { BackIcon } from '../components/icons'
+import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -74,6 +75,11 @@ export function DayPage() {
     setCreating(false)
   }
 
+  const goPrev = () => date && navigate(`/day/${shiftDate(date, -1)}`)
+  const goNext = () => date && navigate(`/day/${shiftDate(date, 1)}`)
+  const goCalendar = () => navigate('/calendar')
+  const emptySwipe = useSwipeGesture({ onSwipeLeft: goNext, onSwipeRight: goPrev, onDoubleTap: goCalendar })
+
   if (!date) return null
 
   return (
@@ -85,17 +91,17 @@ export function DayPage() {
           <div className="pg">DAY PAGE</div>
         </div>
         <div className="right">
-          <button onClick={() => navigate(`/day/${shiftDate(date, -1)}`)}>
+          <button onClick={goPrev}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg>
           </button>
-          <button onClick={() => navigate(`/day/${shiftDate(date, 1)}`)}>
+          <button onClick={goNext}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
 
       {!loading && !pageId ? (
-        <div className="page-canvas">
+        <div className="page-canvas" onPointerDown={emptySwipe.onPointerDown} onPointerUp={emptySwipe.onPointerUp}>
           <div className="empty-state">
             No page for this day yet.
             <div style={{ marginTop: 12 }}>
@@ -103,6 +109,7 @@ export function DayPage() {
                 {creating ? 'Creating…' : 'Create this page'}
               </button>
             </div>
+            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--ink-faint)', fontStyle: 'italic' }}>swipe to flip days · double-tap for calendar</div>
           </div>
         </div>
       ) : (
@@ -114,6 +121,9 @@ export function DayPage() {
           loading={loading}
           emptyMessage="This page is empty so far. Tap + to add something, or file a moment here from the Loose Pile."
           onReload={load}
+          onSwipeLeft={goNext}
+          onSwipeRight={goPrev}
+          onDoubleTap={goCalendar}
         />
       )}
 

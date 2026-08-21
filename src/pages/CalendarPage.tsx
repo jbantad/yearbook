@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
-import { BookIcon } from '../components/icons'
+import { BookIcon, PlusIcon } from '../components/icons'
 import { hashRotation } from '../lib/hash'
 import { getOrCreateDayPage } from '../components/FileToPageSheet'
+import type { Tables } from '../lib/database.types'
 
 type Summary = { summary_date: string; block_count: number }
+type Album = Tables<'pages'>
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
@@ -28,6 +30,7 @@ export function CalendarPage() {
   })
   const [summaries, setSummaries] = useState<Record<string, Summary>>({})
   const [loading, setLoading] = useState(true)
+  const [albums, setAlbums] = useState<Album[]>([])
 
   const monthStart = `${cursor.year}-${pad(cursor.month + 1)}-01`
   const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate()
@@ -54,6 +57,17 @@ export function CalendarPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, monthStart, monthEnd])
 
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('pages')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('kind', 'event')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setAlbums(data ?? []))
+  }, [user])
+
   const cells = useMemo(() => {
     const arr: { day: number | null; iso: string | null }[] = []
     for (let i = 0; i < leadBlanks; i++) arr.push({ day: null, iso: null })
@@ -69,7 +83,6 @@ export function CalendarPage() {
         <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
           <button className="chip" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })}>‹ prev</button>
           <button className="chip" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })}>next ›</button>
-          <button className="chip" onClick={() => navigate('/albums')} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><BookIcon /> Albums</button>
         </div>
       </div>
 
@@ -110,6 +123,22 @@ export function CalendarPage() {
       </div>
 
       <div className="legend"><span>each stamp is that day's cover photo</span></div>
+
+      <div className="albums-section">
+        <div className="kicker" style={{ padding: '0 4px 8px' }}>Albums</div>
+        <div className="album-row">
+          {albums.map((a) => (
+            <button key={a.id} className="album-chip" onClick={() => navigate(`/page/${a.id}`)}>
+              <BookIcon />
+              <span>{a.title || 'Untitled album'}</span>
+            </button>
+          ))}
+          <button className="album-chip new" onClick={() => navigate('/albums')}>
+            <PlusIcon />
+            <span>New</span>
+          </button>
+        </div>
+      </div>
 
       <TabBar active="calendar" />
     </div>
