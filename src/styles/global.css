@@ -8,6 +8,7 @@
 }
 
 :root {
+  --safe-bottom: min(env(safe-area-inset-bottom, 0px), 14px);
   --paper: oklch(88% 0.03 78);
   --paper-alt: oklch(93% 0.02 80);
   --card: oklch(99% 0.005 85);
@@ -85,7 +86,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(84px + env(safe-area-inset-bottom)); /* space for fixed tab bar */
+  padding-bottom: calc(84px + var(--safe-bottom)); /* space for fixed tab bar */
   min-height: 100vh;
 }
 
@@ -259,7 +260,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 /* ---- fab ---- */
 
 .fab {
-  position: fixed; right: calc(50% - 230px + 20px); bottom: calc(100px + env(safe-area-inset-bottom)); width: 58px; height: 58px; border-radius: 50%;
+  position: fixed; right: max(20px, calc(50% - 210px)); bottom: calc(100px + var(--safe-bottom)); width: 58px; height: 58px; border-radius: 50%;
   background: var(--ink); display: flex; align-items: center; justify-content: center;
   box-shadow: 0 10px 20px oklch(30% 0.05 50 / 0.35); border: none; z-index: 20;
 }
@@ -274,7 +275,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .sheet {
   position: relative; width: 100%; max-width: 460px; background: var(--card); z-index: 31;
   border-radius: 22px 22px 0 0; box-shadow: 0 -14px 34px oklch(25% 0.03 50 / 0.28);
-  padding: 14px 22px calc(28px + env(safe-area-inset-bottom));
+  padding: 14px 22px calc(28px + var(--safe-bottom));
   max-height: 88vh; overflow-y: auto;
 }
 .handle { width: 38px; height: 4px; border-radius: 3px; background: var(--line); margin: 0 auto 16px; }
@@ -359,8 +360,8 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .tabbar-wrap { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; z-index: 25; }
 .tabbar {
-  position: relative; width: 100%; max-width: 460px; height: calc(84px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 1px solid var(--line-on-photo);
-  display: flex; align-items: stretch; justify-content: space-around; padding: 0 6px env(safe-area-inset-bottom);
+  position: relative; width: 100%; max-width: 460px; height: calc(84px + var(--safe-bottom)); background: var(--paper); border-top: 1px solid var(--line-on-photo);
+  display: flex; align-items: stretch; justify-content: space-around; padding: 0 6px var(--safe-bottom);
   box-shadow: 0 -6px 16px oklch(30% 0.02 50 / 0.1); box-sizing: border-box;
 }
 .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex: 1; padding-top: 10px; background: none; border: none; }
