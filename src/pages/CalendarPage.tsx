@@ -79,10 +79,12 @@ export function CalendarPage() {
   return (
     <div className="screen">
       <div className="header">
-        <h1>{monthLabel}</h1>
-        <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-          <button className="chip" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })}>‹ prev</button>
-          <button className="chip" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })}>next ›</button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <h1>{monthLabel}</h1>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="chip" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })}>‹ prev</button>
+            <button className="chip" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })}>next ›</button>
+          </div>
         </div>
       </div>
 
