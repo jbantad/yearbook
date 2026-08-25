@@ -90,14 +90,7 @@ export function DayPage() {
           <h1>{formatDate(date)}</h1>
           <div className="pg">DAY PAGE</div>
         </div>
-        <div className="right">
-          <button onClick={goPrev}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg>
-          </button>
-          <button onClick={goNext}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
-          </button>
-        </div>
+        <div style={{ width: 32 }} />
       </div>
 
       {!loading && !pageId ? (
