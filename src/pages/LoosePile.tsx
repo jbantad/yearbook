@@ -42,13 +42,10 @@ export function LoosePile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
-  const initial = (user?.email ?? '?')[0]?.toUpperCase()
-
   return (
     <div className="screen">
       <div className="header">
         <h1>Loose Pile</h1>
-        <div className="avatar">{initial}</div>
       </div>
 
       <div className="pile">

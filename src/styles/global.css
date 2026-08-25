@@ -108,14 +108,6 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .header .sub, .header .stat { margin-top: 3px; font-size: 13.5px; font-style: italic; color: oklch(78% 0.01 85 / 0.85); }
 .header .row .stat { margin-top: 0; }
 
-.avatar {
-  position: absolute; top: 20px; right: 20px; width: 38px; height: 38px; border-radius: 50%;
-  background: var(--rose-soft); border: 1.5px solid oklch(100% 0 0 / 0.7);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-hand); font-style: normal; font-size: 19px; font-weight: 600; color: var(--rose);
-  box-shadow: 0 2px 5px oklch(30% 0.02 50 / 0.15);
-}
-
 /* ---- nav bar (day page / person detail / customize) ---- */
 
 .nav { display: flex; align-items: center; justify-content: space-between; padding: calc(18px + env(safe-area-inset-top)) 18px 12px; flex-shrink: 0; }
