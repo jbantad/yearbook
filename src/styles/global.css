@@ -9,6 +9,7 @@
 
 :root {
   --safe-bottom: min(env(safe-area-inset-bottom, 0px), 14px);
+  --safe-top: min(env(safe-area-inset-top, 0px), 59px);
   --paper: oklch(88% 0.03 78);
   --paper-alt: oklch(93% 0.02 80);
   --card: oklch(99% 0.005 85);
@@ -94,11 +95,11 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .header {
   position: relative;
-  height: calc(132px + env(safe-area-inset-top));
+  height: calc(132px + var(--safe-top));
   box-sizing: border-box;
   background: #1c211f url('../assets/torn-header-edge.png') bottom center/100% 100% no-repeat;
-  background-size: 100% calc(100% - env(safe-area-inset-top));
-  padding: calc(20px + env(safe-area-inset-top)) 22px 0;
+  background-size: 100% calc(100% - var(--safe-top));
+  padding: calc(20px + var(--safe-top)) 22px 0;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -111,7 +112,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 /* ---- nav bar (day page / person detail / customize) ---- */
 
-.nav { display: flex; align-items: center; justify-content: space-between; padding: calc(18px + env(safe-area-inset-top)) 18px 12px; flex-shrink: 0; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding: calc(18px + var(--safe-top)) 18px 12px; flex-shrink: 0; }
 .nav button { background: none; border: none; padding: 6px; color: var(--ink); display: flex; }
 .nav button svg { width: 20px; height: 20px; }
 .nav .right { display: flex; align-items: center; gap: 2px; }
