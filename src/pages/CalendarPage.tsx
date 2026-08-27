@@ -80,10 +80,14 @@ export function CalendarPage() {
     <div className="screen">
       <div className="header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <h1>{monthLabel}</h1>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="chip" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })}>‹ prev</button>
-            <button className="chip" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })}>next ›</button>
+          <h1 style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{monthLabel}</h1>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button className="month-nav-btn" onClick={() => setCursor((c) => c.month === 0 ? { year: c.year - 1, month: 11 } : { year: c.year, month: c.month - 1 })} aria-label="Previous month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5 8 12l7 7" /></svg>
+            </button>
+            <button className="month-nav-btn" onClick={() => setCursor((c) => c.month === 11 ? { year: c.year + 1, month: 0 } : { year: c.year, month: c.month + 1 })} aria-label="Next month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
         </div>
       </div>

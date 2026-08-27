@@ -450,6 +450,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
 .header .chip { border-color: oklch(80% 0.02 85 / 0.4); color: oklch(88% 0.02 85 / 0.9); }
 .header .chip.active { background: oklch(97% 0.01 85); color: var(--ink); border-color: oklch(97% 0.01 85); }
+.month-nav-btn {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; background: none;
+  border: 1.5px solid oklch(80% 0.02 85 / 0.4); color: oklch(88% 0.02 85 / 0.9);
+  display: flex; align-items: center; justify-content: center;
+}
+.month-nav-btn svg { width: 17px; height: 17px; }
 .shelf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 6px 18px 20px; }
 .mcard { background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 6px 14px oklch(30% 0.03 50 / 0.16); }
 .mcard .art { height: 110px; position: relative; display: flex; align-items: center; justify-content: center; }
