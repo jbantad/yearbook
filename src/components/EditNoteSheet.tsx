@@ -21,6 +21,7 @@ export function EditNoteSheet({
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [text, setText] = useState((data.text as string) || '')
   const [color, setColor] = useState(data.color as string | undefined)
+  const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +31,7 @@ export function EditNoteSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData = { ...data, text, color }
+      const nextData = { ...data, text, color, font }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -69,6 +70,18 @@ export function EditNoteSheet({
           <div className="field">
             <label>Note</label>
             <textarea value={text} onChange={(e) => setText(e.target.value)} required />
+          </div>
+
+          <div className="field">
+            <label>Font</label>
+            <div className="segmented" style={{ marginBottom: 0 }}>
+              <button type="button" className={`seg${font === 'hand' ? ' sel' : ''}`} onClick={() => setFont('hand')} style={{ fontFamily: 'var(--font-hand)', fontStyle: 'normal', fontSize: 17 }}>
+                Handwritten
+              </button>
+              <button type="button" className={`seg${font === 'mono' ? ' sel' : ''}`} onClick={() => setFont('mono')} style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>
+                Typed
+              </button>
+            </div>
           </div>
 
           <div className="field">

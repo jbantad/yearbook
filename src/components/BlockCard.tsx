@@ -61,6 +61,9 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'note') {
     const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
+    const noteFont = (data.font as string) === 'mono'
+      ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const }
+      : undefined
     return (
       <button
         className="card scrap"
@@ -70,7 +73,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         <div className="badge" style={{ background: noteColor.fg }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4.5 19 9l-9.5 9.5-5 1 1-5Z" /></svg>
         </div>
-        <div className="cap">{(data.text as string) || ''}</div>
+        <div className="cap" style={noteFont}>{(data.text as string) || ''}</div>
       </button>
     )
   }
