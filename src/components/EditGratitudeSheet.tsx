@@ -70,7 +70,7 @@ export function EditGratitudeSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Grateful for</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} required autoFocus rows={4} />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={4} />
           </div>
 
           <div className="field">

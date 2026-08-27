@@ -68,7 +68,7 @@ export function EditNoteSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Note</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+            <textarea value={text} onChange={(e) => setText(e.target.value)} required />
           </div>
 
           <div className="field">

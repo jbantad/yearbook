@@ -106,7 +106,7 @@ export function EditMealSheet({
 
           <div className="field">
             <label>What did you have</label>
-            <input value={dish} onChange={(e) => setDish(e.target.value)} required autoFocus />
+            <input value={dish} onChange={(e) => setDish(e.target.value)} required />
           </div>
           <div className="field">
             <label>Notes (optional)</label>

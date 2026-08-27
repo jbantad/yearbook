@@ -67,7 +67,7 @@ export function EditTextSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Text</label>
-            <input value={content} onChange={(e) => setContent(e.target.value)} placeholder={style === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'} required autoFocus />
+            <input value={content} onChange={(e) => setContent(e.target.value)} placeholder={style === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'} required />
           </div>
 
           <div className="field">

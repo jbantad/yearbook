@@ -110,7 +110,7 @@ export function EditMovieSheet({
             </label>
             <div style={{ flex: 1 }}>
               <label>Title</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} required />
             </div>
           </div>
 

@@ -87,7 +87,7 @@ export function AlbumsPage() {
           <form onSubmit={createAlbum} style={{ background: 'var(--card)', borderRadius: 14, padding: 14 }}>
             <div className="field">
               <label>Album title</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Iceland 2026" required autoFocus />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Iceland 2026" required />
             </div>
             <button className="cta" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create album'}</button>
             <button type="button" className="cancel" onClick={() => { setCreating(false); setTitle('') }}>Cancel</button>

@@ -216,20 +216,20 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
             {type === 'note' && (
               <div className="field">
                 <label>Note</label>
-                <textarea value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                <textarea value={text} onChange={(e) => setText(e.target.value)} required />
               </div>
             )}
             {type === 'place' && (
               <div className="field">
                 <label>Place name</label>
-                <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                <input value={text} onChange={(e) => setText(e.target.value)} required />
               </div>
             )}
             {type === 'meal' && (
               <>
                 <div className="field">
                   <label>What did you have</label>
-                  <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                  <input value={text} onChange={(e) => setText(e.target.value)} required />
                 </div>
                 <div className="field">
                   <label>Notes (optional)</label>
@@ -271,7 +271,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
                   </label>
                   <div style={{ flex: 1 }}>
                     <label>Title</label>
-                    <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                    <input value={text} onChange={(e) => setText(e.target.value)} required />
                     <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>poster is optional — fixed 2:3, same shape as a real one</div>
                   </div>
                 </div>
@@ -300,7 +300,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
               <>
                 <div className="field">
                   <label>Name</label>
-                  <input value={text} onChange={(e) => setText(e.target.value)} required autoFocus />
+                  <input value={text} onChange={(e) => setText(e.target.value)} required />
                 </div>
                 <div className="field">
                   <label>Relationship (optional)</label>
@@ -311,7 +311,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
             {type === 'gratitude' && (
               <div className="field">
                 <label>Grateful for (one per line)</label>
-                <textarea value={text} onChange={(e) => setText(e.target.value)} required autoFocus rows={4} />
+                <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={4} />
               </div>
             )}
 

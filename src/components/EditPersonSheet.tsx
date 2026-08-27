@@ -139,7 +139,7 @@ export function EditPersonSheet({
             <div className="field" style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
               <div style={{ flex: 1 }}>
                 <label>Name</label>
-                <input value={newName} onChange={(e) => setNewName(e.target.value)} autoFocus />
+                <input value={newName} onChange={(e) => setNewName(e.target.value)} />
               </div>
               <button type="button" className="cta" style={{ margin: 0, width: 'auto', padding: '11px 16px' }} onClick={addPerson} disabled={busy}>Add</button>
             </div>

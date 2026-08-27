@@ -108,7 +108,7 @@ export function ShelvesPage() {
             <form onSubmit={addPerson} style={{ background: 'var(--card)', borderRadius: 14, padding: 14 }}>
               <div className="field">
                 <label>Name</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+                <input value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="field">
                 <label>Relationship (optional)</label>
