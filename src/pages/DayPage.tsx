@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
-import { getOrCreateDayPage } from '../components/FileToPageSheet'
+import { getOrCreateDayPage } from '../lib/pages'
 import { BackIcon } from '../components/icons'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
@@ -112,7 +112,7 @@ export function DayPage() {
           pageNumber={pageNumber}
           blocks={blocks}
           loading={loading}
-          emptyMessage="This page is empty so far. Tap + to add something, or file a moment here from the Loose Pile."
+          emptyMessage="This page is empty so far. Tap + to add something."
           onReload={load}
           onSwipeLeft={goNext}
           onSwipeRight={goPrev}

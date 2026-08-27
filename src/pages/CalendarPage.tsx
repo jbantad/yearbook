@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { BookIcon, PlusIcon } from '../components/icons'
 import { hashRotation } from '../lib/hash'
-import { getOrCreateDayPage } from '../components/FileToPageSheet'
+import { getOrCreateDayPage } from '../lib/pages'
 import type { Tables } from '../lib/database.types'
 
 type Summary = { summary_date: string; block_count: number }

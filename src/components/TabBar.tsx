@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
+import { todayISO } from '../lib/pages'
 
 type TabKey = 'today' | 'calendar' | 'quests' | 'shelves'
 
-const TABS: { key: TabKey; to: string; label: string; icon: React.ReactNode }[] = [
+function buildTabs(): { key: TabKey; to: string; label: string; icon: React.ReactNode }[] { return [
   {
     key: 'today',
-    to: '/',
+    to: `/day/${todayISO()}`,
     label: 'Today',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -49,13 +50,14 @@ const TABS: { key: TabKey; to: string; label: string; icon: React.ReactNode }[] 
       </svg>
     ),
   },
-]
+] }
 
 export function TabBar({ active }: { active: TabKey }) {
+  const tabs = buildTabs()
   return (
     <div className="tabbar-wrap">
       <div className="tabbar">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <Link key={tab.key} to={tab.to} className={`tab ${active === tab.key ? 'on' : 'off'}`}>
             {tab.icon}
             <span>{tab.label}</span>
