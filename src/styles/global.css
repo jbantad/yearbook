@@ -223,15 +223,6 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: oklch(15% 0 0); padding: 0; text-align: left;
 }
 
-.add-text-bar { position: absolute; left: 14px; right: 96px; bottom: 14px; display: flex; gap: 8px; z-index: 15; }
-.add-text-bar button {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;
-  padding: 10px; border-radius: 22px; border: none; box-shadow: 0 6px 14px oklch(30% 0.03 50 / 0.2);
-}
-.add-text-bar button svg { width: 15px; height: 15px; }
-.add-text-bar .headline-btn { background: var(--ink); color: var(--paper); }
-.add-text-bar .label-btn { background: var(--card); color: var(--ink); border: 1.5px solid var(--line); box-shadow: 0 4px 10px oklch(30% 0.03 50 / 0.12); }
-
 .glabel { font-size: 10.5px; font-style: italic; color: var(--ink-soft); margin-bottom: 5px; }
 .gitem { display: flex; align-items: center; gap: 6px; font-family: var(--font-hand); font-style: normal; font-size: 16px; line-height: 1.25; color: var(--ink); }
 .gitem i { width: 5px; height: 5px; border-radius: 50%; background: var(--block-gratitude); flex-shrink: 0; }

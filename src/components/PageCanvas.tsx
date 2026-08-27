@@ -13,7 +13,6 @@ import { EditTextSheet } from './EditTextSheet'
 import { PlusIcon } from './icons'
 import { defaultBlockPosition } from '../lib/hash'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
-import type { Json } from '../lib/database.types'
 
 type Pos = { x: number; y: number }
 
@@ -72,7 +71,6 @@ function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJo
 }
 
 export function PageCanvas({
-  userId,
   pageId,
   pageNumber,
   blocks,
@@ -83,7 +81,6 @@ export function PageCanvas({
   onSwipeRight,
   onDoubleTap,
 }: {
-  userId: string | undefined
   pageId: string | null
   pageNumber: number | null
   blocks: BlockWithJoins[]
@@ -95,25 +92,11 @@ export function PageCanvas({
   onDoubleTap?: () => void
 }) {
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
-  const [addingText, setAddingText] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
   async function handleMoved(id: string, pos: Pos) {
     await supabase.from('blocks').update({ layout: pos }).eq('id', id)
-  }
-
-  async function addText(style: 'headline' | 'label') {
-    if (!userId || !pageId) return
-    setAddingText(false)
-    const { data: created, error } = await supabase
-      .from('blocks')
-      .insert({ user_id: userId, page_id: pageId, type: 'text', data: { style, content: '' } as unknown as Json })
-      .select('*')
-      .single()
-    if (error || !created) return
-    onReload()
-    setEditingBlock({ ...created, people: [] } as unknown as BlockWithJoins)
   }
 
   return (
@@ -137,21 +120,6 @@ export function PageCanvas({
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
-
-        {!loading && pageId && (
-          addingText ? (
-            <div className="add-text-bar">
-              <button className="headline-btn" onClick={() => addText('headline')}>Add headline</button>
-              <button className="label-btn" onClick={() => addText('label')}>Add label</button>
-            </div>
-          ) : (
-            <div className="add-text-bar" style={{ right: 'auto' }}>
-              <button className="label-btn" onClick={() => setAddingText(true)} style={{ flex: 'none', width: 40, height: 40, borderRadius: '50%', padding: 0 }} aria-label="Add text">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-              </button>
-            </div>
-          )
-        )}
       </div>
 
       {pageId && (

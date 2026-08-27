@@ -82,7 +82,6 @@ export function AlbumPage() {
       </div>
 
       <PageCanvas
-        userId={user?.id}
         pageId={id ?? null}
         pageNumber={pageNumber}
         blocks={blocks}

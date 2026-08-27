@@ -5,11 +5,12 @@ import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
-const TYPES: BlockType[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude']
+type Selection = BlockType | 'headline' | 'label'
+const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude', 'headline', 'label']
 
 export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; onCreated: () => void; pageId?: string | null }) {
   const { user } = useAuth()
-  const [type, setType] = useState<BlockType | null>(null)
+  const [type, setType] = useState<Selection | null>(null)
   const [text, setText] = useState('')
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -75,6 +76,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
       if (type === 'note') data = { text }
+      if (type === 'headline' || type === 'label') data = { style: type, content: text }
       if (type === 'meal') {
         data = { dish: text, description: secondary }
         if (mealPhotoFile) data.photo_url = await uploadToPhotos(mealPhotoFile)
@@ -136,9 +138,10 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
         }
       }
 
+      const blockType: BlockType = type === 'headline' || type === 'label' ? 'text' : type
       const { data: block, error: blockErr } = await supabase
         .from('blocks')
-        .insert({ user_id: user.id, type, data: data as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
+        .insert({ user_id: user.id, type: blockType, data: data as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
         .select('id')
         .single()
       if (blockErr) throw blockErr
@@ -312,6 +315,20 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
               <div className="field">
                 <label>Grateful for (one per line)</label>
                 <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={4} />
+              </div>
+            )}
+            {(type === 'headline' || type === 'label') && (
+              <div className="field">
+                <label>Text</label>
+                <input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder={type === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'}
+                  required
+                />
+                <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>
+                  {type === 'label' ? 'short — shows as label-maker tiles' : 'a title for this page'}
+                </div>
               </div>
             )}
 

@@ -107,7 +107,6 @@ export function DayPage() {
         </div>
       ) : (
         <PageCanvas
-          userId={user?.id}
           pageId={pageId}
           pageNumber={pageNumber}
           blocks={blocks}
