@@ -27,6 +27,12 @@ export default defineConfig({
         // App-shell caching only — Supabase calls stay network-only so
         // signed-in data is never served stale or to the wrong account.
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,ttf,woff,woff2}'],
+        // Activate a new service worker (and its updated cache) as soon as
+        // it finishes installing, instead of waiting for every open tab/app
+        // instance to fully close first — otherwise a fix can look "not
+        // deployed" for a while on a device that never fully quits the app.
+        skipWaiting: true,
+        clientsClaim: true,
       },
     }),
   ],
