@@ -26,27 +26,25 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
 
 function DraggableBlock({
   block,
-  index,
+  pos,
   zIndex,
   locked,
+  onDrag,
   onMoved,
   onFront,
   onClick,
 }: {
   block: BlockWithJoins
-  index: number
+  pos: Pos
   zIndex: number
   locked: boolean
+  onDrag: (pos: Pos) => void
   onMoved: (id: string, pos: Pos) => void
   onFront: () => void
   onClick?: () => void
 }) {
-  const base = blockPosition(block, index)
-  const [pos, setPos] = useState(base)
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
-
-  useEffect(() => { setPos(base) }, [base.x, base.y])
 
   function onPointerDown(e: React.PointerEvent) {
     if (locked) return
@@ -63,7 +61,7 @@ function DraggableBlock({
   function onPointerMove(e: React.PointerEvent) {
     if (!dragRef.current) return
     const { startX, startY, origin } = dragRef.current
-    setPos({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
+    onDrag({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
   }
   function onPointerUp(e: React.PointerEvent) {
     if (!dragRef.current) return
@@ -119,13 +117,27 @@ export function PageCanvas({
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addOpen, setAddOpen] = useState(false)
   const [zOrder, setZOrder] = useState<Record<string, number>>({})
+  const [positions, setPositions] = useState<Record<string, Pos>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
+
+  // Positions are lifted up here (rather than kept local to each dragged
+  // block) so the canvas-height calc below always sees where a block was
+  // just dragged to, instead of the stale position from the last fetch —
+  // otherwise dragging something further down didn't grow the scrollable
+  // area until the page was reloaded.
+  useEffect(() => {
+    setPositions(Object.fromEntries(blocks.map((b, i) => [b.id, blockPosition(b, i)])))
+  }, [blocks])
 
   function bringToFront(id: string) {
     zCounter.current += 1
     const z = zCounter.current
     setZOrder((prev) => (prev[id] === z ? prev : { ...prev, [id]: z }))
+  }
+
+  function handleDrag(id: string, pos: Pos) {
+    setPositions((prev) => ({ ...prev, [id]: pos }))
   }
 
   async function handleMoved(id: string, pos: Pos) {
@@ -139,7 +151,7 @@ export function PageCanvas({
   // so the page scrolls to reveal everything instead of clipping it.
   const CARD_HEIGHT_ESTIMATE = 220
   const canvasHeight = blocks.reduce((max, b, i) => {
-    const pos = blockPosition(b, i)
+    const pos = positions[b.id] ?? blockPosition(b, i)
     const data = (b.data ?? {}) as { card_scale?: number }
     const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE * scale)
@@ -161,9 +173,10 @@ export function PageCanvas({
           <DraggableBlock
             key={b.id}
             block={b}
-            index={i}
+            pos={positions[b.id] ?? blockPosition(b, i)}
             zIndex={zOrder[b.id] ?? i}
             locked={locked}
+            onDrag={(pos) => handleDrag(b.id, pos)}
             onMoved={handleMoved}
             onFront={() => bringToFront(b.id)}
             onClick={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}

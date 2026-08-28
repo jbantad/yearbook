@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
+import { PhotoFields } from './PhotoFields'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
@@ -15,6 +16,11 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoFrame, setPhotoFrame] = useState('classic')
+  const [photoZoom, setPhotoZoom] = useState(1)
+  const [photoOffsetX, setPhotoOffsetX] = useState(0)
+  const [photoOffsetY, setPhotoOffsetY] = useState(0)
+  const [photoRotation, setPhotoRotation] = useState(0)
   const [posterFile, setPosterFile] = useState<File | null>(null)
   const [posterPreview, setPosterPreview] = useState<string | null>(null)
   const [rating, setRating] = useState(0)
@@ -31,6 +37,9 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+    setPhotoZoom(1)
+    setPhotoOffsetX(0)
+    setPhotoOffsetY(0)
   }
 
   function pickPoster(file: File | undefined) {
@@ -68,11 +77,13 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
     setError(null)
     try {
       let data: Record<string, unknown> = {}
+      let layout: Record<string, unknown> = {}
       let place_id: string | null = null
       let movie_id: string | null = null
 
       if (type === 'photo') {
-        data = { caption: text }
+        data = { caption: text, frame: photoFrame, photo_zoom: photoZoom, photo_x: photoOffsetX, photo_y: photoOffsetY }
+        layout = { r: photoRotation }
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
       if (type === 'note') data = { text }
@@ -141,7 +152,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
       const blockType: BlockType = type === 'headline' || type === 'label' ? 'text' : type
       const { data: block, error: blockErr } = await supabase
         .from('blocks')
-        .insert({ user_id: user.id, type: blockType, data: data as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
+        .insert({ user_id: user.id, type: blockType, data: data as unknown as Json, layout: layout as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
         .select('id')
         .single()
       if (blockErr) throw blockErr
@@ -188,33 +199,21 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
             <div className="sub">{pageId ? 'added straight to this page' : 'captured now, ready to file to a page'}</div>
 
             {type === 'photo' && (
-              <>
-                <div className="field">
-                  <label>Photo</label>
-                  <label
-                    style={{
-                      width: '100%', height: 150, borderRadius: 10, overflow: 'hidden', cursor: 'pointer',
-                      background: photoPreview ? `url(${photoPreview}) center/cover no-repeat` : 'var(--paper-alt)',
-                      border: photoPreview ? 'none' : '1.5px dashed var(--line)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    {!photoPreview && (
-                      <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={(e) => pickPhoto(e.target.files?.[0])}
-                    />
-                  </label>
-                </div>
-                <div className="field">
-                  <label>Caption (optional)</label>
-                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="add a caption" />
-                </div>
-              </>
+              <PhotoFields
+                preview={photoPreview}
+                onPickPhoto={pickPhoto}
+                caption={text}
+                onCaptionChange={setText}
+                frame={photoFrame}
+                onFrameChange={setPhotoFrame}
+                zoom={photoZoom}
+                onZoomChange={setPhotoZoom}
+                offsetX={photoOffsetX}
+                offsetY={photoOffsetY}
+                onOffsetChange={(x, y) => { setPhotoOffsetX(x); setPhotoOffsetY(y) }}
+                rotation={photoRotation}
+                onRotationChange={setPhotoRotation}
+              />
             )}
             {type === 'note' && (
               <div className="field">
