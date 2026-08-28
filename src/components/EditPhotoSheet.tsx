@@ -5,14 +5,12 @@ import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
-import polaroidClassic from '../assets/polaroid-frame.png'
-import polaroidTall from '../assets/polaroid-frame-tall.png'
-import polaroidSquare from '../assets/polaroid-frame-square.png'
+import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
 
-const FRAMES: { key: string; label: string; src: string }[] = [
-  { key: 'classic', label: 'Classic', src: polaroidClassic },
-  { key: 'tall', label: 'Tall', src: polaroidTall },
-  { key: 'square', label: 'Square', src: polaroidSquare },
+const FRAMES: { key: string; label: string }[] = [
+  { key: 'classic', label: 'Classic' },
+  { key: 'tall', label: 'Tall' },
+  { key: 'square', label: 'Square' },
 ]
 
 export function EditPhotoSheet({
@@ -41,6 +39,11 @@ export function EditPhotoSheet({
   const [error, setError] = useState<string | null>(null)
   const previewBoxRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
+
+  const frameSize = FRAME_SIZES[frame] ?? FRAME_SIZES.classic
+  const win = FRAME_WINDOWS[frame] ?? FRAME_WINDOWS.classic
+  const previewW = 190
+  const previewFrame = { w: previewW, h: previewW * (frameSize.h / frameSize.w), src: frameSize.src }
 
   function clamp(v: number, lo: number, hi: number) {
     return Math.min(hi, Math.max(lo, v))
@@ -141,41 +144,51 @@ export function EditPhotoSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Photo</label>
-            <div
-              ref={previewBoxRef}
-              style={{
-                position: 'relative', width: '100%', height: 150, borderRadius: 10, overflow: 'hidden',
-                background: preview ? '#000' : 'var(--paper-alt)',
-                border: preview ? 'none' : '1.5px dashed var(--line)',
-                touchAction: 'none',
-              }}
-              onPointerDown={onDragStart}
-              onPointerMove={onDragMove}
-              onPointerUp={onDragEnd}
-              onPointerCancel={onDragEnd}
-            >
-              {preview ? (
-                <img
-                  src={preview}
-                  alt=""
-                  draggable={false}
-                  style={{
-                    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                    transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom})`,
-                    cursor: 'grab', pointerEvents: 'none',
-                  }}
-                />
-              ) : (
-                <label style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPhoto(e.target.files?.[0])} />
-                </label>
-              )}
+            <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
+              <div
+                style={{
+                  position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
+                  backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
+                }}
+              />
+              <div
+                ref={previewBoxRef}
+                style={{
+                  position: 'absolute', overflow: 'hidden', touchAction: 'none', zIndex: 1,
+                  left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+                  background: preview ? '#000' : 'var(--paper-alt)',
+                }}
+                onPointerDown={onDragStart}
+                onPointerMove={onDragMove}
+                onPointerUp={onDragEnd}
+                onPointerCancel={onDragEnd}
+              >
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt=""
+                    draggable={false}
+                    style={{
+                      position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                      transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom})`,
+                      cursor: 'grab', pointerEvents: 'none',
+                    }}
+                  />
+                ) : (
+                  <label style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic', textAlign: 'center', padding: '0 6px' }}>tap to add a photo</span>
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPhoto(e.target.files?.[0])} />
+                  </label>
+                )}
+              </div>
+              <div className="cap" style={{ position: 'absolute', left: '7%', right: '7%', top: '85%', margin: 0, padding: 0, textAlign: 'center', color: 'oklch(24% 0.02 50)', fontSize: 13, lineHeight: 1.15, zIndex: 3 }}>
+                {caption || 'a moment'}
+              </div>
               {preview && (
                 <label
                   style={{
-                    position: 'absolute', right: 8, bottom: 8, background: 'oklch(20% 0 0 / 0.55)', color: '#fff',
-                    fontSize: 11, fontWeight: 600, padding: '4px 9px', borderRadius: 20, cursor: 'pointer',
+                    position: 'absolute', right: `calc(${win.right}% + 6px)`, bottom: `calc(${win.bottom}% + 6px)`, background: 'oklch(20% 0 0 / 0.55)', color: '#fff',
+                    fontSize: 10.5, fontWeight: 600, padding: '3px 8px', borderRadius: 20, cursor: 'pointer', zIndex: 4,
                   }}
                   onPointerDown={(e) => e.stopPropagation()}
                 >
@@ -216,7 +229,7 @@ export function EditPhotoSheet({
                   className={`frame-opt${frame === f.key ? ' sel' : ''}`}
                   onClick={() => setFrame(f.key)}
                 >
-                  <div className="sw" style={{ backgroundImage: `url(${f.src})` }} />
+                  <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
                   <span>{f.label}</span>
                 </button>
               ))}
