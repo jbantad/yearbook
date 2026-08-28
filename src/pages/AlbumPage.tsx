@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
-import { BackIcon } from '../components/icons'
+import { BackIcon, LockIcon, UnlockIcon } from '../components/icons'
 
 export function AlbumPage() {
   const { id } = useParams<{ id: string }>()
@@ -13,6 +13,7 @@ export function AlbumPage() {
   const navigate = useNavigate()
   const [title, setTitle] = useState<string | null>(null)
   const [pageNumber, setPageNumber] = useState<number | null>(null)
+  const [locked, setLocked] = useState(false)
   const [blocks, setBlocks] = useState<BlockWithJoins[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -22,7 +23,7 @@ export function AlbumPage() {
     setLoading(true)
     const { data: page } = await supabase
       .from('pages')
-      .select('id, title, page_number')
+      .select('id, title, page_number, locked')
       .eq('user_id', user.id)
       .eq('kind', 'event')
       .eq('id', id)
@@ -34,6 +35,7 @@ export function AlbumPage() {
     }
     setTitle(page.title)
     setPageNumber(page.page_number)
+    setLocked(page.locked)
     const { data } = await supabase
       .from('blocks')
       .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(id, display_name))')
@@ -53,6 +55,13 @@ export function AlbumPage() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, id])
+
+  async function toggleLock() {
+    if (!id) return
+    const next = !locked
+    setLocked(next)
+    await supabase.from('pages').update({ locked: next }).eq('id', id)
+  }
 
   if (notFound) {
     return (
@@ -78,7 +87,9 @@ export function AlbumPage() {
           <h1>{title || 'Untitled album'}</h1>
           <div className="pg">ALBUM</div>
         </div>
-        <div style={{ width: 32 }} />
+        <button onClick={toggleLock} aria-label={locked ? 'Unlock page' : 'Lock page'}>
+          {locked ? <LockIcon /> : <UnlockIcon />}
+        </button>
       </div>
 
       <PageCanvas
@@ -86,6 +97,7 @@ export function AlbumPage() {
         pageNumber={pageNumber}
         blocks={blocks}
         loading={loading}
+        locked={locked}
         emptyMessage="This album is empty so far. Tap + to add the first moment."
         onReload={load}
       />

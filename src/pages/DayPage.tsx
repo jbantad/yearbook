@@ -6,7 +6,7 @@ import { TabBar } from '../components/TabBar'
 import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
 import { getOrCreateDayPage } from '../lib/pages'
-import { BackIcon } from '../components/icons'
+import { BackIcon, LockIcon, UnlockIcon } from '../components/icons'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 function formatDate(iso: string) {
@@ -25,6 +25,7 @@ export function DayPage() {
   const navigate = useNavigate()
   const [pageId, setPageId] = useState<string | null>(null)
   const [pageNumber, setPageNumber] = useState<number | null>(null)
+  const [locked, setLocked] = useState(false)
   const [blocks, setBlocks] = useState<BlockWithJoins[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -34,7 +35,7 @@ export function DayPage() {
     setLoading(true)
     const { data: page } = await supabase
       .from('pages')
-      .select('id, page_number')
+      .select('id, page_number, locked')
       .eq('user_id', user.id)
       .eq('kind', 'day')
       .eq('page_date', date)
@@ -47,6 +48,7 @@ export function DayPage() {
     }
     setPageId(page.id)
     setPageNumber(page.page_number)
+    setLocked(page.locked)
     const { data } = await supabase
       .from('blocks')
       .select('*, place:places(name), movie:movies(title, poster_path, rating), people:block_people(person:people(id, display_name))')
@@ -75,6 +77,13 @@ export function DayPage() {
     setCreating(false)
   }
 
+  async function toggleLock() {
+    if (!pageId) return
+    const next = !locked
+    setLocked(next)
+    await supabase.from('pages').update({ locked: next }).eq('id', pageId)
+  }
+
   const goPrev = () => date && navigate(`/day/${shiftDate(date, -1)}`)
   const goNext = () => date && navigate(`/day/${shiftDate(date, 1)}`)
   const goCalendar = () => navigate('/calendar')
@@ -90,7 +99,13 @@ export function DayPage() {
           <h1>{formatDate(date)}</h1>
           <div className="pg">DAY PAGE</div>
         </div>
-        <div style={{ width: 32 }} />
+        {pageId ? (
+          <button onClick={toggleLock} aria-label={locked ? 'Unlock page' : 'Lock page'}>
+            {locked ? <LockIcon /> : <UnlockIcon />}
+          </button>
+        ) : (
+          <div style={{ width: 32 }} />
+        )}
       </div>
 
       {!loading && !pageId ? (
@@ -111,6 +126,7 @@ export function DayPage() {
           pageNumber={pageNumber}
           blocks={blocks}
           loading={loading}
+          locked={locked}
           emptyMessage="This page is empty so far. Tap + to add something."
           onReload={load}
           onSwipeLeft={goNext}

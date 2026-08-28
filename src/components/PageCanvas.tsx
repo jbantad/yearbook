@@ -24,7 +24,23 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
   return defaultBlockPosition(block.id, index)
 }
 
-function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJoins; index: number; onMoved: (id: string, pos: Pos) => void; onClick?: () => void }) {
+function DraggableBlock({
+  block,
+  index,
+  zIndex,
+  locked,
+  onMoved,
+  onFront,
+  onClick,
+}: {
+  block: BlockWithJoins
+  index: number
+  zIndex: number
+  locked: boolean
+  onMoved: (id: string, pos: Pos) => void
+  onFront: () => void
+  onClick?: () => void
+}) {
   const base = blockPosition(block, index)
   const [pos, setPos] = useState(base)
   const [dragging, setDragging] = useState(false)
@@ -33,11 +49,13 @@ function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJo
   useEffect(() => { setPos(base) }, [base.x, base.y])
 
   function onPointerDown(e: React.PointerEvent) {
+    if (locked) return
     // Without this, a mouse-drag starting on the <img> inside a photo block
     // can also kick off the browser's own native image-drag gesture, which
     // races our pointer-capture drag below and can leave its ghost preview
     // stuck on screen across navigations.
     e.preventDefault()
+    onFront()
     e.currentTarget.setPointerCapture(e.pointerId)
     dragRef.current = { startX: e.clientX, startY: e.clientY, origin: pos }
     setDragging(true)
@@ -64,13 +82,13 @@ function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJo
   return (
     <div
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
-      style={{ left: pos.x, top: pos.y }}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      style={{ left: pos.x, top: pos.y, zIndex }}
+      onPointerDown={locked ? undefined : onPointerDown}
+      onPointerMove={locked ? undefined : onPointerMove}
+      onPointerUp={locked ? undefined : onPointerUp}
+      onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onClick={onClick} />
+      <BlockCard block={block} onClick={locked ? undefined : onClick} />
     </div>
   )
 }
@@ -80,6 +98,7 @@ export function PageCanvas({
   pageNumber,
   blocks,
   loading,
+  locked = false,
   emptyMessage,
   onReload,
   onSwipeLeft,
@@ -90,6 +109,7 @@ export function PageCanvas({
   pageNumber: number | null
   blocks: BlockWithJoins[]
   loading: boolean
+  locked?: boolean
   emptyMessage: string
   onReload: () => void
   onSwipeLeft?: () => void
@@ -98,7 +118,15 @@ export function PageCanvas({
 }) {
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [zOrder, setZOrder] = useState<Record<string, number>>({})
+  const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
+
+  function bringToFront(id: string) {
+    zCounter.current += 1
+    const z = zCounter.current
+    setZOrder((prev) => (prev[id] === z ? prev : { ...prev, [id]: z }))
+  }
 
   async function handleMoved(id: string, pos: Pos) {
     await supabase.from('blocks').update({ layout: pos }).eq('id', id)
@@ -134,14 +162,17 @@ export function PageCanvas({
             key={b.id}
             block={b}
             index={i}
+            zIndex={zOrder[b.id] ?? i}
+            locked={locked}
             onMoved={handleMoved}
+            onFront={() => bringToFront(b.id)}
             onClick={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
       </div>
 
-      {pageId && (
+      {pageId && !locked && (
         <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
           <PlusIcon />
         </button>
