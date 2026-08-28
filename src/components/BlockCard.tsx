@@ -12,6 +12,15 @@ const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
   square: { w: 150, h: 164, src: polaroidSquare },
 }
 
+// Each frame PNG cuts its photo window at a different spot, so the
+// photo-art layer's inset must match that frame's own art, not a
+// one-size-fits-all box.
+const FRAME_WINDOWS: Record<string, { left: number; right: number; top: number; bottom: number }> = {
+  classic: { left: 4.9, right: 4.3, top: 8.7, bottom: 19.1 },
+  tall: { left: 9.6, right: 9.6, top: 5.7, bottom: 14.7 },
+  square: { left: 9.2, right: 9.0, top: 8.4, bottom: 23.9 },
+}
+
 export type BlockWithJoins = Tables<'blocks'> & {
   place?: { name: string } | null
   movie?: { title: string; poster_path: string | null; rating: number | null } | null
@@ -39,7 +48,9 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   if (block.type === 'photo') {
     const caption = (data.caption as string) || 'a moment'
     const photoUrl = data.photo_url as string | undefined
-    const frame = FRAME_SIZES[(data.frame as string) || 'classic'] ?? FRAME_SIZES.classic
+    const frameKey = (data.frame as string) || 'classic'
+    const frame = FRAME_SIZES[frameKey] ?? FRAME_SIZES.classic
+    const win = FRAME_WINDOWS[frameKey] ?? FRAME_WINDOWS.classic
     const zoom = typeof data.photo_zoom === 'number' ? data.photo_zoom : 1
     const px = typeof data.photo_x === 'number' ? data.photo_x : 0
     const py = typeof data.photo_y === 'number' ? data.photo_y : 0
@@ -52,7 +63,10 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
         <div
           className="photo-art"
-          style={!photoUrl ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` } : undefined}
+          style={{
+            left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+            ...(!photoUrl ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` } : {}),
+          }}
         >
           {photoUrl && (
             <img
