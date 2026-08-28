@@ -37,10 +37,11 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const zoom = typeof data.photo_zoom === 'number' ? data.photo_zoom : 1
     const px = typeof data.photo_x === 'number' ? data.photo_x : 0
     const py = typeof data.photo_y === 'number' ? data.photo_y : 0
+    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return (
       <div
         className="card polaroid"
-        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg)`, cursor: onClick ? 'pointer' : 'default' }}
+        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})`, cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
         <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />

@@ -5,7 +5,7 @@ import polaroidSquare from '../assets/polaroid-frame-square.png'
 export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
   classic: { w: 168, h: 132, src: polaroidClassic },
   tall: { w: 132, h: 186, src: polaroidTall },
-  square: { w: 150, h: 164, src: polaroidSquare },
+  square: { w: 130, h: 154, src: polaroidSquare },
 }
 
 // Each frame PNG cuts its photo window at a different spot, so the

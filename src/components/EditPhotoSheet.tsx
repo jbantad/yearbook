@@ -35,6 +35,7 @@ export function EditPhotoSheet({
   const [zoom, setZoom] = useState(typeof data.photo_zoom === 'number' ? (data.photo_zoom as number) : 1)
   const [offsetX, setOffsetX] = useState(typeof data.photo_x === 'number' ? (data.photo_x as number) : 0)
   const [offsetY, setOffsetY] = useState(typeof data.photo_y === 'number' ? (data.photo_y as number) : 0)
+  const [cardScale, setCardScale] = useState(typeof data.card_scale === 'number' ? (data.card_scale as number) : 1)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const previewBoxRef = useRef<HTMLDivElement>(null)
@@ -98,7 +99,7 @@ export function EditPhotoSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
+      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY, card_scale: cardScale }
       if (photoFile) {
         const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`
@@ -233,6 +234,23 @@ export function EditPhotoSheet({
                   <span>{f.label}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Size</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
+              <input
+                type="range"
+                min={0.6}
+                max={2.5}
+                step={0.05}
+                value={cardScale}
+                onChange={(e) => setCardScale(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
             </div>
           </div>
 
