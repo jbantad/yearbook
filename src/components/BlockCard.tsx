@@ -30,7 +30,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   const data = (block.data ?? {}) as Record<string, unknown>
 
   if (block.type === 'photo') {
-    const caption = (data.caption as string) || 'a moment'
+    const caption = (data.caption as string) || ''
     const photoUrl = data.photo_url as string | undefined
     const frameKey = (data.frame as string) || 'classic'
     const frame = FRAME_SIZES[frameKey] ?? FRAME_SIZES.classic
@@ -66,7 +66,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
             />
           )}
         </div>
-        <div className="cap">{caption}</div>
+        {caption && <div className="cap">{caption}</div>}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )

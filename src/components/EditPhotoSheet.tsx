@@ -182,9 +182,11 @@ export function EditPhotoSheet({
                   </label>
                 )}
               </div>
-              <div className="cap" style={{ position: 'absolute', left: '7%', right: '7%', top: '85%', margin: 0, padding: 0, textAlign: 'center', color: 'oklch(24% 0.02 50)', fontSize: 13, lineHeight: 1.15, zIndex: 3 }}>
-                {caption || 'a moment'}
-              </div>
+              {caption && (
+                <div className="cap" style={{ position: 'absolute', left: '7%', right: '7%', top: '85%', margin: 0, padding: 0, textAlign: 'center', color: 'oklch(24% 0.02 50)', fontSize: 13, lineHeight: 1.15, zIndex: 3 }}>
+                  {caption}
+                </div>
+              )}
               {preview && (
                 <label
                   style={{
@@ -216,8 +218,8 @@ export function EditPhotoSheet({
             {preview && <div className="sub" style={{ marginTop: 4 }}>drag the photo to reposition it, use the slider to zoom</div>}
           </div>
           <div className="field">
-            <label>Caption</label>
-            <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="made it right as the sky went pink" />
+            <label>Caption (optional)</label>
+            <input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="add a caption" />
           </div>
 
           <div className="field">

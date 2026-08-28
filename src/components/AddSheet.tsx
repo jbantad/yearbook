@@ -211,8 +211,8 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
                   </label>
                 </div>
                 <div className="field">
-                  <label>Caption</label>
-                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="made it right as the sky went pink" />
+                  <label>Caption (optional)</label>
+                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="add a caption" />
                 </div>
               </>
             )}
