@@ -33,6 +33,11 @@ function DraggableBlock({ block, index, onMoved, onClick }: { block: BlockWithJo
   useEffect(() => { setPos(base) }, [base.x, base.y])
 
   function onPointerDown(e: React.PointerEvent) {
+    // Without this, a mouse-drag starting on the <img> inside a photo block
+    // can also kick off the browser's own native image-drag gesture, which
+    // races our pointer-capture drag below and can leave its ghost preview
+    // stuck on screen across navigations.
+    e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     dragRef.current = { startX: e.clientX, startY: e.clientY, origin: pos }
     setDragging(true)

@@ -72,9 +72,11 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
             <img
               src={photoUrl}
               alt=""
+              draggable={false}
               style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
                 transform: `translate(${px}%, ${py}%) scale(${zoom})`,
+                pointerEvents: 'none',
               }}
             />
           )}
