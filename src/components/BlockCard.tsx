@@ -62,7 +62,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   if (block.type === 'note') {
     const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
     const noteFont = (data.font as string) === 'mono'
-      ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const }
+      ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 13 }
       : undefined
     return (
       <button
