@@ -112,7 +112,9 @@ export function PageCanvas({
   const CARD_HEIGHT_ESTIMATE = 220
   const canvasHeight = blocks.reduce((max, b, i) => {
     const pos = blockPosition(b, i)
-    return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE)
+    const data = (b.data ?? {}) as { card_scale?: number }
+    const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
+    return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE * scale)
   }, 420)
 
   return (
