@@ -10,9 +10,12 @@ export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> 
 
 // Each frame PNG cuts its photo window at a different spot, so the
 // photo-art layer's inset must match that frame's own art, not a
-// one-size-fits-all box.
+// one-size-fits-all box. Measured from each PNG's soft (antialiased)
+// window edge with a small extra margin subtracted so the photo layer
+// always bleeds slightly under the opaque frame border — undersizing
+// it left a sliver of the page background peeking through the window.
 export const FRAME_WINDOWS: Record<string, { left: number; right: number; top: number; bottom: number }> = {
-  classic: { left: 4.9, right: 4.3, top: 8.7, bottom: 19.1 },
-  tall: { left: 9.6, right: 9.6, top: 5.7, bottom: 14.7 },
-  square: { left: 9.2, right: 9.0, top: 8.4, bottom: 23.9 },
+  classic: { left: 4.0, right: 3.4, top: 7.9, bottom: 18.2 },
+  tall: { left: 8.5, right: 8.9, top: 4.8, bottom: 13.8 },
+  square: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
 }
