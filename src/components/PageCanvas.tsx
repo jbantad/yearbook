@@ -104,10 +104,22 @@ export function PageCanvas({
     await supabase.from('blocks').update({ layout: pos }).eq('id', id)
   }
 
+  // Blocks are positioned absolutely, so the canvas never grows to fit them
+  // on its own — once a page has enough content to run past the default
+  // 420px floor, grow the canvas to the lowest block's bottom edge (plus a
+  // generous per-card height, since exact card heights vary by type/frame)
+  // so the page scrolls to reveal everything instead of clipping it.
+  const CARD_HEIGHT_ESTIMATE = 220
+  const canvasHeight = blocks.reduce((max, b, i) => {
+    const pos = blockPosition(b, i)
+    return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE)
+  }, 420)
+
   return (
     <>
       <div
         className="page-canvas"
+        style={{ minHeight: canvasHeight }}
         onPointerDown={swipe.onPointerDown}
         onPointerUp={swipe.onPointerUp}
       >
