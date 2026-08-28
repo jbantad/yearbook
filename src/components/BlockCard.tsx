@@ -40,6 +40,9 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const caption = (data.caption as string) || 'a moment'
     const photoUrl = data.photo_url as string | undefined
     const frame = FRAME_SIZES[(data.frame as string) || 'classic'] ?? FRAME_SIZES.classic
+    const zoom = typeof data.photo_zoom === 'number' ? data.photo_zoom : 1
+    const px = typeof data.photo_x === 'number' ? data.photo_x : 0
+    const py = typeof data.photo_y === 'number' ? data.photo_y : 0
     return (
       <div
         className="card polaroid"
@@ -49,10 +52,19 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
         <div
           className="photo-art"
-          style={photoUrl
-            ? { backgroundImage: `url(${photoUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-            : { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` }}
-        />
+          style={!photoUrl ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` } : undefined}
+        >
+          {photoUrl && (
+            <img
+              src={photoUrl}
+              alt=""
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                transform: `translate(${px}%, ${py}%) scale(${zoom})`,
+              }}
+            />
+          )}
+        </div>
         <div className="cap">{caption}</div>
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>

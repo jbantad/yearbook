@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { BlockWithJoins } from './BlockCard'
@@ -34,8 +34,21 @@ export function EditPhotoSheet({
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>((data.photo_url as string) || null)
+  const [zoom, setZoom] = useState(typeof data.photo_zoom === 'number' ? (data.photo_zoom as number) : 1)
+  const [offsetX, setOffsetX] = useState(typeof data.photo_x === 'number' ? (data.photo_x as number) : 0)
+  const [offsetY, setOffsetY] = useState(typeof data.photo_y === 'number' ? (data.photo_y as number) : 0)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const previewBoxRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
+
+  function clamp(v: number, lo: number, hi: number) {
+    return Math.min(hi, Math.max(lo, v))
+  }
+
+  function maxOffset(z: number) {
+    return Math.max(0, (z - 1) * 50)
+  }
 
   function pickPhoto(file: File | undefined) {
     if (!file) return
@@ -44,6 +57,36 @@ export function EditPhotoSheet({
       if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+    setZoom(1)
+    setOffsetX(0)
+    setOffsetY(0)
+  }
+
+  function handleZoom(v: number) {
+    const max = maxOffset(v)
+    setZoom(v)
+    setOffsetX((x) => clamp(x, -max, max))
+    setOffsetY((y) => clamp(y, -max, max))
+  }
+
+  function onDragStart(e: React.PointerEvent) {
+    if (!preview) return
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    dragRef.current = { x: e.clientX, y: e.clientY, ox: offsetX, oy: offsetY }
+  }
+
+  function onDragMove(e: React.PointerEvent) {
+    if (!dragRef.current || !previewBoxRef.current) return
+    const rect = previewBoxRef.current.getBoundingClientRect()
+    const dx = ((e.clientX - dragRef.current.x) / rect.width) * 100
+    const dy = ((e.clientY - dragRef.current.y) / rect.height) * 100
+    const max = maxOffset(zoom)
+    setOffsetX(clamp(dragRef.current.ox + dx, -max, max))
+    setOffsetY(clamp(dragRef.current.oy + dy, -max, max))
+  }
+
+  function onDragEnd() {
+    dragRef.current = null
   }
 
   async function save(e: React.FormEvent) {
@@ -52,7 +95,7 @@ export function EditPhotoSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData: Record<string, unknown> = { ...data, caption, frame }
+      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
       if (photoFile) {
         const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`
@@ -98,17 +141,65 @@ export function EditPhotoSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Photo</label>
-            <label
+            <div
+              ref={previewBoxRef}
               style={{
-                display: 'flex', width: '100%', height: 150, borderRadius: 10, overflow: 'hidden', cursor: 'pointer',
-                background: preview ? `url(${preview}) center/cover no-repeat` : 'var(--paper-alt)',
+                position: 'relative', width: '100%', height: 150, borderRadius: 10, overflow: 'hidden',
+                background: preview ? '#000' : 'var(--paper-alt)',
                 border: preview ? 'none' : '1.5px dashed var(--line)',
-                alignItems: 'center', justifyContent: 'center',
+                touchAction: 'none',
               }}
+              onPointerDown={onDragStart}
+              onPointerMove={onDragMove}
+              onPointerUp={onDragEnd}
+              onPointerCancel={onDragEnd}
             >
-              {!preview && <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>}
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPhoto(e.target.files?.[0])} />
-            </label>
+              {preview ? (
+                <img
+                  src={preview}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                    transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom})`,
+                    cursor: 'grab', pointerEvents: 'none',
+                  }}
+                />
+              ) : (
+                <label style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 13, color: 'var(--ink-soft)', fontStyle: 'italic' }}>tap to add a photo</span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPhoto(e.target.files?.[0])} />
+                </label>
+              )}
+              {preview && (
+                <label
+                  style={{
+                    position: 'absolute', right: 8, bottom: 8, background: 'oklch(20% 0 0 / 0.55)', color: '#fff',
+                    fontSize: 11, fontWeight: 600, padding: '4px 9px', borderRadius: 20, cursor: 'pointer',
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  Replace
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => pickPhoto(e.target.files?.[0])} />
+                </label>
+              )}
+            </div>
+            {preview && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={2.5}
+                  step={0.05}
+                  value={zoom}
+                  onChange={(e) => handleZoom(parseFloat(e.target.value))}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
+              </div>
+            )}
+            {preview && <div className="sub" style={{ marginTop: 4 }}>drag the photo to reposition it, use the slider to zoom</div>}
           </div>
           <div className="field">
             <label>Caption</label>
