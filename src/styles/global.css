@@ -78,7 +78,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
-  background: var(--paper) url('../assets/craft-paper.jpg') center/cover no-repeat;
+  background: var(--paper) url('../assets/craft-paper-torn.webp') center/cover no-repeat;
   display: flex;
   flex-direction: column;
 }
@@ -456,7 +456,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 /* ---- auth ---- */
 
 .auth-screen { min-height: 100vh;
-  min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper) url('../assets/craft-paper.jpg') center/cover no-repeat; }
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper) url('../assets/craft-paper-torn.webp') center/cover no-repeat; }
 .auth-card { width: 100%; max-width: 360px; background: var(--card); border-radius: 18px; padding: 28px 26px; box-shadow: 0 14px 34px oklch(25% 0.03 50 / 0.24); }
 .auth-card h1 { margin: 0 0 4px; font-size: 24px; }
 .auth-card .sub { font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 20px; }
