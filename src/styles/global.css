@@ -78,7 +78,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
-  background: var(--paper) url('../assets/craft-paper-fill.jpg') center/cover no-repeat;
+  background: var(--paper) url('../assets/craft-paper-fill.jpg') top left/220px repeat;
   display: flex;
   flex-direction: column;
 }
@@ -135,14 +135,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 .page-canvas {
   /* Children are individually positioned (block.layout.x/y) so they can be
-     dragged around the page, rather than flowing like the loose pile does. */
+     dragged around the page, rather than flowing like the loose pile does.
+     No background/card styling of its own — blocks sit directly on the
+     page's craft-paper background. */
   position: relative;
   flex: 1;
   margin: 0 14px 14px;
-  border-radius: 10px;
-  background: var(--paper-alt);
-  box-shadow: inset 0 0 0 1px oklch(70% 0.02 70 / 0.5), 0 10px 24px oklch(30% 0.03 50 / 0.14);
-  overflow: hidden;
   min-height: 420px;
 }
 .block-drag-wrap {
@@ -449,12 +447,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .mcard .d { font-size: 11px; color: var(--ink-faint); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
 .mcard .stars { display: flex; gap: 2px; margin-top: 6px; }
 .mcard .stars svg { width: 13px; height: 13px; }
-.empty-state { padding: 40px 24px; text-align: center; color: var(--ink-soft); font-size: 14px; }
+.empty-state { padding: 40px 24px; text-align: center; color: var(--ink-on-photo-soft); font-size: 14px; }
 
 /* ---- auth ---- */
 
 .auth-screen { min-height: 100vh;
-  min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper) url('../assets/craft-paper-fill.jpg') center/cover no-repeat; }
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--paper) url('../assets/craft-paper-fill.jpg') top left/220px repeat; }
 .auth-card { width: 100%; max-width: 360px; background: var(--card); border-radius: 18px; padding: 28px 26px; box-shadow: 0 14px 34px oklch(25% 0.03 50 / 0.24); }
 .auth-card h1 { margin: 0 0 4px; font-size: 24px; }
 .auth-card .sub { font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 20px; }
