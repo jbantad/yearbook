@@ -2,6 +2,7 @@ import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
+import pinPhoto from '../assets/pin-trimmed.png'
 import type { Tables } from '../lib/database.types'
 
 export type BlockWithJoins = Tables<'blocks'> & {
@@ -89,10 +90,20 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
 
   if (block.type === 'place') {
     const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
+    const pinStyle = data.pin_style === 'pin' ? 'pin' : 'outline'
+    const placeName = `  ${block.place?.name ?? 'a place'}  `
+    if (pinStyle === 'pin') {
+      return (
+        <button className="place place-pinned" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+          <img src={pinPhoto} alt="" draggable={false} className="place-pin-img" />
+          <div className="place-name">{placeName}</div>
+        </button>
+      )
+    }
     return (
       <button className="place" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
         <PlaceIcon color={placeColor.fg} />
-        <div className="place-name">{`  ${block.place?.name ?? 'a place'}  `}</div>
+        <div className="place-name">{placeName}</div>
       </button>
     )
   }
