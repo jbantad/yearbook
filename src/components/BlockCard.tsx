@@ -96,9 +96,6 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         style={{ width: 168, background: noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        <div className="badge" style={{ background: noteColor.fg }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4.5 19 9l-9.5 9.5-5 1 1-5Z" /></svg>
-        </div>
         <div className="cap" style={noteFont}>{(data.text as string) || ''}</div>
       </button>
     )
@@ -129,9 +126,6 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         {mealPhoto && (
           <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundImage: `url(${mealPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         )}
-        <div className="badge" style={{ background: mealColor.fg }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3v6M9 3v6M11 3v7M17 3c-1.7 0-3 2-3 5s1.3 5 3 5v8" /></svg>
-        </div>
         <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined, color: mealPhoto ? undefined : mealColor.fg }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
       </button>
     )
@@ -146,9 +140,6 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         style={{ width: 170, background: gratColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        <div className="badge" style={{ background: gratColor.fg }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20.5S3.5 15.4 3.5 9.4A4.9 4.9 0 0 1 12 6a4.9 4.9 0 0 1 8.5 3.4c0 6-8.5 11.1-8.5 11.1Z" /></svg>
-        </div>
         <div className="glabel">grateful for</div>
         {items.length === 0 && <div className="gitem"><i style={{ background: gratColor.fg }} />today</div>}
         {items.map((it, i) => <div className="gitem" key={i}><i style={{ background: gratColor.fg }} />{it}</div>)}
@@ -182,9 +173,6 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
           </>
         ) : (
           <>
-            <div className="badge" style={{ background: movieColor.fg }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="oklch(99% 0.01 85)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8.5 5 4h3l-1.6 4.5M9 8.5 10.6 4h3l-1.6 4.5M15.6 8.5 17.2 4H20l-2 4.5M3 8.5h18v9.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /></svg>
-            </div>
             <div className="cap">{block.movie?.title ?? 'a movie'}</div>
             {rating != null && (
               <div className="stars">

@@ -167,13 +167,6 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   box-shadow: 0 8px 18px oklch(30% 0.03 50 / 0.16), 0 1px 3px oklch(30% 0.03 50 / 0.12);
   flex-shrink: 0;
 }
-.badge {
-  position: absolute; top: -9px; left: 14px; width: 26px; height: 26px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 4px oklch(30% 0.02 50 / 0.2); z-index: 4;
-}
-.badge svg { width: 14px; height: 14px; }
-
 .polaroid { position: relative; background: none; box-shadow: none; }
 .polaroid .frame-img {
   position: absolute; inset: 0; background-image: url('../assets/polaroid-frame.png');
