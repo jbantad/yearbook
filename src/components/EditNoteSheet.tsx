@@ -78,7 +78,7 @@ export function EditNoteSheet({
               <button type="button" className={`seg${font === 'hand' ? ' sel' : ''}`} onClick={() => setFont('hand')} style={{ fontFamily: 'var(--font-hand)', fontStyle: 'normal', fontSize: 17 }}>
                 Handwritten
               </button>
-              <button type="button" className={`seg${font === 'mono' ? ' sel' : ''}`} onClick={() => setFont('mono')} style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 13 }}>
+              <button type="button" className={`seg${font === 'mono' ? ' sel' : ''}`} onClick={() => setFont('mono')} style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }}>
                 Typed
               </button>
             </div>
