@@ -92,7 +92,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     return (
       <button className="place" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
         <PlaceIcon color={placeColor.fg} />
-        <div className="place-name">{block.place?.name ?? 'a place'}</div>
+        <div className="place-name">{`  ${block.place?.name ?? 'a place'}  `}</div>
       </button>
     )
   }
@@ -180,7 +180,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        {content}
+        {style === 'label' ? `  ${content}  ` : content}
       </button>
     )
   }
