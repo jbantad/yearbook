@@ -91,7 +91,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
   if (block.type === 'place') {
     const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
     const pinStyle = data.pin_style === 'pin' ? 'pin' : 'outline'
-    const placeName = `  ${block.place?.name ?? 'a place'}  `
+    const placeName = ` ${block.place?.name ?? 'a place'} `
     if (pinStyle === 'pin') {
       return (
         <button className="place place-pinned" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
@@ -191,7 +191,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
         style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }}
         onClick={onClick}
       >
-        {style === 'label' ? `  ${content}  ` : content}
+        {style === 'label' ? ` ${content} ` : content}
       </button>
     )
   }
