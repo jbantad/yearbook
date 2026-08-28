@@ -97,7 +97,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .header {
   position: relative;
-  height: calc(184px + var(--safe-top));
+  height: calc(140px + var(--safe-top));
   box-sizing: border-box;
   background: url('../assets/torn-header-edge.png') top center/100% 100% no-repeat;
   padding: calc(20px + var(--safe-top)) 22px 0;
