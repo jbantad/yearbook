@@ -155,11 +155,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   padding: 18px 20px 6px;
 }
 .day-section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin: 10px 14px 0; padding: 16px 4px 0; border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px;
+  margin: 10px 14px 0; padding: 16px 4px 0;
 }
-.day-section-header span { font-size: 15px; font-weight: 600; color: var(--ink); }
-.day-section-header button { background: none; border: none; padding: 6px; color: var(--ink-soft); display: flex; }
+.day-section-header span { font-size: 15px; font-weight: 600; color: var(--ink); flex-shrink: 0; }
+.day-section-header .squiggle { flex: 1; height: 16px; color: var(--ink); }
+.day-section-header button { background: none; border: none; padding: 6px; color: var(--ink-soft); display: flex; flex-shrink: 0; }
 .day-section-header button svg { width: 17px; height: 17px; }
 .block-drag-wrap {
   position: absolute;

@@ -183,8 +183,14 @@ export function DayPage() {
       {days.map((entry, i) => (
         (entry.pageId && (i === 0 || entry.blocks.length > 0)) ? (
           <div key={entry.date}>
-            <div className="day-section-header" style={i === 0 ? { borderTop: 'none', marginTop: 0 } : undefined}>
+            <div className="day-section-header" style={i === 0 ? { marginTop: 0 } : undefined}>
               <span>{formatDate(entry.date)}</span>
+              <svg className="squiggle" viewBox="0 0 200 20" preserveAspectRatio="none">
+                <path
+                  d="M0,10 Q3.12,6.5 6.25,10 Q9.38,13.5 12.50,10 Q15.62,6.5 18.75,10 Q21.88,13.5 25.00,10 Q28.12,6.5 31.25,10 Q34.38,13.5 37.50,10 Q40.62,6.5 43.75,10 Q46.88,13.5 50.00,10 Q53.12,6.5 56.25,10 Q59.38,13.5 62.50,10 Q65.62,6.5 68.75,10 Q71.88,13.5 75.00,10 Q78.12,6.5 81.25,10 Q84.38,13.5 87.50,10 Q90.62,6.5 93.75,10 Q96.88,13.5 100.00,10 Q103.12,6.5 106.25,10 Q109.38,13.5 112.50,10 Q115.62,6.5 118.75,10 Q121.88,13.5 125.00,10 Q128.12,6.5 131.25,10 Q134.38,13.5 137.50,10 Q140.62,6.5 143.75,10 Q146.88,13.5 150.00,10 Q153.12,6.5 156.25,10 Q159.38,13.5 162.50,10 Q165.62,6.5 168.75,10 Q171.88,13.5 175.00,10 Q178.12,6.5 181.25,10 Q184.38,13.5 187.50,10 Q190.62,6.5 193.75,10 Q196.88,13.5 200.00,10"
+                  fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+                />
+              </svg>
               <button onClick={() => toggleLock(entry)} aria-label={entry.locked ? 'Unlock page' : 'Lock page'}>
                 {entry.locked ? <LockIcon /> : <UnlockIcon />}
               </button>
