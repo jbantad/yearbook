@@ -218,6 +218,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .place .place-name {
   font-family: 'Impact Label', 'Arial Narrow', sans-serif; font-style: normal; font-size: 19px; font-weight: 400;
   letter-spacing: 0.01em; text-transform: uppercase; white-space: nowrap; color: var(--ink);
+  -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
 }
 .place-pinned { padding-left: 14px; }
 .place-pin-img {
@@ -238,6 +239,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   display: inline-flex; align-items: center; gap: 6px;
   font-family: 'Impact Label', 'Arial Narrow', sans-serif; font-style: normal; font-size: 20px; font-weight: 400;
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: oklch(15% 0 0); padding: 0; text-align: left;
+  -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
 }
 
 .glabel { font-size: 10.5px; font-style: italic; color: var(--ink-soft); margin-bottom: 5px; }
