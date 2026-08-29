@@ -225,7 +225,7 @@ export function PageCanvas({
   // 420px floor, grow the canvas to the lowest block's bottom edge (plus a
   // generous per-card height, since exact card heights vary by type/frame)
   // so the page scrolls to reveal everything instead of clipping it.
-  const CARD_HEIGHT_ESTIMATE = 220
+  const CARD_HEIGHT_ESTIMATE = 300
   const canvasHeight = blocks.reduce((max, b, i) => {
     const pos = positions[b.id] ?? blockPosition(b, i)
     const data = (b.data ?? {}) as { card_scale?: number }
