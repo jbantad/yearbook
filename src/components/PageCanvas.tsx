@@ -158,6 +158,8 @@ export function PageCanvas({
   onSwipeLeft,
   onSwipeRight,
   onDoubleTap,
+  minHeight = 420,
+  showFab = true,
 }: {
   pageId: string | null
   pageNumber: number | null
@@ -169,6 +171,8 @@ export function PageCanvas({
   onSwipeLeft?: () => void
   onSwipeRight?: () => void
   onDoubleTap?: () => void
+  minHeight?: number
+  showFab?: boolean
 }) {
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addOpen, setAddOpen] = useState(false)
@@ -231,7 +235,7 @@ export function PageCanvas({
     const data = (b.data ?? {}) as { card_scale?: number }
     const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE * scale)
-  }, 420)
+  }, minHeight)
 
   return (
     <>
@@ -264,7 +268,7 @@ export function PageCanvas({
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
       </div>
 
-      {pageId && !locked && (
+      {pageId && !locked && showFab && (
         <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
           <PlusIcon />
         </button>

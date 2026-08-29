@@ -196,6 +196,8 @@ export function DayPage() {
               emptyMessage="This page is empty so far. Tap + to add something."
               onReload={() => reloadDay(entry.date)}
               onDoubleTap={goCalendar}
+              minHeight={i === 0 ? 420 : 120}
+              showFab={i === 0}
             />
           </div>
         ) : null
