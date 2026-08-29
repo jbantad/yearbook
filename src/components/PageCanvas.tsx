@@ -11,7 +11,7 @@ import { EditMealSheet } from './EditMealSheet'
 import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { PlusIcon } from './icons'
-import { defaultBlockPosition } from '../lib/hash'
+import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
@@ -24,27 +24,51 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
   return defaultBlockPosition(block.id, index)
 }
 
+function blockRotation(block: BlockWithJoins): number {
+  const layout = (block.layout ?? {}) as { r?: number }
+  return typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
+}
+
+function angleOf(a: { x: number; y: number }, b: { x: number; y: number }) {
+  return (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI
+}
+
 function DraggableBlock({
   block,
   pos,
+  rotation,
   zIndex,
   locked,
   onDrag,
   onMoved,
+  onRotate,
+  onRotated,
   onFront,
   onEdit,
 }: {
   block: BlockWithJoins
   pos: Pos
+  rotation: number
   zIndex: number
   locked: boolean
   onDrag: (pos: Pos) => void
   onMoved: (id: string, pos: Pos) => void
+  onRotate: (r: number) => void
+  onRotated: (id: string, r: number) => void
   onFront: () => void
   onEdit?: () => void
 }) {
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
+  // Two fingers down at once switches from dragging to twist-to-rotate;
+  // dropping back to one finger resumes dragging from wherever it is now.
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+  const rotateRef = useRef<{ startAngle: number; base: number } | null>(null)
+
+  function beginRotate() {
+    const pts = Array.from(pointersRef.current.values())
+    rotateRef.current = { startAngle: angleOf(pts[0], pts[1]), base: rotation }
+  }
 
   function onPointerDown(e: React.PointerEvent) {
     if (locked) return
@@ -53,22 +77,57 @@ function DraggableBlock({
     // races our pointer-capture drag below and can leave its ghost preview
     // stuck on screen across navigations.
     e.preventDefault()
-    onFront()
     e.currentTarget.setPointerCapture(e.pointerId)
-    dragRef.current = { startX: e.clientX, startY: e.clientY, origin: pos }
-    setDragging(true)
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+    if (pointersRef.current.size === 1) {
+      onFront()
+      dragRef.current = { startX: e.clientX, startY: e.clientY, origin: pos }
+      setDragging(true)
+    } else if (pointersRef.current.size === 2) {
+      dragRef.current = null
+      setDragging(false)
+      beginRotate()
+    }
   }
+
   function onPointerMove(e: React.PointerEvent) {
-    if (!dragRef.current) return
-    const { startX, startY, origin } = dragRef.current
-    onDrag({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
+    if (!pointersRef.current.has(e.pointerId)) return
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+    if (pointersRef.current.size >= 2 && rotateRef.current) {
+      const pts = Array.from(pointersRef.current.values())
+      const delta = angleOf(pts[0], pts[1]) - rotateRef.current.startAngle
+      onRotate(rotateRef.current.base + delta)
+      return
+    }
+    if (dragRef.current) {
+      const { startX, startY, origin } = dragRef.current
+      onDrag({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
+    }
   }
+
   function onPointerUp(e: React.PointerEvent) {
-    if (!dragRef.current) return
-    e.currentTarget.releasePointerCapture(e.pointerId)
-    dragRef.current = null
-    setDragging(false)
-    onMoved(block.id, pos)
+    if (!pointersRef.current.has(e.pointerId)) return
+    pointersRef.current.delete(e.pointerId)
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch { /* already released */ }
+
+    if (rotateRef.current && pointersRef.current.size < 2) {
+      rotateRef.current = null
+      onRotated(block.id, rotation)
+    }
+
+    if (pointersRef.current.size === 0) {
+      if (dragRef.current) onMoved(block.id, pos)
+      dragRef.current = null
+      setDragging(false)
+    } else if (pointersRef.current.size === 1) {
+      // One finger lifted off a two-finger rotate — pick dragging back up
+      // from here with whichever finger is still down.
+      const [remaining] = Array.from(pointersRef.current.values())
+      dragRef.current = { startX: remaining.x, startY: remaining.y, origin: pos }
+      setDragging(true)
+    }
     // A plain tap (or a tiny drag) only reorders/moves the block via onFront
     // above — it must never also pop the edit sheet open. Editing is only
     // triggered by the block's own pencil button now.
@@ -77,13 +136,13 @@ function DraggableBlock({
   return (
     <div
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
-      style={{ left: pos.x, top: pos.y, zIndex }}
+      style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none' }}
       onPointerDown={locked ? undefined : onPointerDown}
       onPointerMove={locked ? undefined : onPointerMove}
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onEdit={locked ? undefined : onEdit} />
+      <BlockCard block={block} onEdit={locked ? undefined : onEdit} rotationOverride={rotation} />
     </div>
   )
 }
@@ -115,16 +174,18 @@ export function PageCanvas({
   const [addOpen, setAddOpen] = useState(false)
   const [zOrder, setZOrder] = useState<Record<string, number>>({})
   const [positions, setPositions] = useState<Record<string, Pos>>({})
+  const [rotations, setRotations] = useState<Record<string, number>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
-  // Positions are lifted up here (rather than kept local to each dragged
-  // block) so the canvas-height calc below always sees where a block was
-  // just dragged to, instead of the stale position from the last fetch —
-  // otherwise dragging something further down didn't grow the scrollable
-  // area until the page was reloaded.
+  // Positions/rotations are lifted up here (rather than kept local to each
+  // dragged block) so the canvas-height calc below always sees where a
+  // block was just dragged to, instead of the stale position from the last
+  // fetch — otherwise dragging something further down didn't grow the
+  // scrollable area until the page was reloaded.
   useEffect(() => {
     setPositions(Object.fromEntries(blocks.map((b, i) => [b.id, blockPosition(b, i)])))
+    setRotations(Object.fromEntries(blocks.map((b) => [b.id, blockRotation(b)])))
   }, [blocks])
 
   function bringToFront(id: string) {
@@ -137,8 +198,26 @@ export function PageCanvas({
     setPositions((prev) => ({ ...prev, [id]: pos }))
   }
 
+  function handleRotate(id: string, r: number) {
+    setRotations((prev) => ({ ...prev, [id]: r }))
+  }
+
+  // Layout is a single JSON column ({x, y, r}) — merge in just the changed
+  // piece against that block's current stored layout, or a drag would wipe
+  // out a rotation set elsewhere (and vice versa) instead of only updating
+  // the field that actually changed.
+  async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number }>) {
+    const block = blocks.find((b) => b.id === id)
+    const currentLayout = (block?.layout ?? {}) as Record<string, unknown>
+    await supabase.from('blocks').update({ layout: { ...currentLayout, ...patch } }).eq('id', id)
+  }
+
   async function handleMoved(id: string, pos: Pos) {
-    await supabase.from('blocks').update({ layout: pos }).eq('id', id)
+    await persistLayout(id, pos)
+  }
+
+  async function handleRotated(id: string, r: number) {
+    await persistLayout(id, { r })
   }
 
   // Blocks are positioned absolutely, so the canvas never grows to fit them
@@ -171,10 +250,13 @@ export function PageCanvas({
             key={b.id}
             block={b}
             pos={positions[b.id] ?? blockPosition(b, i)}
+            rotation={rotations[b.id] ?? blockRotation(b)}
             zIndex={zOrder[b.id] ?? i}
             locked={locked}
             onDrag={(pos) => handleDrag(b.id, pos)}
             onMoved={handleMoved}
+            onRotate={(r) => handleRotate(b.id, r)}
+            onRotated={handleRotated}
             onFront={() => bringToFront(b.id)}
             onEdit={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
           />

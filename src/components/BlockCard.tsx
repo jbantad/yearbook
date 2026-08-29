@@ -28,9 +28,9 @@ function EditButton({ onEdit }: { onEdit: () => void }) {
 // by the wrapper in PageCanvas), but editing is a deliberate act via this
 // small pencil button — a plain tap/drag release must never also pop the
 // edit sheet open.
-export function BlockCard({ block, onEdit }: { block: BlockWithJoins; onEdit?: () => void }) {
+export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWithJoins; onEdit?: () => void; rotationOverride?: number }) {
   const layout = (block.layout ?? {}) as { r?: number }
-  const rot = typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
+  const rot = rotationOverride ?? (typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const data = (block.data ?? {}) as Record<string, unknown>
 
   if (block.type === 'photo') {
