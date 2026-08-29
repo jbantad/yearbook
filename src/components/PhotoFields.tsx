@@ -8,7 +8,7 @@ const FRAMES: { key: string; label: string }[] = [
 ]
 
 export function clampOffset(v: number, zoom: number) {
-  const max = Math.max(0, (zoom - 1) * 50)
+  const max = Math.max(25, (zoom - 1) * 60)
   return Math.min(max, Math.max(-max, v))
 }
 
