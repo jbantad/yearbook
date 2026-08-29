@@ -3,15 +3,27 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
+import { todayISO } from '../lib/pages'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
 const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude', 'headline', 'label']
 
-export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; onCreated: () => void; pageId?: string | null }) {
+export function AddSheet({
+  onClose,
+  onCreated,
+  pageId,
+  initialType,
+}: {
+  onClose: () => void
+  onCreated: () => void
+  pageId?: string | null
+  initialType?: Selection
+}) {
   const { user } = useAuth()
-  const [type, setType] = useState<Selection | null>(null)
+  const [type, setType] = useState<Selection | null>(initialType ?? null)
+  const [dateWatched, setDateWatched] = useState(todayISO())
   const [text, setText] = useState('')
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -152,9 +164,13 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
       }
 
       const blockType: BlockType = type === 'headline' || type === 'label' ? 'text' : type
+      const captured_at = type === 'movie' ? new Date(dateWatched + 'T12:00:00').toISOString() : undefined
       const { data: block, error: blockErr } = await supabase
         .from('blocks')
-        .insert({ user_id: user.id, type: blockType, data: data as unknown as Json, layout: layout as unknown as Json, place_id, movie_id, page_id: pageId ?? null })
+        .insert({
+          user_id: user.id, type: blockType, data: data as unknown as Json, layout: layout as unknown as Json,
+          place_id, movie_id, page_id: pageId ?? null, ...(captured_at ? { captured_at } : {}),
+        })
         .select('id')
         .single()
       if (blockErr) throw blockErr
@@ -288,6 +304,10 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
                       </button>
                     ))}
                   </div>
+                </div>
+                <div className="field">
+                  <label>Date watched</label>
+                  <input type="date" value={dateWatched} onChange={(e) => setDateWatched(e.target.value)} max={todayISO()} required />
                 </div>
                 <div className="toggle-row">
                   <div>

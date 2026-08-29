@@ -492,6 +492,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .shelf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 6px 18px 20px; }
 .mcard { background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 6px 14px oklch(30% 0.03 50 / 0.16); }
 .mcard .art { height: 110px; position: relative; display: flex; align-items: center; justify-content: center; }
+.mcard .art.poster { height: auto; aspect-ratio: 2 / 3; }
 .mcard .art svg { width: 34px; height: 34px; color: oklch(99% 0.02 85 / 0.85); }
 .mcard .stub { padding: 10px 11px 12px; }
 .mcard .t { font-family: var(--font-hand); font-style: normal; font-size: 16px; line-height: 1.2; color: var(--ink); }

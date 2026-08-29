@@ -6,6 +6,7 @@ import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { TrashIcon, StarIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { todayISO } from '../lib/pages'
 
 export function EditMovieSheet({
   block,
@@ -26,6 +27,7 @@ export function EditMovieSheet({
   const [showTitle, setShowTitle] = useState(data.show_title !== false)
   const [color, setColor] = useState(data.color as string | undefined)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
+  const [dateWatched, setDateWatched] = useState(block.captured_at.slice(0, 10))
   const [posterFile, setPosterFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(block.movie?.poster_path ?? null)
   const [busy, setBusy] = useState(false)
@@ -60,9 +62,10 @@ export function EditMovieSheet({
 
       const nextData = { ...data, show_title: showTitle, color }
       const nextLayout = { ...layout, r: rotation }
+      const captured_at = new Date(dateWatched + 'T12:00:00').toISOString()
       const { error: updateErr } = await supabase
         .from('blocks')
-        .update({ data: nextData as unknown as Json, layout: nextLayout as unknown as Json })
+        .update({ data: nextData as unknown as Json, layout: nextLayout as unknown as Json, captured_at })
         .eq('id', block.id)
       if (updateErr) throw updateErr
       onSaved()
@@ -91,7 +94,7 @@ export function EditMovieSheet({
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="handle" />
         <h2>Edit movie</h2>
-        <div className="sub">change the title, poster, or your rating</div>
+        <div className="sub">change the title, poster, rating, or date watched</div>
 
         <form onSubmit={save}>
           <div className="field" style={{ display: 'flex', gap: 14 }}>
@@ -123,6 +126,11 @@ export function EditMovieSheet({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="field">
+            <label>Date watched</label>
+            <input type="date" value={dateWatched} onChange={(e) => setDateWatched(e.target.value)} max={todayISO()} required />
           </div>
 
           <div className="toggle-row">

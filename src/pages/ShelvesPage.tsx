@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
+import { AddSheet } from '../components/AddSheet'
+import { EditMovieSheet } from '../components/EditMovieSheet'
+import type { BlockWithJoins } from '../components/BlockCard'
 import { MealIcon, MovieIcon, PlaceIcon, ChevronIcon, PlusIcon, StarIcon } from '../components/icons'
 import type { Tables } from '../lib/database.types'
 
@@ -18,9 +21,24 @@ export function ShelvesPage() {
   const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
   const [addingPerson, setAddingPerson] = useState(false)
+  const [addingMovie, setAddingMovie] = useState(false)
+  const [editingBlock, setEditingBlock] = useState<Block | null>(null)
   const [name, setName] = useState('')
   const [relationship, setRelationship] = useState('')
   const [busy, setBusy] = useState(false)
+
+  async function loadBlocks() {
+    if (!user || shelf === 'person') return
+    setLoading(true)
+    const { data } = await supabase
+      .from('blocks')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating)')
+      .eq('user_id', user.id)
+      .eq('type', shelf)
+      .order('captured_at', { ascending: false })
+    setBlocks((data ?? []) as unknown as Block[])
+    setLoading(false)
+  }
 
   async function loadPeople() {
     if (!user) return
@@ -42,17 +60,7 @@ export function ShelvesPage() {
       loadPeople()
       return
     }
-    setLoading(true)
-    supabase
-      .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path, rating)')
-      .eq('user_id', user.id)
-      .eq('type', shelf)
-      .order('captured_at', { ascending: false })
-      .then(({ data }) => {
-        setBlocks((data ?? []) as unknown as Block[])
-        setLoading(false)
-      })
+    loadBlocks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, shelf])
 
@@ -129,10 +137,19 @@ export function ShelvesPage() {
               const title = shelf === 'movie' ? b.movie?.title : shelf === 'place' ? b.place?.name : ((data.dish as string) || (data.description as string))
               const dateStr = new Date(b.captured_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
               const poster = shelf === 'movie' ? b.movie?.poster_path : undefined
+              const openMovie = shelf === 'movie' && !b.page_id
               return (
-                <div className="mcard" key={b.id} onClick={() => b.page_id && navigate(`/day/${new Date(b.captured_at).toISOString().slice(0, 10)}`)} style={{ cursor: b.page_id ? 'pointer' : 'default' }}>
+                <div
+                  className="mcard"
+                  key={b.id}
+                  onClick={() => {
+                    if (b.page_id) navigate(`/day/${new Date(b.captured_at).toISOString().slice(0, 10)}`)
+                    else if (openMovie) setEditingBlock(b)
+                  }}
+                  style={{ cursor: b.page_id || openMovie ? 'pointer' : 'default' }}
+                >
                   <div
-                    className="art"
+                    className={`art${shelf === 'movie' ? ' poster' : ''}`}
                     style={poster
                       ? { backgroundImage: `url(${poster})`, backgroundSize: 'cover', backgroundPosition: 'center' }
                       : { background: `linear-gradient(160deg, oklch(58% 0.1 ${hue}), oklch(30% 0.06 ${hue}))` }}
@@ -156,6 +173,30 @@ export function ShelvesPage() {
             })}
           </div>
         </>
+      )}
+
+      {shelf === 'movie' && (
+        <button className="fab" onClick={() => setAddingMovie(true)} aria-label="Add a movie">
+          <PlusIcon />
+        </button>
+      )}
+
+      {addingMovie && (
+        <AddSheet
+          pageId={null}
+          initialType="movie"
+          onClose={() => setAddingMovie(false)}
+          onCreated={() => { setAddingMovie(false); loadBlocks() }}
+        />
+      )}
+
+      {editingBlock && (
+        <EditMovieSheet
+          block={editingBlock as unknown as BlockWithJoins}
+          onClose={() => setEditingBlock(null)}
+          onSaved={() => { setEditingBlock(null); loadBlocks() }}
+          onDeleted={() => { setEditingBlock(null); loadBlocks() }}
+        />
       )}
 
       <TabBar active="shelves" />
