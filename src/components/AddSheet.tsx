@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
@@ -9,6 +10,8 @@ import type { Enums, Json } from '../lib/database.types'
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
 const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude', 'headline', 'label']
+
+type LibraryMovie = { id: string; title: string; poster_path: string | null; rating: number | null; capturedAt: string }
 
 export function AddSheet({
   onClose,
@@ -22,8 +25,12 @@ export function AddSheet({
   initialType?: Selection
 }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [type, setType] = useState<Selection | null>(initialType ?? null)
   const [dateWatched, setDateWatched] = useState(todayISO())
+  const [movieLibrary, setMovieLibrary] = useState<LibraryMovie[]>([])
+  const [movieLibraryLoading, setMovieLibraryLoading] = useState(false)
+  const [movieSearch, setMovieSearch] = useState('')
   const [text, setText] = useState('')
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -74,6 +81,48 @@ export function AddSheet({
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+  }
+
+  useEffect(() => {
+    if (!user || type !== 'movie' || !pageId) return
+    setMovieLibraryLoading(true)
+    supabase
+      .from('blocks')
+      .select('movie_id, captured_at, movie:movies(id, title, poster_path, rating)')
+      .eq('user_id', user.id)
+      .eq('type', 'movie')
+      .not('movie_id', 'is', null)
+      .order('captured_at', { ascending: false })
+      .then(({ data }) => {
+        const seen = new Set<string>()
+        const library: LibraryMovie[] = []
+        for (const row of (data ?? []) as unknown as { movie_id: string; captured_at: string; movie: { id: string; title: string; poster_path: string | null; rating: number | null } | null }[]) {
+          if (!row.movie || seen.has(row.movie.id)) continue
+          seen.add(row.movie.id)
+          library.push({ ...row.movie, capturedAt: row.captured_at })
+        }
+        setMovieLibrary(library)
+        setMovieLibraryLoading(false)
+      })
+  }, [user, type, pageId])
+
+  async function pickExistingMovie(movie: LibraryMovie) {
+    if (!user || !pageId) return
+    setBusy(true)
+    setError(null)
+    try {
+      const { error: blockErr } = await supabase
+        .from('blocks')
+        .insert({
+          user_id: user.id, type: 'movie', data: { show_title: true } as unknown as Json, layout: {} as unknown as Json,
+          movie_id: movie.id, page_id: pageId, captured_at: movie.capturedAt,
+        })
+      if (blockErr) throw blockErr
+      onCreated()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add this movie')
+      setBusy(false)
+    }
   }
 
   function pickMealPhoto(file: File | undefined) {
@@ -227,6 +276,55 @@ export function AddSheet({
               })}
             </div>
             <button className="cancel" onClick={onClose}>Cancel</button>
+          </>
+        ) : type === 'movie' && pageId ? (
+          <>
+            <h2>Add a movie</h2>
+            <div className="sub">choose one from your shelf, or log a new one there first</div>
+            <div className="search-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+              <input placeholder="search your movies…" value={movieSearch} onChange={(e) => setMovieSearch(e.target.value)} />
+            </div>
+            <div className="lib-scroll">
+              {movieLibraryLoading && <div className="sub">loading…</div>}
+              {!movieLibraryLoading && movieLibrary.length === 0 && (
+                <div className="sub">nothing logged yet — log one on Shelves first</div>
+              )}
+              <div className="shelf-grid">
+                {movieLibrary
+                  .filter((m) => m.title.toLowerCase().includes(movieSearch.trim().toLowerCase()))
+                  .map((m) => {
+                    const hue = Math.abs(m.id.charCodeAt(0) * 7) % 360
+                    return (
+                      <div className="mcard" key={m.id} onClick={() => !busy && pickExistingMovie(m)} style={{ cursor: 'pointer' }}>
+                        <div
+                          className="art poster"
+                          style={m.poster_path
+                            ? { backgroundImage: `url(${m.poster_path})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                            : { background: `linear-gradient(160deg, oklch(58% 0.1 ${hue}), oklch(30% 0.06 ${hue}))` }}
+                        />
+                        <div className="stub">
+                          <div className="t">{m.title}</div>
+                          {m.rating != null && (
+                            <div className="stars" style={{ marginTop: 4 }}>
+                              {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= (m.rating ?? 0)} />)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+            {error && <div className="auth-error">{error}</div>}
+            <div className="new-log-row" onClick={() => { onClose(); navigate('/shelves') }}>
+              <div className="plus-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg></div>
+              <div className="txt">
+                <div className="t1">Don't see it? Log it on Shelves</div>
+                <div className="t2">poster, rating &amp; date watched live there now</div>
+              </div>
+            </div>
+            <button type="button" className="cancel" onClick={() => setType(null)}>Back</button>
           </>
         ) : (
           <form onSubmit={submit}>

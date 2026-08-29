@@ -501,6 +501,26 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .mcard .stars svg { width: 13px; height: 13px; }
 .empty-state { padding: 40px 24px; text-align: center; color: var(--ink-on-photo-soft); font-size: 14px; }
 
+/* ---- movie-from-shelf picker (AddSheet) ---- */
+.search-row { position: relative; margin-bottom: 12px; }
+.search-row input {
+  width: 100%; font-family: var(--font-body); font-style: italic; font-size: 14px; padding: 10px 12px 10px 34px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--paper-alt); color: var(--ink);
+}
+.search-row svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--ink-faint); }
+.lib-scroll { max-height: 46vh; overflow-y: auto; margin: 0 -22px; padding: 0 22px; }
+.new-log-row {
+  margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line);
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.new-log-row .plus-badge {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--amber-soft); color: oklch(40% 0.1 55);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.new-log-row .plus-badge svg { width: 16px; height: 16px; }
+.new-log-row .txt .t1 { font-size: 13px; color: var(--ink); font-weight: 600; font-style: normal; }
+.new-log-row .txt .t2 { font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+
 /* ---- auth ---- */
 
 .auth-screen { min-height: 100vh;
