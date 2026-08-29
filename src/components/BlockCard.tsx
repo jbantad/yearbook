@@ -1,9 +1,10 @@
 import { hashRotation } from '../lib/hash'
-import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
+import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import pinPhoto from '../assets/pin-trimmed.png'
+import starIcon from '../assets/star.png'
 import type { Tables } from '../lib/database.types'
 import type { CSSProperties } from 'react'
 
@@ -11,6 +12,10 @@ export type BlockWithJoins = Tables<'blocks'> & {
   place?: { name: string } | null
   movie?: { title: string; poster_path: string | null; rating: number | null } | null
   people?: { id: string; display_name: string }[]
+}
+
+function StarPng({ filled }: { filled: boolean }) {
+  return <img src={starIcon} alt="" style={filled ? undefined : { filter: 'grayscale(1) opacity(0.35)' }} />
 }
 
 function EditButton({ onEdit }: { onEdit: () => void }) {
@@ -203,7 +208,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         className="card scrap"
         style={{
           width: 168, transform: `rotate(${rot}deg)`, borderRadius: 6,
-          background: poster ? 'none' : movieColor.soft, padding: poster ? 0 : undefined, overflow: poster ? 'hidden' : undefined,
+          background: poster ? 'var(--card)' : movieColor.soft, padding: poster ? 0 : undefined, overflow: poster ? 'hidden' : undefined,
         }}
       >
         {poster ? (
@@ -212,7 +217,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             {showTitle && <div className="cap" style={{ padding: '8px 10px 0' }}>{block.movie?.title ?? 'a movie'}</div>}
             {rating != null && (
               <div className="stars" style={{ padding: showTitle ? '5px 10px 8px' : '8px 10px' }}>
-                {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= rating} />)}
+                {[1, 2, 3, 4, 5].map((n) => <StarPng key={n} filled={n <= rating} />)}
               </div>
             )}
           </>
@@ -221,7 +226,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             <div className="cap">{block.movie?.title ?? 'a movie'}</div>
             {rating != null && (
               <div className="stars">
-                {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= rating} />)}
+                {[1, 2, 3, 4, 5].map((n) => <StarPng key={n} filled={n <= rating} />)}
               </div>
             )}
           </>

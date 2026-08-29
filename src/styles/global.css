@@ -356,6 +356,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .stars-row button svg { width: 26px; height: 26px; }
 .stars { display: flex; gap: 2px; color: var(--gold); }
 .stars svg { width: 13px; height: 13px; }
+.stars img { width: 19.5px; height: 19.5px; }
 
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper-alt); margin-bottom: 14px; }
 .toggle-row .lbl { font-size: 14px; color: var(--ink); }
