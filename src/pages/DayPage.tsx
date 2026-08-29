@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -89,6 +89,31 @@ export function DayPage() {
   const goCalendar = () => navigate('/calendar')
   const emptySwipe = useSwipeGesture({ onSwipeLeft: goNext, onSwipeRight: goPrev, onDoubleTap: goCalendar })
 
+  const bottomSentinelRef = useRef<HTMLDivElement>(null)
+  const wasIntersectingRef = useRef(false)
+
+  useEffect(() => {
+    wasIntersectingRef.current = false
+    const el = bottomSentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Skip the observer's initial report — on a short page the sentinel
+        // can already be on-screen at load with no scrolling at all, which
+        // would otherwise navigate away immediately.
+        const wasIntersecting = wasIntersectingRef.current
+        wasIntersectingRef.current = entry.isIntersecting
+        if (entry.isIntersecting && !wasIntersecting && window.scrollY > 20) {
+          goPrev()
+        }
+      },
+      { threshold: 1 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, pageId, loading])
+
   if (!date) return null
 
   return (
@@ -134,6 +159,9 @@ export function DayPage() {
           onDoubleTap={goCalendar}
         />
       )}
+
+      <div className="scroll-prev-hint">keep scrolling for {formatDate(shiftDate(date, -1))}</div>
+      <div ref={bottomSentinelRef} style={{ height: 1 }} />
 
       <TabBar active="today" />
     </div>

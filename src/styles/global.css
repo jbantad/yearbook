@@ -150,6 +150,10 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
      our own JS. */
   touch-action: pan-y;
 }
+.scroll-prev-hint {
+  text-align: center; font-size: 12px; font-style: italic; color: var(--ink-faint);
+  padding: 18px 20px 6px;
+}
 .block-drag-wrap {
   position: absolute;
   touch-action: none;
