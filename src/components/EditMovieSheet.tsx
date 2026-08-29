@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { BlockWithJoins } from './BlockCard'
-import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { TrashIcon, StarIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
@@ -25,7 +24,7 @@ export function EditMovieSheet({
   const [title, setTitle] = useState(block.movie?.title ?? '')
   const [rating, setRating] = useState(block.movie?.rating ?? 0)
   const [showTitle, setShowTitle] = useState(data.show_title !== false)
-  const [color, setColor] = useState(data.color as string | undefined)
+  const [color] = useState(data.color as string | undefined)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [dateWatched, setDateWatched] = useState(block.captured_at.slice(0, 10))
   const [posterFile, setPosterFile] = useState<File | null>(null)
@@ -141,11 +140,6 @@ export function EditMovieSheet({
             <button type="button" className={`switch${showTitle ? ' on' : ''}`} onClick={() => setShowTitle((s) => !s)} aria-label="Toggle title visibility">
               <div className="knob" />
             </button>
-          </div>
-
-          <div className="field">
-            <label>Color</label>
-            <ColorSwatchPicker value={color} onChange={setColor} />
           </div>
 
           <div className="field">

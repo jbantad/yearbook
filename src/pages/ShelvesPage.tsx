@@ -160,13 +160,12 @@ export function ShelvesPage() {
                   </div>
                   <div className="stub">
                     <div className="t">{title || 'untitled'}</div>
-                    {shelf === 'movie' && b.movie?.rating != null ? (
+                    {shelf === 'movie' && b.movie?.rating != null && (
                       <div className="stars" style={{ marginTop: 4 }}>
                         {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} filled={n <= (b.movie?.rating ?? 0)} />)}
                       </div>
-                    ) : (
-                      <div className="d">{dateStr}</div>
                     )}
+                    <div className="d">{dateStr}</div>
                   </div>
                 </div>
               )
