@@ -12,6 +12,7 @@ import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { PlusIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
+import { FRAME_SIZES } from '../lib/frames'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
@@ -27,6 +28,28 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
 function blockRotation(block: BlockWithJoins): number {
   const layout = (block.layout ?? {}) as { r?: number }
   return typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
+}
+
+// Card heights vary a lot by type — a photo frame needs real room, a place
+// tag barely any — so a single flat estimate either clips tall cards or,
+// applied to a small one, leaves a wall of empty space below it before the
+// canvas ends. Approximate per type instead.
+function estimateBlockHeight(block: BlockWithJoins): number {
+  const data = (block.data ?? {}) as { frame?: string; photo_url?: string }
+  switch (block.type) {
+    case 'photo': {
+      const frame = FRAME_SIZES[data.frame ?? 'classic'] ?? FRAME_SIZES.classic
+      return frame.h + 30
+    }
+    case 'movie': return 300
+    case 'meal': return data.photo_url ? 230 : 100
+    case 'gratitude': return 110
+    case 'note': return 100
+    case 'text': return 70
+    case 'place': return 60
+    case 'person': return 60
+    default: return 150
+  }
 }
 
 function angleOf(a: { x: number; y: number }, b: { x: number; y: number }) {
@@ -226,15 +249,13 @@ export function PageCanvas({
 
   // Blocks are positioned absolutely, so the canvas never grows to fit them
   // on its own — once a page has enough content to run past the default
-  // 420px floor, grow the canvas to the lowest block's bottom edge (plus a
-  // generous per-card height, since exact card heights vary by type/frame)
-  // so the page scrolls to reveal everything instead of clipping it.
-  const CARD_HEIGHT_ESTIMATE = 300
+  // floor, grow the canvas to the lowest block's estimated bottom edge so
+  // the page scrolls to reveal everything instead of clipping it.
   const canvasHeight = blocks.reduce((max, b, i) => {
     const pos = positions[b.id] ?? blockPosition(b, i)
     const data = (b.data ?? {}) as { card_scale?: number }
     const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
-    return Math.max(max, pos.y + CARD_HEIGHT_ESTIMATE * scale)
+    return Math.max(max, pos.y + estimateBlockHeight(b) * scale)
   }, minHeight)
 
   return (
