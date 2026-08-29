@@ -3,7 +3,7 @@ import polaroidTall from '../assets/polaroid-frame-tall.png'
 import polaroidSquare from '../assets/polaroid-frame-square.png'
 
 export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
-  classic: { w: 175, h: 138, src: polaroidClassic },
+  classic: { w: 194, h: 153, src: polaroidClassic },
   tall: { w: 132, h: 186, src: polaroidTall },
   square: { w: 130, h: 154, src: polaroidSquare },
 }
