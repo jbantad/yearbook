@@ -30,8 +30,12 @@ export function EditPhotoSheet({
   const [offsetX, setOffsetX] = useState(typeof data.photo_x === 'number' ? (data.photo_x as number) : 0)
   const [offsetY, setOffsetY] = useState(typeof data.photo_y === 'number' ? (data.photo_y as number) : 0)
   const existingTriptychUrls = (Array.isArray(data.photo_urls) ? data.photo_urls : [null, null, null]) as (string | null)[]
+  const existingTriptychZooms = (Array.isArray(data.photo_zooms) ? data.photo_zooms : [1, 1, 1]) as number[]
+  const existingTriptychOffsets = (Array.isArray(data.photo_offsets) ? data.photo_offsets : [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }]) as { x: number; y: number }[]
   const [triptychFiles, setTriptychFiles] = useState<(File | null)[]>([null, null, null])
   const [triptychPreviews, setTriptychPreviews] = useState<(string | null)[]>(existingTriptychUrls)
+  const [triptychZooms, setTriptychZooms] = useState<number[]>(existingTriptychZooms)
+  const [triptychOffsets, setTriptychOffsets] = useState<{ x: number; y: number }[]>(existingTriptychOffsets)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,6 +60,16 @@ export function EditPhotoSheet({
       next[index] = URL.createObjectURL(file)
       return next
     })
+    setTriptychZooms((prev) => { const next = [...prev]; next[index] = 1; return next })
+    setTriptychOffsets((prev) => { const next = [...prev]; next[index] = { x: 0, y: 0 }; return next })
+  }
+
+  function setTriptychZoom(index: number, v: number) {
+    setTriptychZooms((prev) => { const next = [...prev]; next[index] = v; return next })
+  }
+
+  function setTriptychOffset(index: number, x: number, y: number) {
+    setTriptychOffsets((prev) => { const next = [...prev]; next[index] = { x, y }; return next })
   }
 
   async function save(e: React.FormEvent) {
@@ -79,7 +93,7 @@ export function EditPhotoSheet({
             return existingTriptychUrls[i] ?? null
           }),
         )
-        nextData = { ...data, caption, frame, photo_urls }
+        nextData = { ...data, caption, frame, photo_urls, photo_zooms: triptychZooms, photo_offsets: triptychOffsets }
       } else {
         nextData = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
         if (photoFile) {
@@ -141,6 +155,10 @@ export function EditPhotoSheet({
             onRotationChange={setRotation}
             triptychPreviews={triptychPreviews}
             onPickTriptychPhoto={pickTriptychPhoto}
+            triptychZooms={triptychZooms}
+            triptychOffsets={triptychOffsets}
+            onTriptychZoomChange={setTriptychZoom}
+            onTriptychOffsetChange={setTriptychOffset}
           />
 
           {error && <div className="auth-error">{error}</div>}

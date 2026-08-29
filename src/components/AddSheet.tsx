@@ -42,6 +42,8 @@ export function AddSheet({
   const [photoRotation, setPhotoRotation] = useState(0)
   const [triptychFiles, setTriptychFiles] = useState<(File | null)[]>([null, null, null])
   const [triptychPreviews, setTriptychPreviews] = useState<(string | null)[]>([null, null, null])
+  const [triptychZooms, setTriptychZooms] = useState<number[]>([1, 1, 1])
+  const [triptychOffsets, setTriptychOffsets] = useState<{ x: number; y: number }[]>([{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }])
   const [posterFile, setPosterFile] = useState<File | null>(null)
   const [posterPreview, setPosterPreview] = useState<string | null>(null)
   const [rating, setRating] = useState(0)
@@ -72,6 +74,16 @@ export function AddSheet({
       next[index] = URL.createObjectURL(file)
       return next
     })
+    setTriptychZooms((prev) => { const next = [...prev]; next[index] = 1; return next })
+    setTriptychOffsets((prev) => { const next = [...prev]; next[index] = { x: 0, y: 0 }; return next })
+  }
+
+  function setTriptychZoom(index: number, v: number) {
+    setTriptychZooms((prev) => { const next = [...prev]; next[index] = v; return next })
+  }
+
+  function setTriptychOffset(index: number, x: number, y: number) {
+    setTriptychOffsets((prev) => { const next = [...prev]; next[index] = { x, y }; return next })
   }
 
   function pickPoster(file: File | undefined) {
@@ -157,7 +169,7 @@ export function AddSheet({
 
       if (type === 'photo' && photoFrame === 'triptych') {
         const photo_urls = await Promise.all(triptychFiles.map((f) => (f ? uploadToPhotos(f) : Promise.resolve(null))))
-        data = { caption: text, frame: photoFrame, photo_urls }
+        data = { caption: text, frame: photoFrame, photo_urls, photo_zooms: triptychZooms, photo_offsets: triptychOffsets }
         layout = { r: photoRotation }
       } else if (type === 'photo') {
         data = { caption: text, frame: photoFrame, photo_zoom: photoZoom, photo_x: photoOffsetX, photo_y: photoOffsetY }
@@ -348,6 +360,10 @@ export function AddSheet({
                 onRotationChange={setPhotoRotation}
                 triptychPreviews={triptychPreviews}
                 onPickTriptychPhoto={pickTriptychPhoto}
+                triptychZooms={triptychZooms}
+                triptychOffsets={triptychOffsets}
+                onTriptychZoomChange={setTriptychZoom}
+                onTriptychOffsetChange={setTriptychOffset}
               />
             )}
             {type === 'note' && (

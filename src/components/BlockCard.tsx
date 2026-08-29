@@ -44,6 +44,8 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
 
     if (frameKey === 'triptych') {
       const photoUrls = (Array.isArray(data.photo_urls) ? data.photo_urls : []) as (string | undefined)[]
+      const photoZooms = (Array.isArray(data.photo_zooms) ? data.photo_zooms : []) as (number | undefined)[]
+      const photoOffsets = (Array.isArray(data.photo_offsets) ? data.photo_offsets : []) as ({ x?: number; y?: number } | undefined)[]
       const capBottom = TRIPTYCH_WINDOWS[TRIPTYCH_WINDOWS.length - 1].bottom
       return (
         <div
@@ -53,6 +55,10 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
           {TRIPTYCH_WINDOWS.map((win, i) => {
             const url = photoUrls[i]
+            const z = typeof photoZooms[i] === 'number' ? (photoZooms[i] as number) : 1
+            const off = photoOffsets[i] ?? {}
+            const px = typeof off.x === 'number' ? off.x : 0
+            const py = typeof off.y === 'number' ? off.y : 0
             return (
               <div
                 key={i}
@@ -63,7 +69,16 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
                 }}
               >
                 {url && (
-                  <img src={url} alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                  <img
+                    src={url}
+                    alt=""
+                    draggable={false}
+                    style={{
+                      position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                      transform: `translate(${px}%, ${py}%) scale(${z * PHOTO_BASE_SCALE})`,
+                      pointerEvents: 'none',
+                    }}
+                  />
                 )}
               </div>
             )
