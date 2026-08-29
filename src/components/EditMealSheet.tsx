@@ -136,13 +136,14 @@ export function EditMealSheet({
         </form>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
-          <button className="cancel" style={{ width: 'auto', borderTop: 'none', padding: 0 }} onClick={onClose}>Cancel</button>
+          <button className="cancel" style={{ width: 'auto', marginTop: 0, borderTop: 'none', padding: 0 }} onClick={onClose}>Cancel</button>
           <button
+            className="delete-block-btn"
             onClick={remove}
             disabled={busy}
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--rose)', fontSize: 13.5, fontWeight: 600 }}
           >
-            <TrashIcon /> Delete block
+            <TrashIcon /> Delete
           </button>
         </div>
       </div>
