@@ -45,7 +45,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return (
       <div
-        className="card polaroid"
+        className={`card polaroid polaroid-${frameKey}`}
         style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})` }}
       >
         <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
