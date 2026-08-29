@@ -142,6 +142,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   flex: 1;
   margin: 0 14px 14px;
   min-height: 420px;
+  /* Letting the canvas scroll vertically (for long pages) meant the browser
+     could also hijack a horizontal swipe as a vertical pan attempt before
+     our pointer handlers ever saw pointerup, breaking swipe-to-change-day.
+     pan-y keeps native vertical scrolling but leaves horizontal gestures to
+     our own JS. */
+  touch-action: pan-y;
 }
 .block-drag-wrap {
   position: absolute;
