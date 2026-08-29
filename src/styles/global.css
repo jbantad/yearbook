@@ -155,6 +155,14 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   touch-action: none;
   cursor: grab;
   user-select: none;
+  /* Repositioning updates left/top every frame while dragging; on some
+     WebKit versions a plain software repaint of this can leave stale
+     pixels behind (most visible on text using the custom label font),
+     smearing a trail as the block moves. Forcing a dedicated compositor
+     layer makes each frame a full redraw instead of an incremental one. */
+  will-change: left, top, transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .block-drag-wrap.dragging {
   cursor: grabbing;
