@@ -370,7 +370,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .tabbar-wrap { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; z-index: 25; }
 .tabbar {
-  position: relative; width: 100%; max-width: 460px; height: calc(84px + var(--safe-bottom)); background: var(--paper); border-top: 1px solid var(--line-on-photo);
+  position: relative; width: 100%; max-width: 460px; height: calc(84px + var(--safe-bottom)); background: var(--ink); border-top: 1px solid oklch(100% 0 0 / 0.08);
   display: flex; align-items: stretch; justify-content: space-around; padding: 0 6px var(--safe-bottom);
   box-shadow: 0 -6px 16px oklch(30% 0.02 50 / 0.1); box-sizing: border-box;
 }
@@ -380,7 +380,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .tab .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); margin-top: 1px; }
 .tab.off .dot { background: transparent; }
 .tab.on { color: var(--amber); } .tab.on span { font-weight: 600; }
-.tab.off { color: var(--ink-soft); }
+.tab.off { color: oklch(88% 0.03 78 / 0.55); }
 
 /* ---- calendar ---- */
 
