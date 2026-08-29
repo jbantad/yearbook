@@ -6,7 +6,7 @@ import { TabBar } from '../components/TabBar'
 import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
 import { getOrCreateDayPage, findPriorPageDates } from '../lib/pages'
-import { BackIcon, LockIcon, UnlockIcon } from '../components/icons'
+import { LockIcon, UnlockIcon } from '../components/icons'
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -166,16 +166,7 @@ export function DayPage() {
   const entryDay = days[0]
 
   return (
-    <div className="screen">
-      <div className="nav">
-        <button onClick={() => navigate(-1)}><BackIcon /></button>
-        <div className="title">
-          <h1>{formatDate(date)}</h1>
-          <div className="pg">DAY PAGE</div>
-        </div>
-        <div style={{ width: 32 }} />
-      </div>
-
+    <div className="screen" style={{ paddingTop: 'var(--safe-top)' }}>
       {!loading && entryDay && !entryDay.pageId && (
         <div className="page-canvas">
           <div className="empty-state">
