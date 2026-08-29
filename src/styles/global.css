@@ -216,10 +216,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .ticket .cap { font-size: 17px; color: var(--block-meal); }
 
 .headline-el {
+  display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font-hand); font-style: normal; font-size: 38px; font-weight: 600; line-height: 1;
   color: var(--ink); white-space: nowrap; padding: 0; text-align: left;
 }
 .label-el {
+  display: inline-flex; align-items: center; gap: 6px;
   font-family: 'Impact Label', 'Arial Narrow', sans-serif; font-style: normal; font-size: 20px; font-weight: 400;
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap; color: oklch(15% 0 0); padding: 0; text-align: left;
 }
@@ -243,8 +245,16 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%;
   background: oklch(20% 0.02 50 / 0.55); color: oklch(99% 0.01 85); border: none;
   display: flex; align-items: center; justify-content: center; z-index: 5;
+  flex-shrink: 0;
 }
 .block-edit svg { width: 13px; height: 13px; }
+/* Compact inline tags (place/person/headline/label) aren't boxy cards, so
+   an absolute overlay sits right on top of the text — make it a normal
+   flex sibling after the label instead. */
+.place .block-edit, .tag .block-edit, .headline-el .block-edit, .label-el .block-edit {
+  position: static; width: 20px; height: 20px; background: oklch(20% 0.02 50 / 0.4);
+}
+.place .block-edit svg, .tag .block-edit svg, .headline-el .block-edit svg, .label-el .block-edit svg { width: 11px; height: 11px; }
 
 .pagetag {
   position: absolute; left: 0; bottom: 16px; background: var(--kraft); color: var(--ink); font-size: 11px; letter-spacing: 0.03em;

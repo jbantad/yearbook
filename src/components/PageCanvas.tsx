@@ -32,7 +32,7 @@ function DraggableBlock({
   onDrag,
   onMoved,
   onFront,
-  onClick,
+  onEdit,
 }: {
   block: BlockWithJoins
   pos: Pos
@@ -41,7 +41,7 @@ function DraggableBlock({
   onDrag: (pos: Pos) => void
   onMoved: (id: string, pos: Pos) => void
   onFront: () => void
-  onClick?: () => void
+  onEdit?: () => void
 }) {
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
@@ -66,15 +66,12 @@ function DraggableBlock({
   function onPointerUp(e: React.PointerEvent) {
     if (!dragRef.current) return
     e.currentTarget.releasePointerCapture(e.pointerId)
-    const { startX, startY } = dragRef.current
-    const moved = Math.hypot(e.clientX - startX, e.clientY - startY)
     dragRef.current = null
     setDragging(false)
     onMoved(block.id, pos)
-    // setPointerCapture above routes the native click event to this wrapper
-    // instead of letting it bubble from the block underneath, so a tap
-    // (negligible movement) has to trigger the click behavior explicitly here.
-    if (moved < 6) onClick?.()
+    // A plain tap (or a tiny drag) only reorders/moves the block via onFront
+    // above — it must never also pop the edit sheet open. Editing is only
+    // triggered by the block's own pencil button now.
   }
 
   return (
@@ -86,7 +83,7 @@ function DraggableBlock({
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onClick={locked ? undefined : onClick} />
+      <BlockCard block={block} onEdit={locked ? undefined : onEdit} />
     </div>
   )
 }
@@ -179,7 +176,7 @@ export function PageCanvas({
             onDrag={(pos) => handleDrag(b.id, pos)}
             onMoved={handleMoved}
             onFront={() => bringToFront(b.id)}
-            onClick={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
+            onEdit={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}

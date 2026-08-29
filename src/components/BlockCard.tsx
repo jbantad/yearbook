@@ -24,7 +24,11 @@ function EditButton({ onEdit }: { onEdit: () => void }) {
   )
 }
 
-export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; onClick?: () => void; onEdit?: () => void }) {
+// Blocks are always draggable and always tappable-to-bring-to-front (handled
+// by the wrapper in PageCanvas), but editing is a deliberate act via this
+// small pencil button — a plain tap/drag release must never also pop the
+// edit sheet open.
+export function BlockCard({ block, onEdit }: { block: BlockWithJoins; onEdit?: () => void }) {
   const layout = (block.layout ?? {}) as { r?: number }
   const rot = typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
   const data = (block.data ?? {}) as Record<string, unknown>
@@ -42,8 +46,7 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     return (
       <div
         className="card polaroid"
-        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})`, cursor: onClick ? 'pointer' : 'default' }}
-        onClick={onClick}
+        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})` }}
       >
         <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
         <div
@@ -78,33 +81,32 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }
       : undefined
     return (
-      <button
-        className="card scrap"
-        style={{ width: 168, background: noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
-        onClick={onClick}
-      >
+      <div className="card scrap" style={{ width: 168, background: noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>
         <div className="cap" style={noteFont}>{(data.text as string) || ''}</div>
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
   if (block.type === 'place') {
     const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
     const pinStyle = data.pin_style === 'pin' ? 'pin' : 'outline'
-    const placeName = ` ${block.place?.name ?? 'a place'} `
+    const placeName = ` ${block.place?.name ?? 'a place'} `
     if (pinStyle === 'pin') {
       return (
-        <button className="place place-pinned" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+        <div className="place place-pinned" style={{ transform: `rotate(${rot}deg)` }}>
           <img src={pinPhoto} alt="" draggable={false} className="place-pin-img" />
           <div className="place-name">{placeName}</div>
-        </button>
+          {onEdit && <EditButton onEdit={onEdit} />}
+        </div>
       )
     }
     return (
-      <button className="place" style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+      <div className="place" style={{ transform: `rotate(${rot}deg)` }}>
         <PlaceIcon color={placeColor.fg} />
         <div className="place-name">{placeName}</div>
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
@@ -112,19 +114,19 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const mealPhoto = data.photo_url as string | undefined
     const mealColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.meal)
     return (
-      <button
+      <div
         className="card ticket"
         style={{
-          width: 150, background: mealPhoto ? undefined : mealColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 4, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
+          width: 150, background: mealPhoto ? undefined : mealColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 4,
           padding: mealPhoto ? 0 : undefined, overflow: mealPhoto ? 'hidden' : undefined,
         }}
-        onClick={onClick}
       >
         {mealPhoto && (
           <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundImage: `url(${mealPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         )}
         <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined, color: mealPhoto ? undefined : mealColor.fg }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
@@ -132,15 +134,12 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const items = Array.isArray(data.items) ? (data.items as string[]) : []
     const gratColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.gratitude)
     return (
-      <button
-        className="card scrap"
-        style={{ width: 170, background: gratColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
-        onClick={onClick}
-      >
+      <div className="card scrap" style={{ width: 170, background: gratColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>
         <div className="glabel">grateful for</div>
         {items.length === 0 && <div className="gitem"><i style={{ background: gratColor.fg }} />today</div>}
         {items.map((it, i) => <div className="gitem" key={i}><i style={{ background: gratColor.fg }} />{it}</div>)}
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
@@ -150,13 +149,12 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const showTitle = data.show_title !== false
     const movieColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.movie)
     return (
-      <button
+      <div
         className="card scrap"
         style={{
-          width: 168, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default',
+          width: 168, transform: `rotate(${rot}deg)`, borderRadius: 6,
           background: poster ? 'none' : movieColor.soft, padding: poster ? 0 : undefined, overflow: poster ? 'hidden' : undefined,
         }}
-        onClick={onClick}
       >
         {poster ? (
           <>
@@ -178,7 +176,8 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
             )}
           </>
         )}
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
@@ -186,13 +185,10 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const style = (data.style as string) || 'headline'
     const content = (data.content as string) || (style === 'label' ? 'LABEL' : 'headline')
     return (
-      <button
-        className={style === 'label' ? 'label-el' : 'headline-el'}
-        style={{ transform: `rotate(${rot}deg)`, background: 'none', border: 'none', cursor: onClick ? 'pointer' : 'default' }}
-        onClick={onClick}
-      >
-        {style === 'label' ? ` ${content} ` : content}
-      </button>
+      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg)`, position: 'relative' }}>
+        {style === 'label' ? ` ${content} ` : content}
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
@@ -200,20 +196,18 @@ export function BlockCard({ block, onClick, onEdit }: { block: BlockWithJoins; o
     const names = block.people?.map((p) => p.display_name).join(', ') || 'someone'
     const personColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.person)
     return (
-      <button className="tag" style={{ transform: `rotate(${rot}deg)`, border: 'none', cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}>
+      <div className="tag" style={{ transform: `rotate(${rot}deg)` }}>
         <div className="av" style={{ background: personColor.soft, color: personColor.fg }}>{names[0]?.toUpperCase()}</div>
         <span>with {names}</span>
-      </button>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
     )
   }
 
   return (
-    <button
-      className="card scrap"
-      style={{ width: 160, transform: `rotate(${rot}deg)`, borderRadius: 6, border: 'none', textAlign: 'left', cursor: onClick ? 'pointer' : 'default' }}
-      onClick={onClick}
-    >
+    <div className="card scrap" style={{ width: 160, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>
       <div className="cap">{(data.transcript as string) || 'a moment'}</div>
-    </button>
+      {onEdit && <EditButton onEdit={onEdit} />}
+    </div>
   )
 }
