@@ -1,10 +1,11 @@
 import { useRef } from 'react'
-import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 
 const FRAMES: { key: string; label: string }[] = [
   { key: 'classic', label: 'Classic' },
   { key: 'tall', label: 'Tall' },
   { key: 'square', label: 'Square' },
+  { key: 'triptych', label: 'Triptych' },
 ]
 
 // The image is rendered at scale(zoom * PHOTO_BASE_SCALE); baking in a
@@ -36,6 +37,8 @@ export function PhotoFields({
   onOffsetChange,
   rotation,
   onRotationChange,
+  triptychPreviews,
+  onPickTriptychPhoto,
 }: {
   preview: string | null
   onPickPhoto: (file: File | undefined) => void
@@ -50,6 +53,8 @@ export function PhotoFields({
   onOffsetChange: (x: number, y: number) => void
   rotation: number
   onRotationChange: (updater: (r: number) => number) => void
+  triptychPreviews?: (string | null)[]
+  onPickTriptychPhoto?: (index: number, file: File | undefined) => void
 }) {
   const previewBoxRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
@@ -80,6 +85,90 @@ export function PhotoFields({
 
   function onDragEnd() {
     dragRef.current = null
+  }
+
+  if (frame === 'triptych') {
+    const previews = triptychPreviews ?? [null, null, null]
+    return (
+      <>
+        <div className="field">
+          <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
+            <div
+              style={{
+                position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
+                backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
+              }}
+            />
+            {TRIPTYCH_WINDOWS.map((win, i) => (
+              <label
+                key={i}
+                style={{
+                  position: 'absolute', overflow: 'hidden', cursor: 'pointer', zIndex: 1,
+                  left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+                  background: previews[i] ? undefined : 'var(--paper-alt)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {previews[i] ? (
+                  <img src={previews[i] as string} alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: 10, color: 'var(--ink-soft)', fontStyle: 'italic', textAlign: 'center', padding: '0 4px' }}>tap to add</span>
+                )}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onPickTriptychPhoto?.(i, e.target.files?.[0])} />
+              </label>
+            ))}
+            {caption && (
+              <div
+                className="cap"
+                style={{
+                  position: 'absolute', left: '7%', right: '7%', bottom: 0, top: `calc(100% - ${TRIPTYCH_WINDOWS[2].bottom}%)`,
+                  margin: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                  color: 'oklch(24% 0.02 50)', fontSize: 15, lineHeight: 1.15, zIndex: 3,
+                }}
+              >
+                {caption}
+              </div>
+            )}
+          </div>
+          <div className="sub" style={{ marginTop: 8 }}>tap each square to add its photo</div>
+        </div>
+
+        <div className="field">
+          <label>Caption (optional)</label>
+          <input value={caption} onChange={(e) => onCaptionChange(e.target.value)} placeholder="add a caption" />
+        </div>
+
+        <div className="field">
+          <label>Frame</label>
+          <div className="frame-picker">
+            {FRAMES.map((f) => (
+              <button
+                type="button"
+                key={f.key}
+                className={`frame-opt${frame === f.key ? ' sel' : ''}`}
+                onClick={() => onFrameChange(f.key)}
+              >
+                <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
+                <span>{f.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Rotation</label>
+          <div className="rotate-row">
+            <button type="button" onClick={() => onRotationChange((r) => r - 1)} aria-label="Rotate left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
+            </button>
+            <span className="rotate-val">{Math.round(rotation)}°</span>
+            <button type="button" onClick={() => onRotationChange((r) => r + 1)} aria-label="Rotate right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
+            </button>
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (

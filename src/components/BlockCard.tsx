@@ -1,7 +1,7 @@
 import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
-import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import pinPhoto from '../assets/pin-trimmed.png'
 import type { Tables } from '../lib/database.types'
@@ -40,11 +40,44 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const photoUrl = data.photo_url as string | undefined
     const frameKey = (data.frame as string) || 'classic'
     const frame = FRAME_SIZES[frameKey] ?? FRAME_SIZES.classic
+    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
+
+    if (frameKey === 'triptych') {
+      const photoUrls = (Array.isArray(data.photo_urls) ? data.photo_urls : []) as (string | undefined)[]
+      const capBottom = TRIPTYCH_WINDOWS[TRIPTYCH_WINDOWS.length - 1].bottom
+      return (
+        <div
+          className="card polaroid polaroid-triptych"
+          style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})` }}
+        >
+          <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
+          {TRIPTYCH_WINDOWS.map((win, i) => {
+            const url = photoUrls[i]
+            return (
+              <div
+                key={i}
+                className="photo-art"
+                style={{
+                  left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+                  ...(!url ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id + i, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + i + 'x', 360) + 180).toFixed(0)}))` } : {}),
+                }}
+              >
+                {url && (
+                  <img src={url} alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                )}
+              </div>
+            )
+          })}
+          {caption && <div className="cap" style={{ '--cap-bottom': `${capBottom}%` } as CSSProperties}>{caption}</div>}
+          {onEdit && <EditButton onEdit={onEdit} />}
+        </div>
+      )
+    }
+
     const win = FRAME_WINDOWS[frameKey] ?? FRAME_WINDOWS.classic
     const zoom = typeof data.photo_zoom === 'number' ? data.photo_zoom : 1
     const px = typeof data.photo_x === 'number' ? data.photo_x : 0
     const py = typeof data.photo_y === 'number' ? data.photo_y : 0
-    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return (
       <div
         className={`card polaroid polaroid-${frameKey}`}

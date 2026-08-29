@@ -33,6 +33,8 @@ export function AddSheet({
   const [photoOffsetX, setPhotoOffsetX] = useState(0)
   const [photoOffsetY, setPhotoOffsetY] = useState(0)
   const [photoRotation, setPhotoRotation] = useState(0)
+  const [triptychFiles, setTriptychFiles] = useState<(File | null)[]>([null, null, null])
+  const [triptychPreviews, setTriptychPreviews] = useState<(string | null)[]>([null, null, null])
   const [posterFile, setPosterFile] = useState<File | null>(null)
   const [posterPreview, setPosterPreview] = useState<string | null>(null)
   const [rating, setRating] = useState(0)
@@ -52,6 +54,17 @@ export function AddSheet({
     setPhotoZoom(1)
     setPhotoOffsetX(0)
     setPhotoOffsetY(0)
+  }
+
+  function pickTriptychPhoto(index: number, file: File | undefined) {
+    if (!file) return
+    setTriptychFiles((prev) => { const next = [...prev]; next[index] = file; return next })
+    setTriptychPreviews((prev) => {
+      const next = [...prev]
+      if (next[index]) URL.revokeObjectURL(next[index] as string)
+      next[index] = URL.createObjectURL(file)
+      return next
+    })
   }
 
   function pickPoster(file: File | undefined) {
@@ -93,7 +106,11 @@ export function AddSheet({
       let place_id: string | null = null
       let movie_id: string | null = null
 
-      if (type === 'photo') {
+      if (type === 'photo' && photoFrame === 'triptych') {
+        const photo_urls = await Promise.all(triptychFiles.map((f) => (f ? uploadToPhotos(f) : Promise.resolve(null))))
+        data = { caption: text, frame: photoFrame, photo_urls }
+        layout = { r: photoRotation }
+      } else if (type === 'photo') {
         data = { caption: text, frame: photoFrame, photo_zoom: photoZoom, photo_x: photoOffsetX, photo_y: photoOffsetY }
         layout = { r: photoRotation }
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
@@ -231,6 +248,8 @@ export function AddSheet({
                 onOffsetChange={(x, y) => { setPhotoOffsetX(x); setPhotoOffsetY(y) }}
                 rotation={photoRotation}
                 onRotationChange={setPhotoRotation}
+                triptychPreviews={triptychPreviews}
+                onPickTriptychPhoto={pickTriptychPhoto}
               />
             )}
             {type === 'note' && (

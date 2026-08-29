@@ -29,6 +29,9 @@ export function EditPhotoSheet({
   const [zoom, setZoom] = useState(typeof data.photo_zoom === 'number' ? (data.photo_zoom as number) : 1)
   const [offsetX, setOffsetX] = useState(typeof data.photo_x === 'number' ? (data.photo_x as number) : 0)
   const [offsetY, setOffsetY] = useState(typeof data.photo_y === 'number' ? (data.photo_y as number) : 0)
+  const existingTriptychUrls = (Array.isArray(data.photo_urls) ? data.photo_urls : [null, null, null]) as (string | null)[]
+  const [triptychFiles, setTriptychFiles] = useState<(File | null)[]>([null, null, null])
+  const [triptychPreviews, setTriptychPreviews] = useState<(string | null)[]>(existingTriptychUrls)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,20 +47,49 @@ export function EditPhotoSheet({
     setOffsetY(0)
   }
 
+  function pickTriptychPhoto(index: number, file: File | undefined) {
+    if (!file) return
+    setTriptychFiles((prev) => { const next = [...prev]; next[index] = file; return next })
+    setTriptychPreviews((prev) => {
+      const next = [...prev]
+      if (next[index] && next[index]?.startsWith('blob:')) URL.revokeObjectURL(next[index] as string)
+      next[index] = URL.createObjectURL(file)
+      return next
+    })
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!user) return
     setBusy(true)
     setError(null)
     try {
-      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
-      if (photoFile) {
-        const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
-        const path = `${user.id}/${crypto.randomUUID()}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('photos').upload(path, photoFile, { contentType: photoFile.type || undefined })
-        if (uploadErr) throw uploadErr
-        const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
-        nextData.photo_url = pub.publicUrl
+      let nextData: Record<string, unknown>
+      if (frame === 'triptych') {
+        const photo_urls = await Promise.all(
+          triptychFiles.map(async (f, i) => {
+            if (f) {
+              const ext = f.name.split('.').pop()?.toLowerCase() || 'jpg'
+              const path = `${user.id}/${crypto.randomUUID()}.${ext}`
+              const { error: uploadErr } = await supabase.storage.from('photos').upload(path, f, { contentType: f.type || undefined })
+              if (uploadErr) throw uploadErr
+              const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
+              return pub.publicUrl
+            }
+            return existingTriptychUrls[i] ?? null
+          }),
+        )
+        nextData = { ...data, caption, frame, photo_urls }
+      } else {
+        nextData = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
+        if (photoFile) {
+          const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+          const path = `${user.id}/${crypto.randomUUID()}.${ext}`
+          const { error: uploadErr } = await supabase.storage.from('photos').upload(path, photoFile, { contentType: photoFile.type || undefined })
+          if (uploadErr) throw uploadErr
+          const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
+          nextData.photo_url = pub.publicUrl
+        }
       }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
@@ -107,6 +139,8 @@ export function EditPhotoSheet({
             onOffsetChange={(x, y) => { setOffsetX(x); setOffsetY(y) }}
             rotation={rotation}
             onRotationChange={setRotation}
+            triptychPreviews={triptychPreviews}
+            onPickTriptychPhoto={pickTriptychPhoto}
           />
 
           {error && <div className="auth-error">{error}</div>}
