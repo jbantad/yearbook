@@ -96,7 +96,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const placeName = ` ${block.place?.name ?? 'a place'} `
     if (pinStyle === 'pin') {
       return (
-        <div className="place place-pinned" style={{ transform: `rotate(${rot}deg)` }}>
+        <div className="place place-pinned" style={{ transform: `rotate(${rot}deg) translateZ(0)` }}>
           <img src={pinPhoto} alt="" draggable={false} className="place-pin-img" />
           <div className="place-name">{placeName}</div>
           {onEdit && <EditButton onEdit={onEdit} />}
@@ -104,7 +104,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
       )
     }
     return (
-      <div className="place" style={{ transform: `rotate(${rot}deg)` }}>
+      <div className="place" style={{ transform: `rotate(${rot}deg) translateZ(0)` }}>
         <PlaceIcon color={placeColor.fg} />
         <div className="place-name">{placeName}</div>
         {onEdit && <EditButton onEdit={onEdit} />}
@@ -187,7 +187,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const style = (data.style as string) || 'headline'
     const content = (data.content as string) || (style === 'label' ? 'LABEL' : 'headline')
     return (
-      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg)`, position: 'relative' }}>
+      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg) translateZ(0)`, position: 'relative' }}>
         {style === 'label' ? ` ${content} ` : content}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>

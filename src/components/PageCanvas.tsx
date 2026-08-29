@@ -136,7 +136,7 @@ function DraggableBlock({
   return (
     <div
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
-      style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none' }}
+      style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none', transform: 'translateZ(0)' }}
       onPointerDown={locked ? undefined : onPointerDown}
       onPointerMove={locked ? undefined : onPointerMove}
       onPointerUp={locked ? undefined : onPointerUp}
