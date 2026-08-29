@@ -2,6 +2,7 @@ import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon, StarIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
+import { PHOTO_BASE_SCALE } from './PhotoFields'
 import pinPhoto from '../assets/pin-trimmed.png'
 import type { Tables } from '../lib/database.types'
 import type { CSSProperties } from 'react'
@@ -64,7 +65,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
               draggable={false}
               style={{
                 position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                transform: `translate(${px}%, ${py}%) scale(${zoom})`,
+                transform: `translate(${px}%, ${py}%) scale(${zoom * PHOTO_BASE_SCALE})`,
                 pointerEvents: 'none',
               }}
             />
@@ -92,7 +93,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
   if (block.type === 'place') {
     const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
     const pinStyle = data.pin_style === 'pin' ? 'pin' : 'outline'
-    const placeName = ` ${block.place?.name ?? 'a place'} `
+    const placeName = `  ${block.place?.name ?? 'a place'}  `
     if (pinStyle === 'pin') {
       return (
         <div className="place place-pinned" style={{ transform: `rotate(${rot}deg)` }}>
@@ -187,7 +188,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const content = (data.content as string) || (style === 'label' ? 'LABEL' : 'headline')
     return (
       <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg)`, position: 'relative' }}>
-        {style === 'label' ? ` ${content} ` : content}
+        {style === 'label' ? `  ${content}  ` : content}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )

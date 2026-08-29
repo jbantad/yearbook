@@ -29,7 +29,6 @@ export function EditPhotoSheet({
   const [zoom, setZoom] = useState(typeof data.photo_zoom === 'number' ? (data.photo_zoom as number) : 1)
   const [offsetX, setOffsetX] = useState(typeof data.photo_x === 'number' ? (data.photo_x as number) : 0)
   const [offsetY, setOffsetY] = useState(typeof data.photo_y === 'number' ? (data.photo_y as number) : 0)
-  const [cardScale, setCardScale] = useState(typeof data.card_scale === 'number' ? (data.card_scale as number) : 1)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,7 +50,7 @@ export function EditPhotoSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY, card_scale: cardScale }
+      const nextData: Record<string, unknown> = { ...data, caption, frame, photo_zoom: zoom, photo_x: offsetX, photo_y: offsetY }
       if (photoFile) {
         const ext = photoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`
@@ -92,7 +91,6 @@ export function EditPhotoSheet({
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="handle" />
         <h2>Edit photo</h2>
-        <div className="sub">change the picture or its caption</div>
 
         <form onSubmit={save}>
           <PhotoFields
@@ -111,23 +109,6 @@ export function EditPhotoSheet({
             onRotationChange={setRotation}
           />
 
-          <div className="field">
-            <label>Size</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
-              <input
-                type="range"
-                min={0.6}
-                max={2.5}
-                step={0.05}
-                value={cardScale}
-                onChange={(e) => setCardScale(parseFloat(e.target.value))}
-                style={{ flex: 1 }}
-              />
-              <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
-            </div>
-          </div>
-
           {error && <div className="auth-error">{error}</div>}
           <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
         </form>
@@ -135,11 +116,12 @@ export function EditPhotoSheet({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
           <button className="cancel" style={{ width: 'auto', borderTop: 'none', padding: 0 }} onClick={onClose}>Cancel</button>
           <button
+            className="delete-block-btn"
             onClick={remove}
             disabled={busy}
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--rose)', fontSize: 13.5, fontWeight: 600 }}
           >
-            <TrashIcon /> Delete block
+            <TrashIcon /> Delete
           </button>
         </div>
       </div>

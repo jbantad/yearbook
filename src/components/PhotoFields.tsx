@@ -7,8 +7,15 @@ const FRAMES: { key: string; label: string }[] = [
   { key: 'square', label: 'Square' },
 ]
 
+// The image is rendered at scale(zoom * PHOTO_BASE_SCALE); baking in a
+// small always-on overscan means there's a little room to reposition even
+// at the zoom slider's minimum, without ever revealing empty space beyond
+// the image's edges (which a same-as-container base scale would allow).
+export const PHOTO_BASE_SCALE = 1.12
+
 export function clampOffset(v: number, zoom: number) {
-  const max = Math.max(25, (zoom - 1) * 60)
+  const effective = zoom * PHOTO_BASE_SCALE
+  const max = Math.max(0, (effective - 1) * 50)
   return Math.min(max, Math.max(-max, v))
 }
 
@@ -78,7 +85,6 @@ export function PhotoFields({
   return (
     <>
       <div className="field">
-        <label>Photo</label>
         <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
           <div
             style={{
@@ -105,7 +111,7 @@ export function PhotoFields({
                 draggable={false}
                 style={{
                   position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                  transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom})`,
+                  transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom * PHOTO_BASE_SCALE})`,
                   cursor: 'grab', pointerEvents: 'none',
                 }}
               />
@@ -142,19 +148,22 @@ export function PhotoFields({
           )}
         </div>
         {preview && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
-            <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
-            <input
-              type="range"
-              min={1}
-              max={2.5}
-              step={0.05}
-              value={zoom}
-              onChange={(e) => handleZoom(parseFloat(e.target.value))}
-              style={{ flex: 1 }}
-            />
-            <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
-          </div>
+          <>
+            <label style={{ marginTop: 10, display: 'block' }}>Size</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
+              <input
+                type="range"
+                min={1}
+                max={2.5}
+                step={0.05}
+                value={zoom}
+                onChange={(e) => handleZoom(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
+            </div>
+          </>
         )}
         {preview && <div className="sub" style={{ marginTop: 4 }}>drag the photo to reposition it, use the slider to zoom</div>}
       </div>

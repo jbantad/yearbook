@@ -178,6 +178,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .polaroid-square .frame-img {
   filter: drop-shadow(0 3px 5px oklch(30% 0.03 50 / 0.18));
 }
+.delete-block-btn svg { width: 15px; height: 15px; }
 .polaroid .photo-art {
   position: absolute; left: 4.9%; right: 4.3%; top: 8.7%; bottom: 19.3%;
   width: auto; height: auto; margin: 0; z-index: 1;
@@ -212,7 +213,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 .place-pinned { padding-left: 14px; }
 .place-pin-img {
-  position: absolute; left: -5px; top: -18px; width: 14px; height: auto;
+  position: absolute; left: -5px; top: -1px; width: 14px; height: auto;
   transform: rotate(0deg); transform-origin: top center; pointer-events: none; z-index: 2;
   filter: drop-shadow(0 2px 2px oklch(0% 0 0 / 0.4));
 }
