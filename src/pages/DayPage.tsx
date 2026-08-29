@@ -130,25 +130,36 @@ export function DayPage() {
   const goCalendar = () => navigate('/calendar')
 
   const bottomSentinelRef = useRef<HTMLDivElement>(null)
-  const wasIntersectingRef = useRef(false)
 
+  // On a short page — or any viewport taller than the loaded content, which
+  // is the common case on desktop — the sentinel can already sit on-screen
+  // with nothing to scroll at all, so a plain "wait for it to scroll into
+  // view" observer would never fire. Keep auto-loading batches after every
+  // change to the day list until the sentinel is finally pushed off-screen
+  // (meaning there's now enough content to scroll) or we run out of days.
   useEffect(() => {
-    wasIntersectingRef.current = false
+    if (loading || loadingMore || exhausted) return
+    const el = bottomSentinelRef.current
+    if (!el) return
+    if (el.getBoundingClientRect().top <= window.innerHeight) {
+      loadMore()
+    }
+  }, [days, loading, loadingMore, exhausted, loadMore])
+
+  // Once there's enough content that the sentinel starts off-screen, a real
+  // scroll gesture is what should resume loading.
+  useEffect(() => {
     const el = bottomSentinelRef.current
     if (!el || exhausted) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const wasIntersecting = wasIntersectingRef.current
-        wasIntersectingRef.current = entry.isIntersecting
-        if (entry.isIntersecting && !wasIntersecting && window.scrollY > 20) {
-          loadMore()
-        }
+        if (entry.isIntersecting) loadMore()
       },
       { threshold: 1 },
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [days.length, loading, exhausted, loadMore])
+  }, [exhausted, loadMore])
 
   if (!date) return null
 
