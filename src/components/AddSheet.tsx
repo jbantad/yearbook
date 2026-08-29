@@ -4,12 +4,13 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
+import { PeopleTagFields } from './PeopleTagFields'
 import { todayISO } from '../lib/pages'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
-const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'person', 'gratitude', 'headline', 'label']
+const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'gratitude', 'headline', 'label']
 
 type LibraryMovie = { id: string; title: string; poster_path: string | null; rating: number | null; capturedAt: string }
 
@@ -50,6 +51,7 @@ export function AddSheet({
   const [showTitle, setShowTitle] = useState(true)
   const [mealPhotoFile, setMealPhotoFile] = useState<File | null>(null)
   const [mealPhotoPreview, setMealPhotoPreview] = useState<string | null>(null)
+  const [taggedPersonIds, setTaggedPersonIds] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -218,29 +220,6 @@ export function AddSheet({
         data = { show_title: showTitle }
       }
 
-      let personId: string | null = null
-      if (type === 'person') {
-        const personName = text.trim()
-        const { data: existing } = await supabase
-          .from('people')
-          .select('id')
-          .eq('user_id', user.id)
-          .ilike('display_name', personName)
-          .limit(1)
-          .maybeSingle()
-        if (existing) {
-          personId = existing.id
-        } else {
-          const { data: created, error: personErr } = await supabase
-            .from('people')
-            .insert({ user_id: user.id, display_name: personName, relationship: secondary.trim() || null })
-            .select('id')
-            .single()
-          if (personErr) throw personErr
-          personId = created.id
-        }
-      }
-
       const blockType: BlockType = type === 'headline' || type === 'label' ? 'text' : type
       const captured_at = type === 'movie' ? new Date(dateWatched + 'T12:00:00').toISOString() : undefined
       const { data: block, error: blockErr } = await supabase
@@ -253,8 +232,8 @@ export function AddSheet({
         .single()
       if (blockErr) throw blockErr
 
-      if (type === 'person' && personId && block) {
-        await supabase.from('block_people').insert({ block_id: block.id, person_id: personId })
+      if ((type === 'photo' || type === 'note') && taggedPersonIds.length > 0 && block) {
+        await supabase.from('block_people').insert(taggedPersonIds.map((person_id) => ({ block_id: block.id, person_id })))
       }
 
       onCreated()
@@ -366,11 +345,15 @@ export function AddSheet({
                 onTriptychOffsetChange={setTriptychOffset}
               />
             )}
+            {type === 'photo' && <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />}
             {type === 'note' && (
-              <div className="field">
-                <label>Note</label>
-                <textarea value={text} onChange={(e) => setText(e.target.value)} required />
-              </div>
+              <>
+                <div className="field">
+                  <label>Note</label>
+                  <textarea value={text} onChange={(e) => setText(e.target.value)} required />
+                </div>
+                <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />
+              </>
             )}
             {type === 'place' && (
               <div className="field">
@@ -450,18 +433,6 @@ export function AddSheet({
                   <button type="button" className={`switch${showTitle ? ' on' : ''}`} onClick={() => setShowTitle((s) => !s)} aria-label="Toggle title visibility">
                     <div className="knob" />
                   </button>
-                </div>
-              </>
-            )}
-            {type === 'person' && (
-              <>
-                <div className="field">
-                  <label>Name</label>
-                  <input value={text} onChange={(e) => setText(e.target.value)} required />
-                </div>
-                <div className="field">
-                  <label>Relationship (optional)</label>
-                  <input value={secondary} onChange={(e) => setSecondary(e.target.value)} placeholder="sister, friend…" />
                 </div>
               </>
             )}

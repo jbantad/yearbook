@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
+import { PeopleTagFields } from './PeopleTagFields'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 
@@ -23,6 +24,7 @@ export function EditNoteSheet({
   const [color, setColor] = useState(data.color as string | undefined)
   const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
+  const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,6 +33,12 @@ export function EditNoteSheet({
     setBusy(true)
     setError(null)
     try {
+      const { error: delErr } = await supabase.from('block_people').delete().eq('block_id', block.id)
+      if (delErr) throw delErr
+      if (taggedIds.length > 0) {
+        const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
+        if (insErr) throw insErr
+      }
       const nextData = { ...data, text, color, font }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
@@ -88,6 +96,8 @@ export function EditNoteSheet({
             <label>Color</label>
             <ColorSwatchPicker value={color} onChange={setColor} />
           </div>
+
+          <PeopleTagFields taggedIds={taggedIds} onChange={setTaggedIds} />
 
           <div className="field">
             <label>Rotation</label>

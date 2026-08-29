@@ -6,6 +6,7 @@ import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 import { PhotoFields } from './PhotoFields'
+import { PeopleTagFields } from './PeopleTagFields'
 
 export function EditPhotoSheet({
   block,
@@ -36,6 +37,7 @@ export function EditPhotoSheet({
   const [triptychPreviews, setTriptychPreviews] = useState<(string | null)[]>(existingTriptychUrls)
   const [triptychZooms, setTriptychZooms] = useState<number[]>(existingTriptychZooms)
   const [triptychOffsets, setTriptychOffsets] = useState<{ x: number; y: number }[]>(existingTriptychOffsets)
+  const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -78,6 +80,12 @@ export function EditPhotoSheet({
     setBusy(true)
     setError(null)
     try {
+      const { error: delErr } = await supabase.from('block_people').delete().eq('block_id', block.id)
+      if (delErr) throw delErr
+      if (taggedIds.length > 0) {
+        const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
+        if (insErr) throw insErr
+      }
       let nextData: Record<string, unknown>
       if (frame === 'triptych') {
         const photo_urls = await Promise.all(
@@ -160,6 +168,8 @@ export function EditPhotoSheet({
             onTriptychZoomChange={setTriptychZoom}
             onTriptychOffsetChange={setTriptychOffset}
           />
+
+          <PeopleTagFields taggedIds={taggedIds} onChange={setTaggedIds} />
 
           {error && <div className="auth-error">{error}</div>}
           <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>

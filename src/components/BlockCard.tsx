@@ -247,17 +247,11 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     )
   }
 
-  if (block.type === 'person') {
-    const names = block.people?.map((p) => p.display_name).join(', ') || 'someone'
-    const personColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.person)
-    return (
-      <div className="tag" style={{ transform: `rotate(${rot}deg)` }}>
-        <div className="av" style={{ background: personColor.soft, color: personColor.fg }}>{names[0]?.toUpperCase()}</div>
-        <span>with {names}</span>
-        {onEdit && <EditButton onEdit={onEdit} />}
-      </div>
-    )
-  }
+  // Person tagging is now an attribute of the photo/note it's attached to
+  // (see block_people), not a visible card of its own — a dedicated
+  // `type === 'person'` block from before this change simply renders
+  // nothing.
+  if (block.type === 'person') return null
 
   return (
     <div className="card scrap" style={{ width: 160, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>

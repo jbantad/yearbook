@@ -10,7 +10,7 @@ import { MealIcon, MovieIcon, PlaceIcon, ChevronIcon, PlusIcon, StarIcon } from 
 import type { Tables } from '../lib/database.types'
 
 type Shelf = 'movie' | 'place' | 'meal' | 'person'
-type Block = Tables<'blocks'> & { place?: { name: string } | null; movie?: { title: string; poster_path: string | null; rating: number | null } | null }
+type Block = Tables<'blocks'> & { place?: { name: string } | null; movie?: { title: string; poster_path: string | null; rating: number | null } | null; page?: { id: string } | null }
 type Person = Tables<'people'> & { count: number }
 
 export function ShelvesPage() {
@@ -32,7 +32,7 @@ export function ShelvesPage() {
     setLoading(true)
     const { data } = await supabase
       .from('blocks')
-      .select('*, place:places(name), movie:movies(title, poster_path, rating)')
+      .select('*, place:places(name), movie:movies(title, poster_path, rating), page:pages(id)')
       .eq('user_id', user.id)
       .eq('type', shelf)
       .order('captured_at', { ascending: false })
@@ -137,16 +137,17 @@ export function ShelvesPage() {
               const title = shelf === 'movie' ? b.movie?.title : shelf === 'place' ? b.place?.name : ((data.dish as string) || (data.description as string))
               const dateStr = new Date(b.captured_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
               const poster = shelf === 'movie' ? b.movie?.poster_path : undefined
-              const openMovie = shelf === 'movie' && !b.page_id
+              const hasPage = !!b.page?.id
+              const openMovie = shelf === 'movie' && !hasPage
               return (
                 <div
                   className="mcard"
                   key={b.id}
                   onClick={() => {
-                    if (b.page_id) navigate(`/day/${new Date(b.captured_at).toISOString().slice(0, 10)}`)
+                    if (hasPage) navigate(`/day/${new Date(b.captured_at).toISOString().slice(0, 10)}`)
                     else if (openMovie) setEditingBlock(b)
                   }}
-                  style={{ cursor: b.page_id || openMovie ? 'pointer' : 'default' }}
+                  style={{ cursor: hasPage || openMovie ? 'pointer' : 'default' }}
                 >
                   <div
                     className={`art${shelf === 'movie' ? ' poster' : ''}`}
