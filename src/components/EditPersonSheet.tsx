@@ -46,14 +46,23 @@ export function EditPersonSheet({
     setBusy(true)
     setError(null)
     try {
-      const { data: created, error: personErr } = await supabase
-        .from('people')
-        .insert({ user_id: user.id, display_name: newName.trim() })
-        .select('*')
-        .single()
-      if (personErr) throw personErr
-      setPeople((prev) => [...prev, created].sort((a, b) => a.display_name.localeCompare(b.display_name)))
-      setTaggedIds((prev) => [...prev, created.id])
+      const name = newName.trim()
+      // Reuse an existing person with the same name (case-insensitive)
+      // instead of creating a duplicate — otherwise the same person ends up
+      // as two separate tags with their "moments together" split between them.
+      const existing = people.find((p) => p.display_name.toLowerCase() === name.toLowerCase())
+      let person = existing
+      if (!person) {
+        const { data: created, error: personErr } = await supabase
+          .from('people')
+          .insert({ user_id: user.id, display_name: name })
+          .select('*')
+          .single()
+        if (personErr) throw personErr
+        person = created
+        setPeople((prev) => [...prev, created].sort((a, b) => a.display_name.localeCompare(b.display_name)))
+      }
+      setTaggedIds((prev) => (prev.includes(person!.id) ? prev : [...prev, person!.id]))
       setNewName('')
       setAdding(false)
     } catch (err) {

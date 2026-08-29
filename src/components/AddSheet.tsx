@@ -95,11 +95,12 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
       if (type === 'gratitude') data = { items: text.split('\n').map((s) => s.trim()).filter(Boolean) }
 
       if (type === 'place') {
+        const placeName = text.trim()
         const { data: existing } = await supabase
           .from('places')
           .select('id')
           .eq('user_id', user.id)
-          .ilike('name', text)
+          .ilike('name', placeName)
           .limit(1)
           .maybeSingle()
         if (existing) {
@@ -107,7 +108,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
         } else {
           const { data: created, error: placeErr } = await supabase
             .from('places')
-            .insert({ user_id: user.id, name: text })
+            .insert({ user_id: user.id, name: placeName })
             .select('id')
             .single()
           if (placeErr) throw placeErr
@@ -129,11 +130,12 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
 
       let personId: string | null = null
       if (type === 'person') {
+        const personName = text.trim()
         const { data: existing } = await supabase
           .from('people')
           .select('id')
           .eq('user_id', user.id)
-          .ilike('display_name', text)
+          .ilike('display_name', personName)
           .limit(1)
           .maybeSingle()
         if (existing) {
@@ -141,7 +143,7 @@ export function AddSheet({ onClose, onCreated, pageId }: { onClose: () => void; 
         } else {
           const { data: created, error: personErr } = await supabase
             .from('people')
-            .insert({ user_id: user.id, display_name: text, relationship: secondary || null })
+            .insert({ user_id: user.id, display_name: personName, relationship: secondary.trim() || null })
             .select('id')
             .single()
           if (personErr) throw personErr
