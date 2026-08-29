@@ -139,6 +139,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
      No background/card styling of its own — blocks sit directly on the
      page's craft-paper background. */
   position: relative;
+  z-index: 1;
   flex: 1;
   margin: 0 14px 14px;
   min-height: 420px;
@@ -175,15 +176,16 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   background-size: 100% 100%; background-repeat: no-repeat; z-index: 2; pointer-events: none;
 }
 .polaroid-square .frame-img {
-  filter: drop-shadow(0 3px 5px oklch(30% 0.03 50 / 0.24));
+  filter: drop-shadow(0 3px 5px oklch(30% 0.03 50 / 0.18));
 }
 .polaroid .photo-art {
   position: absolute; left: 4.9%; right: 4.3%; top: 8.7%; bottom: 19.3%;
   width: auto; height: auto; margin: 0; z-index: 1;
 }
 .polaroid .cap {
-  position: absolute; left: 7%; right: 7%; top: 85%; margin: 0; padding: 0; text-align: center;
-  color: oklch(24% 0.02 50); font-size: 13px; line-height: 1.15; z-index: 3;
+  position: absolute; left: 7%; right: 7%; bottom: 0; top: calc(100% - var(--cap-bottom, 18.2%));
+  margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+  color: oklch(24% 0.02 50); font-size: 15px; line-height: 1.15; z-index: 3;
 }
 .photo-art {
   border-radius: 0; overflow: hidden; width: 100%; height: 100%;

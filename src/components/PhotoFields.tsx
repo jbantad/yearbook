@@ -117,7 +117,14 @@ export function PhotoFields({
             )}
           </div>
           {caption && (
-            <div className="cap" style={{ position: 'absolute', left: '7%', right: '7%', top: '85%', margin: 0, padding: 0, textAlign: 'center', color: 'oklch(24% 0.02 50)', fontSize: 13, lineHeight: 1.15, zIndex: 3 }}>
+            <div
+              className="cap"
+              style={{
+                position: 'absolute', left: '7%', right: '7%', bottom: 0, top: `calc(100% - ${win.bottom}%)`,
+                margin: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                color: 'oklch(24% 0.02 50)', fontSize: 15, lineHeight: 1.15, zIndex: 3,
+              }}
+            >
               {caption}
             </div>
           )}

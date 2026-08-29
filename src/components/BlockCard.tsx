@@ -4,6 +4,7 @@ import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS } from '../lib/frames'
 import pinPhoto from '../assets/pin-trimmed.png'
 import type { Tables } from '../lib/database.types'
+import type { CSSProperties } from 'react'
 
 export type BlockWithJoins = Tables<'blocks'> & {
   place?: { name: string } | null
@@ -69,7 +70,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             />
           )}
         </div>
-        {caption && <div className="cap">{caption}</div>}
+        {caption && <div className="cap" style={{ '--cap-bottom': `${win.bottom}%` } as CSSProperties}>{caption}</div>}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
