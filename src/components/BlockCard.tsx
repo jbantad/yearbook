@@ -216,7 +216,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             <div style={{ width: '100%', aspectRatio: '2 / 3', backgroundImage: `url(${poster})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             {showTitle && <div className="cap" style={{ padding: '8px 10px 0' }}>{block.movie?.title ?? 'a movie'}</div>}
             {rating != null && (
-              <div className="stars" style={{ padding: showTitle ? '5px 10px 8px' : '8px 10px' }}>
+              <div className="stars" style={{ padding: showTitle ? '5px 8px 8px' : '8px 8px' }}>
                 {[1, 2, 3, 4, 5].map((n) => <StarPng key={n} filled={n <= rating} />)}
               </div>
             )}
