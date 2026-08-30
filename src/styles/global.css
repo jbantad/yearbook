@@ -229,6 +229,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .scrap { padding: 14px 16px 14px; }
 .scrap .cap { font-size: 18px; margin-top: 2px; }
+.scrap.no-bg { box-shadow: none; padding: 6px 4px; }
 
 .place { position: relative; display: flex; align-items: center; gap: 6px; white-space: nowrap; align-self: center; }
 .place svg { width: 18px; height: 18px; color: var(--block-place); flex-shrink: 0; }

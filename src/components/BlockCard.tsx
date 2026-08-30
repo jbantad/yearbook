@@ -133,11 +133,15 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
 
   if (block.type === 'note') {
     const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
+    const transparent = data.transparent === true
     const noteFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }
       : undefined
     return (
-      <div className="card scrap" style={{ width: 168, background: noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>
+      <div
+        className={`card scrap${transparent ? ' no-bg' : ''}`}
+        style={{ width: 168, background: transparent ? 'none' : noteColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6 }}
+      >
         <div className="cap" style={noteFont}>{(data.text as string) || ''}</div>
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>

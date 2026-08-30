@@ -23,6 +23,7 @@ export function EditNoteSheet({
   const [text, setText] = useState((data.text as string) || '')
   const [color, setColor] = useState(data.color as string | undefined)
   const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
+  const [transparent, setTransparent] = useState(data.transparent === true)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
   const [busy, setBusy] = useState(false)
@@ -39,7 +40,7 @@ export function EditNoteSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
-      const nextData = { ...data, text, color, font }
+      const nextData = { ...data, text, color, font, transparent }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -92,10 +93,22 @@ export function EditNoteSheet({
             </div>
           </div>
 
-          <div className="field">
-            <label>Color</label>
-            <ColorSwatchPicker value={color} onChange={setColor} />
+          <div className="toggle-row">
+            <div>
+              <div className="lbl">Remove background</div>
+              <div className="hint">just the handwriting, no paper card</div>
+            </div>
+            <button type="button" className={`switch${transparent ? ' on' : ''}`} onClick={() => setTransparent((t) => !t)} aria-label="Toggle background">
+              <div className="knob" />
+            </button>
           </div>
+
+          {!transparent && (
+            <div className="field">
+              <label>Color</label>
+              <ColorSwatchPicker value={color} onChange={setColor} />
+            </div>
+          )}
 
           <PeopleTagFields taggedIds={taggedIds} onChange={setTaggedIds} />
 
