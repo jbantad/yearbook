@@ -4,7 +4,7 @@ import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
-import { STICKERS } from '../lib/stickers'
+import { STICKERS, STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 
 export function EditStickerSheet({
   block,
@@ -24,6 +24,7 @@ export function EditStickerSheet({
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const previewSticker = STICKER_BY_KEY[stickerKey]
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -66,6 +67,26 @@ export function EditStickerSheet({
         <div className="sub">swap it, resize it, or change its angle</div>
 
         <form onSubmit={save}>
+          {previewSticker && (
+            <div
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140,
+                background: 'var(--paper-alt)', borderRadius: 10, marginBottom: 14, overflow: 'hidden',
+              }}
+            >
+              <div
+                className="sticker-block"
+                style={{
+                  width: STICKER_BASE_WIDTH,
+                  height: STICKER_BASE_WIDTH * (previewSticker.h / previewSticker.w),
+                  transform: `rotate(${rotation}deg) scale(${cardScale})`,
+                }}
+              >
+                <img src={previewSticker.src} alt="" />
+              </div>
+            </div>
+          )}
+
           <div className="field">
             <label>Sticker</label>
             <div className="sticker-grid">
