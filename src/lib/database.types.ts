@@ -650,6 +650,7 @@ export type Database = {
         | "voice"
         | "gratitude"
         | "text"
+        | "sticker"
       page_kind: "day" | "event"
       quest_kind: "count" | "checklist"
       quest_status: "active" | "complete" | "abandoned"
@@ -790,6 +791,7 @@ export const Constants = {
         "voice",
         "gratitude",
         "text",
+        "sticker",
       ],
       page_kind: ["day", "event"],
       quest_kind: ["count", "checklist"],

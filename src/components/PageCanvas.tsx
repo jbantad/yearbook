@@ -9,14 +9,16 @@ import { EditGratitudeSheet } from './EditGratitudeSheet'
 import { EditMealSheet } from './EditMealSheet'
 import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
+import { EditStickerSheet } from './EditStickerSheet'
 import { PlusIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
+import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
 
-const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'gratitude', 'text', 'meal', 'movie'])
+const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'gratitude', 'text', 'meal', 'movie', 'sticker'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -34,11 +36,16 @@ function blockRotation(block: BlockWithJoins): number {
 // applied to a small one, leaves a wall of empty space below it before the
 // canvas ends. Approximate per type instead.
 function estimateBlockHeight(block: BlockWithJoins): number {
-  const data = (block.data ?? {}) as { frame?: string; photo_url?: string }
+  const data = (block.data ?? {}) as { frame?: string; photo_url?: string; sticker?: string }
   switch (block.type) {
     case 'photo': {
       const frame = FRAME_SIZES[data.frame ?? 'classic'] ?? FRAME_SIZES.classic
       return frame.h + 30
+    }
+    case 'sticker': {
+      const sticker = data.sticker ? STICKER_BY_KEY[data.sticker] : undefined
+      const ratio = sticker ? sticker.h / sticker.w : 0.6
+      return STICKER_BASE_WIDTH * ratio + 20
     }
     case 'movie': return 300
     case 'meal': return data.photo_url ? 230 : 100
@@ -321,6 +328,9 @@ export function PageCanvas({
       )}
       {editingBlock?.type === 'text' && (
         <EditTextSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
+      )}
+      {editingBlock?.type === 'sticker' && (
+        <EditStickerSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
       )}
     </>
   )

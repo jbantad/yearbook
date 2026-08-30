@@ -5,12 +5,13 @@ import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
+import { STICKERS } from '../lib/stickers'
 import { todayISO } from '../lib/pages'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
-const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'gratitude', 'headline', 'label']
+const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'gratitude', 'sticker', 'headline', 'label']
 
 type LibraryMovie = { id: string; title: string; poster_path: string | null; rating: number | null; capturedAt: string }
 
@@ -51,6 +52,7 @@ export function AddSheet({
   const [showTitle, setShowTitle] = useState(true)
   const [mealPhotoFile, setMealPhotoFile] = useState<File | null>(null)
   const [mealPhotoPreview, setMealPhotoPreview] = useState<string | null>(null)
+  const [stickerKey, setStickerKey] = useState<string | null>(null)
   const [taggedPersonIds, setTaggedPersonIds] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -161,6 +163,7 @@ export function AddSheet({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!type || !user) return
+    if (type === 'sticker' && !stickerKey) return
     setBusy(true)
     setError(null)
     try {
@@ -185,6 +188,7 @@ export function AddSheet({
         if (mealPhotoFile) data.photo_url = await uploadToPhotos(mealPhotoFile)
       }
       if (type === 'gratitude') data = { items: text.split('\n').map((s) => s.trim()).filter(Boolean) }
+      if (type === 'sticker') data = { sticker: stickerKey, card_scale: 1 }
 
       if (type === 'place') {
         const placeName = text.trim()
@@ -442,6 +446,23 @@ export function AddSheet({
                 <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={4} />
               </div>
             )}
+            {type === 'sticker' && (
+              <div className="field">
+                <label>Choose a sticker</label>
+                <div className="sticker-grid">
+                  {STICKERS.map((s) => (
+                    <button
+                      type="button"
+                      key={s.key}
+                      className={`sticker-opt${stickerKey === s.key ? ' sel' : ''}`}
+                      onClick={() => setStickerKey(s.key)}
+                    >
+                      <img src={s.src} alt="" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {(type === 'headline' || type === 'label') && (
               <div className="field">
                 <label>Text</label>
@@ -458,7 +479,7 @@ export function AddSheet({
             )}
 
             {error && <div className="auth-error">{error}</div>}
-            <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}</button>
+            <button className="cta" type="submit" disabled={busy || (type === 'sticker' && !stickerKey)}>{busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}</button>
             <button type="button" className="cancel" onClick={() => setType(null)}>Back</button>
           </form>
         )}

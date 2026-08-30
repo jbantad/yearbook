@@ -140,6 +140,14 @@ export function LabelTypeIcon() {
     </svg>
   )
 }
+export function StickerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 15c3-7 10-9 15-6" />
+      <path d="M14 7l5 2-2 5" />
+    </svg>
+  )
+}
 export function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -156,6 +164,7 @@ export const BLOCK_ICONS: Record<string, () => React.ReactElement> = {
   movie: MovieIcon,
   person: PersonIcon,
   gratitude: GratitudeIcon,
+  sticker: StickerIcon,
   headline: HeadlineTypeIcon,
   label: LabelTypeIcon,
 }
@@ -168,6 +177,7 @@ export const BLOCK_COLORS: Record<string, { fg: string; soft: string }> = {
   movie: { fg: 'var(--block-movie)', soft: 'var(--block-movie-soft)' },
   person: { fg: 'var(--block-person)', soft: 'var(--block-person-soft)' },
   gratitude: { fg: 'var(--block-gratitude)', soft: 'var(--block-gratitude-soft)' },
+  sticker: { fg: 'var(--block-sticker)', soft: 'var(--block-sticker-soft)' },
   headline: { fg: 'var(--ink)', soft: 'var(--kraft-light)' },
   label: { fg: 'var(--ink)', soft: 'var(--kraft-light)' },
 }
@@ -180,6 +190,7 @@ export const BLOCK_LABELS: Record<string, string> = {
   movie: 'Movie',
   person: 'Person',
   gratitude: 'Gratitude',
+  sticker: 'Sticker',
   headline: 'Headline',
   label: 'Label',
 }

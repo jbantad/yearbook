@@ -35,6 +35,8 @@
   --blush-soft: oklch(91% 0.04 350);
   --gold: oklch(63% 0.12 85);
   --gold-soft: oklch(91% 0.04 85);
+  --moss: oklch(56% 0.1 122);
+  --moss-soft: oklch(90% 0.035 122);
   --line: oklch(80% 0.02 70);
   /* Used instead of --line/--ink-faint wherever an element sits directly on the
      photographic craft-paper background (not a solid --card/--paper-alt surface) —
@@ -52,6 +54,7 @@
   --block-movie: var(--plum); --block-movie-soft: var(--plum-soft);
   --block-person: var(--teal); --block-person-soft: var(--teal-soft);
   --block-gratitude: var(--blush); --block-gratitude-soft: var(--blush-soft);
+  --block-sticker: var(--moss); --block-sticker-soft: var(--moss-soft);
   --font-body: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-hand: 'Caveat', 'Segoe Script', cursive;
 }
@@ -286,6 +289,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 .place .block-edit svg, .tag .block-edit svg, .headline-el .block-edit svg, .label-el .block-edit svg { width: 11px; height: 11px; }
 
+.sticker-block { position: relative; }
+.sticker-block img {
+  width: 100%; height: 100%; display: block; pointer-events: none;
+  filter: drop-shadow(0 3px 6px oklch(30% 0.03 50 / 0.22));
+}
+
 .pagetag {
   position: absolute; left: 0; bottom: 16px; background: var(--kraft); color: var(--ink); font-size: 11px; letter-spacing: 0.03em;
   padding: 6px 10px 6px 14px; border-radius: 0 4px 4px 0; box-shadow: 0 3px 6px oklch(30% 0.02 50 / 0.15);
@@ -346,6 +355,14 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .frame-opt.sel .sw { border-color: var(--amber); background-color: var(--amber-soft); }
 .frame-opt span { font-size: 10.5px; color: var(--ink-soft); }
 .frame-opt.sel span { color: var(--amber); font-weight: 600; }
+
+.sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sticker-opt {
+  display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 12px;
+  border: 1.5px solid var(--line); background: var(--paper-alt); padding: 10px;
+}
+.sticker-opt img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.sticker-opt.sel { border-color: var(--block-sticker); background: var(--block-sticker-soft); }
 
 .rotate-row { display: flex; align-items: center; gap: 14px; }
 .rotate-row button { background: var(--paper-alt); border: 1.5px solid var(--line); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--ink); }

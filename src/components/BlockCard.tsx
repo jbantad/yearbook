@@ -3,6 +3,7 @@ import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
+import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 import pinPhoto from '../assets/pin-trimmed.png'
 import starIcon from '../assets/star.png'
 import type { Tables } from '../lib/database.types'
@@ -242,6 +243,23 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     return (
       <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg) translateZ(0)`, position: 'relative' }}>
         {style === 'label' ? ` ${content} ` : content}
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
+    )
+  }
+
+  if (block.type === 'sticker') {
+    const key = data.sticker as string | undefined
+    const sticker = key ? STICKER_BY_KEY[key] : undefined
+    if (!sticker) return null
+    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
+    const height = STICKER_BASE_WIDTH * (sticker.h / sticker.w)
+    return (
+      <div
+        className="sticker-block"
+        style={{ width: STICKER_BASE_WIDTH, height, transform: `rotate(${rot}deg) scale(${cardScale})` }}
+      >
+        <img src={sticker.src} alt="" draggable={false} />
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
