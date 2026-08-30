@@ -305,6 +305,15 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   flex-shrink: 0;
 }
 .block-edit svg { width: 13px; height: 13px; }
+.block-lock {
+  position: absolute; top: 6px; left: 6px; width: 24px; height: 24px; border-radius: 50%;
+  background: oklch(20% 0.02 50); color: oklch(99% 0.01 85); border: 1.5px solid oklch(99% 0.01 85 / 0.55);
+  box-shadow: 0 1px 4px oklch(20% 0.02 50 / 0.35);
+  display: flex; align-items: center; justify-content: center; z-index: 5;
+  flex-shrink: 0;
+}
+.block-lock svg { width: 13px; height: 13px; }
+.block-lock.is-locked { background: var(--amber); color: oklch(20% 0.02 50); border-color: oklch(20% 0.02 50 / 0.3); }
 /* Compact inline tags (place/person/headline/label) aren't boxy cards, so
    an absolute overlay sits right on top of the text — make it a normal
    flex sibling after the label instead. */
@@ -615,10 +624,8 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   .app {
     max-width: none;
     background-color: var(--ink);
-    background-image: url('../assets/starv2.png'), url('../assets/starv2.png');
-    background-repeat: repeat-y, repeat-y;
-    background-position: top left, top right;
-    background-size: 150px auto, 150px auto;
+    background-image: none;
+    position: relative;
   }
   .screen {
     /* .screen is a flex item, and auto margins on a flex item's cross axis
@@ -633,18 +640,36 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
     border-radius: 6px;
     box-shadow: 0 4px 0 var(--kraft-dark), 0 20px 40px oklch(30% 0.04 50 / 0.22);
   }
+
+  /* decorative star strips flanking the page. Positioned off of 50vw (the
+     page's own horizontal center, since .screen is centered via margin:
+     auto) rather than the .app box edges, so they hug the page's left/right
+     edges with a small gap instead of sitting way out at the browser's
+     edges. Formula: strip's inner edge sits `gap` past the page's own
+     edge — see the desktop override below for the sidebar-adjusted version. */
+  .app::before, .app::after {
+    content: '';
+    position: fixed;
+    top: 0; bottom: 0;
+    width: 150px;
+    background: url('../assets/starv2.png') top center / 150px auto repeat-y;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .app::before { left: calc(50vw - 354px); }
+  .app::after { right: calc(50vw - 354px); }
 }
 
-/* desktop: the bottom tab bar becomes a right sidebar rail. The page stays
-   the same 460px width as tablet for now (matching mobile exactly, no
-   empty space) — a real "same layout, uniformly bigger" treatment needs
-   more than a width bump (see the note in the PR/commit), so this is the
-   honest baseline until that's built. .app's new padding-right (matching
-   the rail's width) is what shifts .screen's centering point over, so
-   .screen's own margin:auto (from the tablet rule above) needs no change. */
+/* desktop: the bottom tab bar becomes a right sidebar rail, and the page
+   card shrinks to match an iPhone 15 Pro's logical width (393px) instead
+   of tablet's wider 460px — a real device size instead of an arbitrary
+   number. The sidebar's width eats into .app's content box asymmetrically
+   (only on the right), so .screen's centerpoint shifts left of 50vw by
+   half the sidebar's width — the fab and star-strip offsets below both
+   account for that shift. */
 @media (min-width: 1200px) {
   .app { padding-right: 112px; }
-  .screen { padding-bottom: 40px; }
+  .screen { max-width: 393px; padding-bottom: 40px; }
 
   .tabbar-wrap { right: 0; left: auto; top: 0; bottom: 0; width: 112px; justify-content: flex-start; }
   .tabbar {
@@ -654,7 +679,10 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   }
   .tab { flex: none; justify-content: center; padding: 14px 0; }
 
-  .fab { right: calc(50vw - 154px); bottom: 32px; }
+  .fab { right: calc(50vw - 121px); bottom: 32px; }
+
+  .app::before { left: calc(50vw - 411px); }
+  .app::after { right: calc(50vw - 299px); }
 
   .sheet-backdrop { align-items: center; }
   .sheet { border-radius: 20px; max-height: 84vh; }

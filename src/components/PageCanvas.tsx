@@ -10,7 +10,7 @@ import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { EditStickerSheet } from './EditStickerSheet'
 import { EditJournalSheet } from './EditJournalSheet'
-import { PlusIcon } from './icons'
+import { PlusIcon, LockIcon, UnlockIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
@@ -19,6 +19,11 @@ import { useSwipeGesture } from '../lib/useSwipeGesture'
 type Pos = { x: number; y: number }
 
 const EDITABLE_TYPES = new Set(['photo', 'note', 'journal', 'place', 'text', 'meal', 'movie', 'sticker'])
+// place/text render as compact inline tags (a pin+name, a bare headline/label
+// string) rather than a boxy card — there's no clean corner to overlay a lock
+// toggle on without it sitting on top of the text itself, so those two types
+// don't get the button. Locking is still honored for them if it's ever set.
+const LOCKABLE_TYPES = new Set(['photo', 'note', 'journal', 'meal', 'movie', 'sticker'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -29,6 +34,11 @@ function blockPosition(block: BlockWithJoins, index: number): Pos {
 function blockRotation(block: BlockWithJoins): number {
   const layout = (block.layout ?? {}) as { r?: number }
   return typeof layout.r === 'number' ? layout.r : hashRotation(block.id)
+}
+
+function blockLocked(block: BlockWithJoins): boolean {
+  const layout = (block.layout ?? {}) as { locked?: boolean }
+  return layout.locked === true
 }
 
 // Card heights vary a lot by type — a photo frame needs real room, a place
@@ -72,25 +82,29 @@ function DraggableBlock({
   pos,
   rotation,
   zIndex,
-  locked,
+  pageLocked,
+  blockLocked,
   onDrag,
   onMoved,
   onRotate,
   onRotated,
   onFront,
   onEdit,
+  onToggleLock,
 }: {
   block: BlockWithJoins
   pos: Pos
   rotation: number
   zIndex: number
-  locked: boolean
+  pageLocked: boolean
+  blockLocked: boolean
   onDrag: (pos: Pos) => void
   onMoved: (id: string, pos: Pos) => void
   onRotate: (r: number) => void
   onRotated: (id: string, r: number) => void
   onFront: () => void
   onEdit?: () => void
+  onToggleLock?: () => void
 }) {
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
@@ -98,6 +112,7 @@ function DraggableBlock({
   // dropping back to one finger resumes dragging from wherever it is now.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
   const rotateRef = useRef<{ startAngle: number; base: number } | null>(null)
+  const locked = pageLocked || blockLocked
 
   function beginRotate() {
     const pts = Array.from(pointersRef.current.values())
@@ -176,7 +191,17 @@ function DraggableBlock({
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onEdit={locked ? undefined : onEdit} rotationOverride={rotation} />
+      <BlockCard block={block} onEdit={pageLocked ? undefined : onEdit} rotationOverride={rotation} />
+      {!pageLocked && onToggleLock && (
+        <button
+          className={`block-lock${blockLocked ? ' is-locked' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleLock() }}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label={blockLocked ? 'Unlock block' : 'Lock block'}
+        >
+          {blockLocked ? <LockIcon /> : <UnlockIcon />}
+        </button>
+      )}
     </div>
   )
 }
@@ -213,6 +238,7 @@ export function PageCanvas({
   const [zOrder, setZOrder] = useState<Record<string, number>>({})
   const [positions, setPositions] = useState<Record<string, Pos>>({})
   const [rotations, setRotations] = useState<Record<string, number>>({})
+  const [locks, setLocks] = useState<Record<string, boolean>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
@@ -224,6 +250,7 @@ export function PageCanvas({
   useEffect(() => {
     setPositions(Object.fromEntries(blocks.map((b, i) => [b.id, blockPosition(b, i)])))
     setRotations(Object.fromEntries(blocks.map((b) => [b.id, blockRotation(b)])))
+    setLocks(Object.fromEntries(blocks.map((b) => [b.id, blockLocked(b)])))
   }, [blocks])
 
   function bringToFront(id: string) {
@@ -240,23 +267,26 @@ export function PageCanvas({
     setRotations((prev) => ({ ...prev, [id]: r }))
   }
 
-  // Layout is a single JSON column ({x, y, r}) — merge in just the changed
-  // piece against that block's current layout, or a drag would wipe out a
-  // rotation set elsewhere (and vice versa) instead of only updating the
-  // field that actually changed. The block's own `layout` prop is a snapshot
-  // from whenever this page last fetched — once dragged AND rotated in the
-  // same session (without a reload in between), it no longer reflects the
-  // other gesture's change, so fall back to the live positions/rotations
-  // state (updated on every gesture) instead of that stale snapshot.
-  async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number }>) {
+  // Layout is a single JSON column ({x, y, r, locked}) — merge in just the
+  // changed piece against that block's current layout, or a drag would wipe
+  // out a rotation set elsewhere (and vice versa) instead of only updating
+  // the field that actually changed. The block's own `layout` prop is a
+  // snapshot from whenever this page last fetched — once dragged AND
+  // rotated in the same session (without a reload in between), it no longer
+  // reflects the other gesture's change, so fall back to the live
+  // positions/rotations/locks state (updated on every gesture) instead of
+  // that stale snapshot.
+  async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number; locked: boolean }>) {
     const block = blocks.find((b) => b.id === id)
     const currentLayout = (block?.layout ?? {}) as Record<string, unknown>
     const livePos = positions[id]
     const liveRot = rotations[id]
+    const liveLock = locks[id]
     const merged = {
       ...currentLayout,
       ...(livePos ? { x: livePos.x, y: livePos.y } : {}),
       ...(typeof liveRot === 'number' ? { r: liveRot } : {}),
+      ...(typeof liveLock === 'boolean' ? { locked: liveLock } : {}),
       ...patch,
     }
     await supabase.from('blocks').update({ layout: merged }).eq('id', id)
@@ -268,6 +298,12 @@ export function PageCanvas({
 
   async function handleRotated(id: string, r: number) {
     await persistLayout(id, { r })
+  }
+
+  async function handleToggleLock(id: string) {
+    const next = !(locks[id] ?? false)
+    setLocks((prev) => ({ ...prev, [id]: next }))
+    await persistLayout(id, { locked: next })
   }
 
   // Blocks are positioned absolutely, so the canvas never grows to fit them
@@ -300,12 +336,14 @@ export function PageCanvas({
             pos={positions[b.id] ?? blockPosition(b, i)}
             rotation={rotations[b.id] ?? blockRotation(b)}
             zIndex={zOrder[b.id] ?? i}
-            locked={locked}
+            pageLocked={locked}
+            blockLocked={locks[b.id] ?? blockLocked(b)}
             onDrag={(pos) => handleDrag(b.id, pos)}
             onMoved={handleMoved}
             onRotate={(r) => handleRotate(b.id, r)}
             onRotated={handleRotated}
             onFront={() => bringToFront(b.id)}
+            onToggleLock={LOCKABLE_TYPES.has(b.type) ? () => handleToggleLock(b.id) : undefined}
             onEdit={EDITABLE_TYPES.has(b.type) ? () => {
               // Same staleness issue as persistLayout above: b.layout is a
               // snapshot from the last fetch, so if this block was dragged
