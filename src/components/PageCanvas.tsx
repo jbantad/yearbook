@@ -235,13 +235,25 @@ export function PageCanvas({
   }
 
   // Layout is a single JSON column ({x, y, r}) — merge in just the changed
-  // piece against that block's current stored layout, or a drag would wipe
-  // out a rotation set elsewhere (and vice versa) instead of only updating
-  // the field that actually changed.
+  // piece against that block's current layout, or a drag would wipe out a
+  // rotation set elsewhere (and vice versa) instead of only updating the
+  // field that actually changed. The block's own `layout` prop is a snapshot
+  // from whenever this page last fetched — once dragged AND rotated in the
+  // same session (without a reload in between), it no longer reflects the
+  // other gesture's change, so fall back to the live positions/rotations
+  // state (updated on every gesture) instead of that stale snapshot.
   async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number }>) {
     const block = blocks.find((b) => b.id === id)
     const currentLayout = (block?.layout ?? {}) as Record<string, unknown>
-    await supabase.from('blocks').update({ layout: { ...currentLayout, ...patch } }).eq('id', id)
+    const livePos = positions[id]
+    const liveRot = rotations[id]
+    const merged = {
+      ...currentLayout,
+      ...(livePos ? { x: livePos.x, y: livePos.y } : {}),
+      ...(typeof liveRot === 'number' ? { r: liveRot } : {}),
+      ...patch,
+    }
+    await supabase.from('blocks').update({ layout: merged }).eq('id', id)
   }
 
   async function handleMoved(id: string, pos: Pos) {
@@ -288,7 +300,24 @@ export function PageCanvas({
             onRotate={(r) => handleRotate(b.id, r)}
             onRotated={handleRotated}
             onFront={() => bringToFront(b.id)}
-            onEdit={EDITABLE_TYPES.has(b.type) ? () => setEditingBlock(b) : undefined}
+            onEdit={EDITABLE_TYPES.has(b.type) ? () => {
+              // Same staleness issue as persistLayout above: b.layout is a
+              // snapshot from the last fetch, so if this block was dragged
+              // or rotated on the canvas earlier this session, saving from
+              // the edit sheet (which starts from b.layout) would silently
+              // revert that gesture. Seed it with the live values first.
+              const livePos = positions[b.id]
+              const liveRot = rotations[b.id]
+              const currentLayout = (b.layout ?? {}) as Record<string, unknown>
+              setEditingBlock({
+                ...b,
+                layout: {
+                  ...currentLayout,
+                  ...(livePos ? { x: livePos.x, y: livePos.y } : {}),
+                  ...(typeof liveRot === 'number' ? { r: liveRot } : {}),
+                },
+              })
+            } : undefined}
           />
         ))}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
