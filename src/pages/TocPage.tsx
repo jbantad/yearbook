@@ -7,29 +7,24 @@ import { HIDDEN_BLOCK_TYPES } from '../components/BlockCard'
 import { getOrCreateDayPage, todayISO } from '../lib/pages'
 
 type DayBlock = { type: string; data: unknown }
-type DayGroup = { date: string; blocks: DayBlock[] }
+type DayGroup = { id: string; date: string; blocks: DayBlock[] }
 
-function stripHtml(html: string): string {
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return (div.textContent || '').trim()
+function hasVisibleBlocks(g: { blocks: DayBlock[] }) {
+  return g.blocks.some((b) => !HIDDEN_BLOCK_TYPES.has(b.type))
 }
 
-// A short, recognizable label per block — good enough to jog your memory
-// when scanning a long list of days, without joining every related table.
-function blockLabel(b: DayBlock): string {
-  const data = (b.data ?? {}) as Record<string, unknown>
-  switch (b.type) {
-    case 'note': return stripHtml(String(data.text || '')) || 'note'
-    case 'journal': return stripHtml(String(data.text || '')) || 'journal entry'
-    case 'text': return String(data.content || '').trim() || 'headline'
-    case 'photo': return String(data.caption || '').trim() || 'photo'
-    case 'meal': return String(data.dish || '').trim() || 'meal'
-    case 'movie': return 'movie'
-    case 'place': return 'a place'
-    case 'sticker': return 'sticker'
-    default: return b.type
-  }
+// A day's headline block (if any) is the one thing meant to summarize it at
+// a glance — journal entries and notes can run to paragraphs, far too much
+// for a list row, so the preview only ever shows the headline text.
+function headlineText(blocks: DayBlock[]): string {
+  const headline = blocks.find((b) => {
+    if (b.type !== 'text') return false
+    const style = (b.data as Record<string, unknown> | null)?.style
+    return (style ?? 'headline') === 'headline'
+  })
+  if (!headline) return ''
+  const content = String((headline.data as Record<string, unknown>)?.content || '').trim()
+  return content.length > 60 ? content.slice(0, 60) + '…' : content
 }
 
 function formatMonth(dateISO: string) {
@@ -62,7 +57,25 @@ async function fetchDayGroups(userId: string): Promise<DayGroup[]> {
     arr.push(b)
     byPage.set(b.page_id as string, arr)
   }
-  return pageList.map((p) => ({ date: p.page_date, blocks: byPage.get(p.id) ?? [] }))
+  return pageList.map((p) => ({ id: p.id, date: p.page_date, blocks: byPage.get(p.id) ?? [] }))
+}
+
+// Pages get created eagerly just by visiting a date (see getOrCreateDayPage),
+// and a removed feature can leave a page with rows that don't render
+// anything visible (see HIDDEN_BLOCK_TYPES) — either way, a page nobody ever
+// put real content on shouldn't stick around. Today's page is exempt so
+// simply opening the Today tab doesn't get immediately deleted out from
+// under you before you've had a chance to add anything.
+async function purgeEmptyPages(groups: DayGroup[]): Promise<DayGroup[]> {
+  const today = todayISO()
+  const toDelete = groups.filter((g) => g.date !== today && !hasVisibleBlocks(g))
+  if (toDelete.length > 0) {
+    const ids = toDelete.map((g) => g.id)
+    await supabase.from('blocks').delete().in('page_id', ids)
+    await supabase.from('pages').delete().in('id', ids)
+  }
+  const deletedIds = new Set(toDelete.map((g) => g.id))
+  return groups.filter((g) => !deletedIds.has(g.id) && hasVisibleBlocks(g))
 }
 
 export function TocPage() {
@@ -75,7 +88,7 @@ export function TocPage() {
 
   useEffect(() => {
     if (!user) return
-    fetchDayGroups(user.id).then((g) => { setGroups(g); setLoading(false) })
+    fetchDayGroups(user.id).then(purgeEmptyPages).then((g) => { setGroups(g); setLoading(false) })
   }, [user])
 
   async function jumpTo(dateISO: string) {
@@ -112,13 +125,12 @@ export function TocPage() {
 
         {rows.map((g) => {
           const { month, showMonth } = g
-          const visible = g.blocks.filter((b) => !HIDDEN_BLOCK_TYPES.has(b.type))
-          const preview = visible.slice(0, 3).map(blockLabel).join(' · ')
+          const preview = headlineText(g.blocks)
           const { n, m } = formatDay(g.date)
           return (
             <Fragment key={g.date}>
               {showMonth && <div className="month-label">{month}</div>}
-              <button className={`prow${visible.length === 0 ? ' toc-empty' : ''}`} onClick={() => navigate(`/day/${g.date}`)}>
+              <button className="prow" onClick={() => navigate(`/day/${g.date}`)}>
                 <div
                   className="av"
                   style={{
@@ -132,7 +144,7 @@ export function TocPage() {
                 </div>
                 <div className="body">
                   <div className="nm">{formatWeekday(g.date)}</div>
-                  <div className="meta">{visible.length === 0 ? 'Nothing here yet' : preview}</div>
+                  {preview && <div className="meta">{preview}</div>}
                 </div>
               </button>
             </Fragment>

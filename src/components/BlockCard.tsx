@@ -98,7 +98,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             )
           })}
           {caption && <div className="cap" style={{ '--cap-bottom': `${capBottom}%` } as CSSProperties}>{caption}</div>}
-          {onEdit && <EditButton onEdit={onEdit} />}
         </div>
       )
     }
@@ -134,7 +133,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           )}
         </div>
         {caption && <div className="cap" style={{ '--cap-bottom': `${win.bottom}%` } as CSSProperties}>{caption}</div>}
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }
@@ -153,7 +151,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         style={{ width: 168, background: transparent ? 'none' : noteColor.soft, transform: `rotate(${rot}deg) scale(${cardScale})`, borderRadius: 6 }}
       >
         <div className="cap" style={{ ...noteFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }
@@ -175,7 +172,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         }}
       >
         <div className="cap" style={{ ...journalFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }
@@ -217,7 +213,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           <div style={{ width: '100%', aspectRatio: '4 / 3', backgroundImage: `url(${mealPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         )}
         <div className="cap" style={{ padding: mealPhoto ? '10px 14px 12px' : undefined, color: mealPhoto ? undefined : mealColor.fg }}>{(data.dish as string) || (data.description as string) || 'a meal'}</div>
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }
@@ -259,7 +254,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
             )}
           </>
         )}
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }
@@ -287,7 +281,6 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         style={{ width: STICKER_BASE_WIDTH, height, transform: `rotate(${rot}deg) scale(${cardScale})` }}
       >
         <img src={sticker.src} alt="" draggable={false} />
-        {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
   }

@@ -10,7 +10,7 @@ import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { EditStickerSheet } from './EditStickerSheet'
 import { EditJournalSheet } from './EditJournalSheet'
-import { PlusIcon, LockIcon, UnlockIcon } from './icons'
+import { PlusIcon, LockIcon, UnlockIcon, EditIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
@@ -91,6 +91,7 @@ function DraggableBlock({
   onFront,
   onEdit,
   onToggleLock,
+  onMeasure,
 }: {
   block: BlockWithJoins
   pos: Pos
@@ -105,6 +106,7 @@ function DraggableBlock({
   onFront: () => void
   onEdit?: () => void
   onToggleLock?: () => void
+  onMeasure: (height: number) => void
 }) {
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
@@ -112,7 +114,29 @@ function DraggableBlock({
   // dropping back to one finger resumes dragging from wherever it is now.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
   const rotateRef = useRef<{ startAngle: number; base: number } | null>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
   const locked = pageLocked || blockLocked
+  const showButtonCluster = LOCKABLE_TYPES.has(block.type)
+
+  // estimateBlockHeight (used for the initial canvasHeight, before this can
+  // measure anything) is a rough guess from the block's data — it was
+  // repeatedly wrong for rich-text journal entries in particular (HTML tags
+  // and contentEditable's per-line <div>s don't match a plain character-
+  // count estimate), letting a tall entry visually spill into the next
+  // day's section. getBoundingClientRect reflects the block's actual
+  // rendered size (rotation and scale included, since — unlike
+  // ResizeObserver's contentRect — it's measured post-transform), so once
+  // this fires the canvas height it feeds is exact instead of guessed.
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const measure = () => onMeasure(el.getBoundingClientRect().height)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rotation, block.data])
 
   function beginRotate() {
     const pts = Array.from(pointersRef.current.values())
@@ -184,6 +208,7 @@ function DraggableBlock({
 
   return (
     <div
+      ref={wrapRef}
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
       style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none', transform: 'translateZ(0)' }}
       onPointerDown={locked ? undefined : onPointerDown}
@@ -191,16 +216,40 @@ function DraggableBlock({
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onEdit={pageLocked ? undefined : onEdit} rotationOverride={rotation} />
-      {!pageLocked && onToggleLock && (
-        <button
-          className={`block-lock${blockLocked ? ' is-locked' : ''}`}
-          onClick={(e) => { e.stopPropagation(); onToggleLock() }}
-          onPointerDown={(e) => e.stopPropagation()}
-          aria-label={blockLocked ? 'Unlock block' : 'Lock block'}
-        >
-          {blockLocked ? <LockIcon /> : <UnlockIcon />}
-        </button>
+      {/* Photo/note/journal/meal/movie/sticker cards apply their own
+          rotate+scale transform for the drag/resize gestures — an edit or
+          lock button rendered *inside* that transformed box would visually
+          rotate and resize right along with it. Rendering both here instead,
+          as siblings of the card inside this wrapper (which never rotates
+          or scales, only translates), keeps them upright, fixed-size, and
+          pinned to the wrapper's own top-right corner regardless of what the
+          card inside is doing. Compact inline types (place/text) don't get
+          this treatment — they render their own edit button inline, since
+          there's no boxy corner to anchor one to. */}
+      <BlockCard block={block} onEdit={(pageLocked || showButtonCluster) ? undefined : onEdit} rotationOverride={rotation} />
+      {!pageLocked && showButtonCluster && (
+        <>
+          {onToggleLock && (
+            <button
+              className={`block-lock${blockLocked ? ' is-locked' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleLock() }}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label={blockLocked ? 'Unlock block' : 'Lock block'}
+            >
+              {blockLocked ? <LockIcon /> : <UnlockIcon />}
+            </button>
+          )}
+          {onEdit && (
+            <button
+              className="block-edit"
+              onClick={(e) => { e.stopPropagation(); onEdit() }}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Edit"
+            >
+              <EditIcon />
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -239,6 +288,7 @@ export function PageCanvas({
   const [positions, setPositions] = useState<Record<string, Pos>>({})
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [locks, setLocks] = useState<Record<string, boolean>>({})
+  const [measuredHeights, setMeasuredHeights] = useState<Record<string, number>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
@@ -306,12 +356,22 @@ export function PageCanvas({
     await persistLayout(id, { locked: next })
   }
 
+  function handleMeasure(id: string, height: number) {
+    setMeasuredHeights((prev) => (prev[id] === height ? prev : { ...prev, [id]: height }))
+  }
+
   // Blocks are positioned absolutely, so the canvas never grows to fit them
   // on its own — once a page has enough content to run past the default
-  // floor, grow the canvas to the lowest block's estimated bottom edge so
-  // the page scrolls to reveal everything instead of clipping it.
+  // floor, grow the canvas to the lowest block's bottom edge so the page
+  // scrolls to reveal everything instead of clipping (or, before this
+  // session, letting a tall block visually spill into the next section).
+  // measuredHeights (the block's real, post-transform rendered height) is
+  // preferred once available; estimateBlockHeight is only the placeholder
+  // guess used for the first render, before anything has measured itself.
   const canvasHeight = blocks.reduce((max, b, i) => {
     const pos = positions[b.id] ?? blockPosition(b, i)
+    const measured = measuredHeights[b.id]
+    if (typeof measured === 'number') return Math.max(max, pos.y + measured)
     const data = (b.data ?? {}) as { card_scale?: number }
     const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
     return Math.max(max, pos.y + estimateBlockHeight(b) * scale)
@@ -343,6 +403,7 @@ export function PageCanvas({
             onRotate={(r) => handleRotate(b.id, r)}
             onRotated={handleRotated}
             onFront={() => bringToFront(b.id)}
+            onMeasure={(h) => handleMeasure(b.id, h)}
             onToggleLock={LOCKABLE_TYPES.has(b.type) ? () => handleToggleLock(b.id) : undefined}
             onEdit={EDITABLE_TYPES.has(b.type) ? () => {
               // Same staleness issue as persistLayout above: b.layout is a
