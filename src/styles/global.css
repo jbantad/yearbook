@@ -631,17 +631,16 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   }
 }
 
-/* desktop: the bottom tab bar becomes a right sidebar rail, and the page
-   gets centered in the remaining space (and 50% bigger) instead of filling
-   the full viewport — .app's new padding-right (matching the rail's width)
-   is what shifts that centering point over, so .screen's own margin:auto
-   (from the tablet rule above) needs no further change. */
+/* desktop: the bottom tab bar becomes a right sidebar rail. The page stays
+   the same 460px width as tablet for now (matching mobile exactly, no
+   empty space) — a real "same layout, uniformly bigger" treatment needs
+   more than a width bump (see the note in the PR/commit), so this is the
+   honest baseline until that's built. .app's new padding-right (matching
+   the rail's width) is what shifts .screen's centering point over, so
+   .screen's own margin:auto (from the tablet rule above) needs no change. */
 @media (min-width: 1200px) {
   .app { padding-right: 112px; }
-  .screen {
-    max-width: 690px; /* 50% bigger than the 460px tablet width */
-    padding-bottom: 40px;
-  }
+  .screen { padding-bottom: 40px; }
 
   .tabbar-wrap { right: 0; left: auto; top: 0; bottom: 0; width: 112px; justify-content: flex-start; }
   .tabbar {
@@ -651,7 +650,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   }
   .tab { flex: none; justify-content: center; padding: 14px 0; }
 
-  .fab { right: calc(50vw - 269px); bottom: 32px; }
+  .fab { right: calc(50vw - 154px); bottom: 32px; }
 
   .sheet-backdrop { align-items: center; }
   .sheet { border-radius: 20px; max-height: 84vh; }
