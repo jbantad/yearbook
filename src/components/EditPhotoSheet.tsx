@@ -7,6 +7,7 @@ import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditPhotoSheet({
   block,
@@ -19,6 +20,7 @@ export function EditPhotoSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const { user } = useAuth()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }

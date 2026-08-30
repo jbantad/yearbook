@@ -5,6 +5,7 @@ import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 import { STICKERS, STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditStickerSheet({
   block,
@@ -17,6 +18,7 @@ export function EditStickerSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [stickerKey, setStickerKey] = useState((data.sticker as string) || STICKERS[0].key)

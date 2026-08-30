@@ -7,6 +7,7 @@ import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
 import { STICKERS } from '../lib/stickers'
 import { todayISO } from '../lib/pages'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
@@ -26,6 +27,7 @@ export function AddSheet({
   pageId?: string | null
   initialType?: Selection
 }) {
+  useBodyScrollLock()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [type, setType] = useState<Selection | null>(initialType ?? null)

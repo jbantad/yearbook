@@ -4,6 +4,7 @@ import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditTextSheet({
   block,
@@ -16,6 +17,7 @@ export function EditTextSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const style = (data.style as string) || 'headline'

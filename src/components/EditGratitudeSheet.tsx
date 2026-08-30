@@ -5,6 +5,7 @@ import { TrashIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditGratitudeSheet({
   block,
@@ -17,6 +18,7 @@ export function EditGratitudeSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const initialItems = Array.isArray(data.items) ? (data.items as string[]) : []

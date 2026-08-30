@@ -6,6 +6,7 @@ import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { PeopleTagFields } from './PeopleTagFields'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditNoteSheet({
   block,
@@ -18,6 +19,7 @@ export function EditNoteSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [text, setText] = useState((data.text as string) || '')

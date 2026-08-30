@@ -6,6 +6,7 @@ import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditMealSheet({
   block,
@@ -18,6 +19,7 @@ export function EditMealSheet({
   onSaved: () => void
   onDeleted: () => void
 }) {
+  useBodyScrollLock()
   const { user } = useAuth()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
