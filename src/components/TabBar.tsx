@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { todayISO } from '../lib/pages'
 
-type TabKey = 'today' | 'albums' | 'shelves'
+type TabKey = 'today' | 'toc' | 'shelves'
 
 function buildTabs(): { key: TabKey; to: string; label: string; icon: React.ReactNode }[] { return [
   {
@@ -17,9 +17,9 @@ function buildTabs(): { key: TabKey; to: string; label: string; icon: React.Reac
     ),
   },
   {
-    key: 'albums',
-    to: '/albums',
-    label: 'Albums',
+    key: 'toc',
+    to: '/toc',
+    label: 'Table of Contents',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5Z" />

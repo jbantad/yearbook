@@ -5,8 +5,7 @@ import { DayPage } from './pages/DayPage'
 import { todayISO } from './lib/pages'
 import { ShelvesPage } from './pages/ShelvesPage'
 import { PersonDetailPage } from './pages/PersonDetailPage'
-import { AlbumsPage } from './pages/AlbumsPage'
-import { AlbumPage } from './pages/AlbumPage'
+import { TocPage } from './pages/TocPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -24,8 +23,7 @@ function App() {
         <Route path="/day/:date" element={<RequireAuth><DayPage /></RequireAuth>} />
         <Route path="/shelves" element={<RequireAuth><ShelvesPage /></RequireAuth>} />
         <Route path="/people/:id" element={<RequireAuth><PersonDetailPage /></RequireAuth>} />
-        <Route path="/albums" element={<RequireAuth><AlbumsPage /></RequireAuth>} />
-        <Route path="/page/:id" element={<RequireAuth><AlbumPage /></RequireAuth>} />
+        <Route path="/toc" element={<RequireAuth><TocPage /></RequireAuth>} />
         <Route path="*" element={<Navigate to={`/day/${todayISO()}`} replace />} />
       </Routes>
     </div>

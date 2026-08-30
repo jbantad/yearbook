@@ -546,6 +546,24 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .padd .plus { width: 48px; height: 48px; border-radius: 50%; border: 1.5px dashed var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .padd span { font-size: 14.5px; }
 
+/* ---- table of contents ---- */
+.toc-jump {
+  width: 100%; background: var(--card); border-radius: 14px; padding: 14px; box-shadow: 0 5px 13px oklch(30% 0.03 50 / 0.1);
+}
+.toc-jump label { display: block; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; }
+.toc-jump-row { display: flex; gap: 8px; }
+.toc-jump-row input {
+  flex: 1; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--ink);
+  background: var(--paper-alt); font-family: inherit; font-style: italic;
+}
+.toc-jump-row button {
+  border: none; border-radius: 10px; background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 600; padding: 0 20px;
+}
+.toc-jump-row button:disabled { opacity: 0.5; }
+.month-label { width: 100%; font-family: var(--font-hand); font-style: normal; font-weight: 700; font-size: 22px; color: var(--ink); padding: 0 2px; }
+.prow.toc-empty { opacity: 0.6; }
+.prow.toc-empty .meta { font-style: italic; }
+
 .hero { display: flex; flex-direction: column; align-items: center; padding: 6px 20px 20px; flex-shrink: 0; }
 .hero .av { width: 84px; height: 84px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); display: flex; align-items: center; justify-content: center; font-family: var(--font-hand); font-style: normal; font-size: 38px; font-weight: 600; box-shadow: inset 0 0 0 2px oklch(100% 0 0 / 0.55); }
 .hero h1 { margin: 14px 0 0; font-size: 23px; font-weight: 600; }

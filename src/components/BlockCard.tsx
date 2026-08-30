@@ -15,6 +15,14 @@ export type BlockWithJoins = Tables<'blocks'> & {
   people?: { id: string; display_name: string }[]
 }
 
+// Removed features (gratitude, person) leave their old block rows in place
+// rather than deleting them — BlockCard just renders nothing for them, same
+// as any other type it doesn't recognize. Anything counting "does this page
+// actually have visible content" needs to exclude these too, or a page whose
+// only rows are leftover gratitude/person blocks reads as non-empty even
+// though there's nothing on it to see.
+export const HIDDEN_BLOCK_TYPES = new Set(['gratitude', 'person'])
+
 function StarPng({ filled }: { filled: boolean }) {
   return <img src={starIcon} alt="" style={filled ? undefined : { filter: 'grayscale(1) opacity(0.35)' }} />
 }

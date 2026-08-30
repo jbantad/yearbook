@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
-import { type BlockWithJoins } from '../components/BlockCard'
+import { type BlockWithJoins, HIDDEN_BLOCK_TYPES } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
 import { AddSheet } from '../components/AddSheet'
 import { getOrCreateDayPage, findPriorPageDates } from '../lib/pages'
@@ -54,6 +54,13 @@ async function fetchDay(userId: string, date: string): Promise<DayEntry> {
 const BATCH_SIZE = 8
 const MAX_EMPTY_BATCHES_PER_LOAD = 4
 
+// A page whose only rows are leftover blocks from a removed feature (see
+// HIDDEN_BLOCK_TYPES) renders nothing, and should count as empty just like a
+// page with zero rows at all.
+function hasVisibleBlocks(entry: { blocks: BlockWithJoins[] }) {
+  return entry.blocks.some((b) => !HIDDEN_BLOCK_TYPES.has(b.type))
+}
+
 export function DayPage() {
   const { date } = useParams<{ date: string }>()
   const { user } = useAuth()
@@ -99,7 +106,7 @@ export function DayPage() {
         }
         cursor = priorDates[priorDates.length - 1]
         const entries = await Promise.all(priorDates.map((d) => fetchDay(user.id, d)))
-        found = entries.filter((e) => e.blocks.length > 0)
+        found = entries.filter(hasVisibleBlocks)
         if (priorDates.length < BATCH_SIZE) {
           // fewer than a full batch came back — we've reached the oldest page
           if (found.length > 0) setDays((prev) => [...prev, ...found])
@@ -204,7 +211,7 @@ export function DayPage() {
       )}
 
       {days.map((entry, i) => (
-        (entry.pageId && (i === 0 || entry.blocks.length > 0)) ? (
+        (entry.pageId && (i === 0 || hasVisibleBlocks(entry))) ? (
           <div
             key={entry.date}
             data-date={entry.date}
