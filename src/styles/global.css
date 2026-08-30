@@ -103,6 +103,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   padding-bottom: calc(84px + var(--safe-bottom)); /* space for fixed tab bar */
   min-height: 100vh;
   min-height: 100dvh;
+  /* A block's x/y is a literal pixel position, tuned against a page this
+     wide. At mobile .screen already IS that width, so this never bites —
+     but once .screen gets capped narrower than the viewport (tablet+
+     below), a block sitting past that edge would otherwise spill onto the
+     surrounding desk instead of clipping to the page like a real edge would. */
+  overflow: hidden;
 }
 
 /* ---- headers ---- */
@@ -598,6 +604,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
     background: var(--kraft-light);
   }
   .screen {
+    /* .screen is a flex item, and auto margins on a flex item's cross axis
+       make it size to fit-content instead of stretch-then-cap at
+       max-width — width:100% forces the stretch back on so max-width
+       actually caps a real width, not just an upper bound on whatever the
+       (mostly absolutely-positioned) content happens to need. */
+    width: 100%;
     max-width: 460px;
     margin: 28px auto 0;
     background: var(--paper) url('../assets/craft-paper-fill.jpg') top left/220px repeat;
@@ -606,24 +618,27 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   }
 }
 
-/* desktop: the bottom tab bar becomes a left sidebar rail, and the page
-   gets centered in the remaining space instead of the full viewport —
-   .app's new padding-left (matching the rail's width) is what shifts that
-   centering point over, so .screen's own margin:auto (from the tablet
-   rule above) needs no further change. */
+/* desktop: the bottom tab bar becomes a right sidebar rail, and the page
+   gets centered in the remaining space (and 50% bigger) instead of filling
+   the full viewport — .app's new padding-right (matching the rail's width)
+   is what shifts that centering point over, so .screen's own margin:auto
+   (from the tablet rule above) needs no further change. */
 @media (min-width: 1200px) {
-  .app { padding-left: 112px; }
-  .screen { padding-bottom: 40px; }
-
-  .tabbar-wrap { left: 0; right: auto; top: 0; bottom: 0; width: 112px; justify-content: flex-start; }
-  .tabbar {
-    max-width: none; width: 100%; height: 100%; flex-direction: column; gap: 4px;
-    border-top: none; border-right: 1px solid oklch(100% 0 0 / 0.08);
-    padding: 24px 0 0; box-shadow: none;
+  .app { padding-right: 112px; }
+  .screen {
+    max-width: 690px; /* 50% bigger than the 460px tablet width */
+    padding-bottom: 40px;
   }
-  .tab { justify-content: center; padding-top: 0; }
 
-  .fab { right: calc(50vw - 266px); bottom: 32px; }
+  .tabbar-wrap { right: 0; left: auto; top: 0; bottom: 0; width: 112px; justify-content: flex-start; }
+  .tabbar {
+    max-width: none; width: 100%; height: 100%; flex-direction: column; justify-content: flex-start; gap: 10px;
+    border-top: none; border-left: 1px solid oklch(100% 0 0 / 0.08);
+    padding: 0; box-shadow: none;
+  }
+  .tab { flex: none; justify-content: center; padding: 14px 0; }
+
+  .fab { right: calc(50vw - 269px); bottom: 32px; }
 
   .sheet-backdrop { align-items: center; }
   .sheet { border-radius: 20px; max-height: 84vh; }
