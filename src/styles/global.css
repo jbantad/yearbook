@@ -67,6 +67,11 @@ body {
   font-style: italic;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  /* Blocks are positioned by absolute x/y (drag-anywhere canvas) and can end
+     up placed past the right edge — without this, that overflow stretches
+     the whole page wider than the viewport instead of just clipping,
+     leaving blank white space beyond the app's own background. */
+  overflow-x: hidden;
 }
 a { color: var(--amber); text-decoration: none; }
 a:hover { color: oklch(50% 0.14 55); }
@@ -81,6 +86,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   min-height: 100vh;
   min-height: 100dvh;
   position: relative;
+  overflow-x: hidden;
   background: var(--paper) url('../assets/craft-paper-fill.jpg') top left/220px repeat;
   display: flex;
   flex-direction: column;
