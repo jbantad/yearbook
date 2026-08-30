@@ -55,7 +55,6 @@
   --block-meal: var(--rose); --block-meal-soft: var(--rose-soft);
   --block-movie: var(--plum); --block-movie-soft: var(--plum-soft);
   --block-person: var(--teal); --block-person-soft: var(--teal-soft);
-  --block-gratitude: var(--blush); --block-gratitude-soft: var(--blush-soft);
   --block-sticker: var(--moss); --block-sticker-soft: var(--moss-soft);
   --block-journal: var(--denim); --block-journal-soft: var(--denim-soft);
   --font-body: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -282,9 +281,6 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
 }
 
-.glabel { font-size: 10.5px; font-style: italic; color: var(--ink-soft); margin-bottom: 5px; }
-.gitem { display: flex; align-items: center; gap: 6px; font-family: var(--font-hand); font-style: normal; font-size: 16px; line-height: 1.25; color: var(--ink); }
-.gitem i { width: 5px; height: 5px; border-radius: 50%; background: var(--block-gratitude); flex-shrink: 0; }
 
 .tag {
   position: relative; display: flex; align-items: center; gap: 6px; background: var(--card); border-radius: 20px;
@@ -374,6 +370,16 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 .field textarea { resize: vertical; min-height: 64px; }
 
+.rtf { border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--paper-alt); }
+.rtf-toolbar { display: flex; gap: 2px; padding: 5px 6px; border-bottom: 1px solid var(--line); background: var(--card); }
+.rtf-toolbar button {
+  width: 28px; height: 28px; border-radius: 6px; background: none; border: none; color: var(--ink-soft);
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+}
+.rtf-toolbar button:hover { background: var(--paper-alt); }
+.rtf-input { padding: 10px 12px; font-size: 15px; color: var(--ink); line-height: 1.4; outline: none; }
+.rtf-input:empty::before { content: attr(data-placeholder); color: var(--ink-faint); font-style: italic; }
+
 .frame-picker { display: flex; align-items: center; gap: 12px; }
 .frame-opt { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; }
 .frame-opt .sw {
@@ -397,6 +403,13 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .rotate-row button { background: var(--paper-alt); border: 1.5px solid var(--line); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--ink); }
 .rotate-row button svg { width: 18px; height: 18px; }
 .rotate-val { font-size: 13px; color: var(--ink-soft); min-width: 34px; text-align: center; }
+.rotate-input-wrap { display: flex; align-items: center; gap: 3px; font-size: 13px; color: var(--ink-soft); }
+.rotate-input {
+  width: 44px; font-size: 13px; color: var(--ink-soft); text-align: center; font-family: inherit;
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 2px; background: var(--paper-alt);
+  -moz-appearance: textfield;
+}
+.rotate-input::-webkit-outer-spin-button, .rotate-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 .stars-row { display: flex; align-items: center; gap: 6px; }
 .stars-row button { background: none; border: none; padding: 2px; color: var(--gold); }

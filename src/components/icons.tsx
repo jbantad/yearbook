@@ -43,13 +43,6 @@ export function PersonIcon() {
     </svg>
   )
 }
-export function GratitudeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 20.5S3.5 15.4 3.5 9.4A4.9 4.9 0 0 1 12 6a4.9 4.9 0 0 1 8.5 3.4c0 6-8.5 11.1-8.5 11.1Z" />
-    </svg>
-  )
-}
 export function ChevronIcon() {
   return (
     <svg className="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -142,9 +135,9 @@ export function LabelTypeIcon() {
 }
 export function StickerIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 15c3-7 10-9 15-6" />
-      <path d="M14 7l5 2-2 5" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 4h9a2 2 0 0 1 2 2v9l-6 6H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" />
+      <path d="M17 15h-3a2 2 0 0 0-2 2v4" />
     </svg>
   )
 }
@@ -171,7 +164,6 @@ export const BLOCK_ICONS: Record<string, () => React.ReactElement> = {
   meal: MealIcon,
   movie: MovieIcon,
   person: PersonIcon,
-  gratitude: GratitudeIcon,
   sticker: StickerIcon,
   journal: JournalIcon,
   headline: HeadlineTypeIcon,
@@ -185,7 +177,6 @@ export const BLOCK_COLORS: Record<string, { fg: string; soft: string }> = {
   meal: { fg: 'var(--block-meal)', soft: 'var(--block-meal-soft)' },
   movie: { fg: 'var(--block-movie)', soft: 'var(--block-movie-soft)' },
   person: { fg: 'var(--block-person)', soft: 'var(--block-person-soft)' },
-  gratitude: { fg: 'var(--block-gratitude)', soft: 'var(--block-gratitude-soft)' },
   sticker: { fg: 'var(--block-sticker)', soft: 'var(--block-sticker-soft)' },
   journal: { fg: 'var(--block-journal)', soft: 'var(--block-journal-soft)' },
   headline: { fg: 'var(--ink)', soft: 'var(--kraft-light)' },
@@ -199,7 +190,6 @@ export const BLOCK_LABELS: Record<string, string> = {
   meal: 'Meal',
   movie: 'Movie',
   person: 'Person',
-  gratitude: 'Gratitude',
   sticker: 'Sticker',
   journal: 'Journal',
   headline: 'Headline',

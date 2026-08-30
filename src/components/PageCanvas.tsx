@@ -5,7 +5,6 @@ import { AddSheet } from './AddSheet'
 import { EditPhotoSheet } from './EditPhotoSheet'
 import { EditNoteSheet } from './EditNoteSheet'
 import { EditPlaceSheet } from './EditPlaceSheet'
-import { EditGratitudeSheet } from './EditGratitudeSheet'
 import { EditMealSheet } from './EditMealSheet'
 import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
@@ -19,7 +18,7 @@ import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
 
-const EDITABLE_TYPES = new Set(['photo', 'note', 'journal', 'place', 'gratitude', 'text', 'meal', 'movie', 'sticker'])
+const EDITABLE_TYPES = new Set(['photo', 'note', 'journal', 'place', 'text', 'meal', 'movie', 'sticker'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -57,7 +56,6 @@ function estimateBlockHeight(block: BlockWithJoins): number {
     }
     case 'movie': return 300
     case 'meal': return data.photo_url ? 230 : 100
-    case 'gratitude': return 110
     case 'note': return 100
     case 'text': return 70
     case 'place': return 60
@@ -356,9 +354,6 @@ export function PageCanvas({
       )}
       {editingBlock?.type === 'place' && (
         <EditPlaceSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
-      )}
-      {editingBlock?.type === 'gratitude' && (
-        <EditGratitudeSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
       )}
       {editingBlock?.type === 'meal' && (
         <EditMealSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />

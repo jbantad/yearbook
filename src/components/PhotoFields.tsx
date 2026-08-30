@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
+import { RotationField } from './RotationField'
 
 const FRAMES: { key: string; label: string }[] = [
   { key: 'classic', label: 'Classic' },
@@ -253,15 +254,7 @@ export function PhotoFields({
 
         <div className="field">
           <label>Rotation</label>
-          <div className="rotate-row">
-            <button type="button" onClick={() => onRotationChange((r) => r - 1)} aria-label="Rotate left">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
-            </button>
-            <span className="rotate-val">{Math.round(rotation)}°</span>
-            <button type="button" onClick={() => onRotationChange((r) => r + 1)} aria-label="Rotate right">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
-            </button>
-          </div>
+          <RotationField value={rotation} onChange={(v) => onRotationChange(() => v)} />
         </div>
       </>
     )
@@ -377,15 +370,7 @@ export function PhotoFields({
 
       <div className="field">
         <label>Rotation</label>
-        <div className="rotate-row">
-          <button type="button" onClick={() => onRotationChange((r) => r - 1)} aria-label="Rotate left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
-          </button>
-          <span className="rotate-val">{Math.round(rotation)}°</span>
-          <button type="button" onClick={() => onRotationChange((r) => r + 1)} aria-label="Rotate right">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
-          </button>
-        </div>
+        <RotationField value={rotation} onChange={(v) => onRotationChange(() => v)} />
       </div>
     </>
   )

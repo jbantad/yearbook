@@ -135,6 +135,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
     const transparent = data.transparent === true
     const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
+    const align = data.align === 'center' ? 'center' : 'left'
     const noteFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }
       : undefined
@@ -143,7 +144,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         className={`card scrap${transparent ? ' no-bg' : ''}`}
         style={{ width: 168, background: transparent ? 'none' : noteColor.soft, transform: `rotate(${rot}deg) scale(${cardScale})`, borderRadius: 6 }}
       >
-        <div className="cap" style={noteFont}>{(data.text as string) || ''}</div>
+        <div className="cap" style={{ ...noteFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
@@ -153,6 +154,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const journalColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.journal)
     const transparent = data.transparent === true
     const width = typeof data.width === 'number' ? data.width : 220
+    const align = data.align === 'center' ? 'center' : 'left'
     const journalFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 13, lineHeight: 1.5 }
       : undefined
@@ -164,7 +166,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           transform: `rotate(${rot}deg)`,
         }}
       >
-        <div className="cap" style={journalFont}>{(data.text as string) || ''}</div>
+        <div className="cap" style={{ ...journalFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
     )
@@ -212,18 +214,9 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     )
   }
 
-  if (block.type === 'gratitude') {
-    const items = Array.isArray(data.items) ? (data.items as string[]) : []
-    const gratColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.gratitude)
-    return (
-      <div className="card scrap" style={{ width: 170, background: gratColor.soft, transform: `rotate(${rot}deg)`, borderRadius: 6 }}>
-        <div className="glabel">grateful for</div>
-        {items.length === 0 && <div className="gitem"><i style={{ background: gratColor.fg }} />today</div>}
-        {items.map((it, i) => <div className="gitem" key={i}><i style={{ background: gratColor.fg }} />{it}</div>)}
-        {onEdit && <EditButton onEdit={onEdit} />}
-      </div>
-    )
-  }
+  // Gratitude was removed as a feature — old blocks of this type simply
+  // stop rendering, same treatment as the earlier person-block removal.
+  if (block.type === 'gratitude') return null
 
   if (block.type === 'movie') {
     const poster = block.movie?.poster_path

@@ -4,6 +4,8 @@ import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { PeopleTagFields } from './PeopleTagFields'
+import { RichTextField, AlignToggle, isHtmlEmpty } from './RichTextField'
+import { RotationField } from './RotationField'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
@@ -23,6 +25,7 @@ export function EditJournalSheet({
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const [text, setText] = useState((data.text as string) || '')
+  const [align, setAlign] = useState(data.align === 'center' ? 'center' : 'left')
   const [color, setColor] = useState(data.color as string | undefined)
   const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
   const [transparent, setTransparent] = useState(data.transparent === true)
@@ -43,7 +46,7 @@ export function EditJournalSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
-      const nextData = { ...data, text, color, font, transparent, width }
+      const nextData = { ...data, text, align, color, font, transparent, width }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -81,7 +84,12 @@ export function EditJournalSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Entry</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={6} />
+            <RichTextField html={text} onChange={setText} placeholder="write something..." minHeight={120} />
+          </div>
+
+          <div className="field">
+            <label>Alignment</label>
+            <AlignToggle align={align} onChange={setAlign} />
           </div>
 
           <div className="field">
@@ -137,19 +145,11 @@ export function EditJournalSheet({
 
           <div className="field">
             <label>Rotation</label>
-            <div className="rotate-row">
-              <button type="button" onClick={() => setRotation((r) => r - 1)} aria-label="Rotate left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
-              </button>
-              <span className="rotate-val">{Math.round(rotation)}°</span>
-              <button type="button" onClick={() => setRotation((r) => r + 1)} aria-label="Rotate right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
-              </button>
-            </div>
+            <RotationField value={rotation} onChange={setRotation} />
           </div>
 
           {error && <div className="auth-error">{error}</div>}
-          <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
+          <button className="cta" type="submit" disabled={busy || isHtmlEmpty(text)}>{busy ? 'Saving…' : 'Save changes'}</button>
         </form>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>

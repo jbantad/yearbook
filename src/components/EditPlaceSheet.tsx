@@ -5,6 +5,7 @@ import { TrashIcon, PlaceIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
+import { RotationField } from './RotationField'
 import pinPhoto from '../assets/pin-trimmed.png'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
@@ -112,15 +113,7 @@ export function EditPlaceSheet({
 
           <div className="field">
             <label>Rotation</label>
-            <div className="rotate-row">
-              <button type="button" onClick={() => setRotation((r) => r - 1)} aria-label="Rotate left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M4 4v4h4" /></svg>
-              </button>
-              <span className="rotate-val">{Math.round(rotation)}°</span>
-              <button type="button" onClick={() => setRotation((r) => r + 1)} aria-label="Rotate right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3M20 20v-4h-4" /></svg>
-              </button>
-            </div>
+            <RotationField value={rotation} onChange={setRotation} />
           </div>
 
           {error && <div className="auth-error">{error}</div>}

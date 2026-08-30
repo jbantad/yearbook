@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { BLOCK_ICONS, BLOCK_LABELS, BLOCK_COLORS, StarIcon } from './icons'
+import { BLOCK_ICONS, BLOCK_LABELS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
+import { RichTextField, AlignToggle, isHtmlEmpty } from './RichTextField'
 import { STICKERS } from '../lib/stickers'
 import { todayISO } from '../lib/pages'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
@@ -12,7 +13,7 @@ import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
-const TYPES: Selection[] = ['photo', 'note', 'journal', 'place', 'meal', 'movie', 'gratitude', 'sticker', 'headline', 'label']
+const TYPES: Selection[] = ['photo', 'note', 'journal', 'place', 'meal', 'movie', 'sticker', 'headline', 'label']
 
 type LibraryMovie = { id: string; title: string; poster_path: string | null; rating: number | null; capturedAt: string }
 
@@ -36,6 +37,7 @@ export function AddSheet({
   const [movieLibraryLoading, setMovieLibraryLoading] = useState(false)
   const [movieSearch, setMovieSearch] = useState('')
   const [text, setText] = useState('')
+  const [align, setAlign] = useState<'left' | 'center'>('left')
   const [secondary, setSecondary] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -183,14 +185,13 @@ export function AddSheet({
         layout = { r: photoRotation }
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
-      if (type === 'note') data = { text }
-      if (type === 'journal') data = { text, width: 220 }
+      if (type === 'note') data = { text, align }
+      if (type === 'journal') data = { text, align, width: 220 }
       if (type === 'headline' || type === 'label') data = { style: type, content: text }
       if (type === 'meal') {
         data = { dish: text, description: secondary }
         if (mealPhotoFile) data.photo_url = await uploadToPhotos(mealPhotoFile)
       }
-      if (type === 'gratitude') data = { items: text.split('\n').map((s) => s.trim()).filter(Boolean) }
       if (type === 'sticker') data = { sticker: stickerKey, card_scale: 1 }
 
       if (type === 'place') {
@@ -262,10 +263,9 @@ export function AddSheet({
             <div className="opt-grid">
               {TYPES.map((t) => {
                 const Icon = BLOCK_ICONS[t]
-                const colors = BLOCK_COLORS[t]
                 return (
                   <button key={t} className="opt" onClick={() => setType(t)}>
-                    <div className="ico" style={{ background: colors.soft, color: colors.fg }}>
+                    <div className="ico" style={{ background: 'var(--kraft-light)', color: 'var(--ink)' }}>
                       <Icon />
                     </div>
                     <span>{BLOCK_LABELS[t]}</span>
@@ -357,7 +357,11 @@ export function AddSheet({
               <>
                 <div className="field">
                   <label>Note</label>
-                  <textarea value={text} onChange={(e) => setText(e.target.value)} required />
+                  <RichTextField html={text} onChange={setText} placeholder="write something..." />
+                </div>
+                <div className="field">
+                  <label>Alignment</label>
+                  <AlignToggle align={align} onChange={setAlign} />
                 </div>
                 <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />
               </>
@@ -366,7 +370,11 @@ export function AddSheet({
               <>
                 <div className="field">
                   <label>Entry</label>
-                  <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={8} />
+                  <RichTextField html={text} onChange={setText} placeholder="write something..." minHeight={140} />
+                </div>
+                <div className="field">
+                  <label>Alignment</label>
+                  <AlignToggle align={align} onChange={setAlign} />
                 </div>
                 <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />
               </>
@@ -452,12 +460,6 @@ export function AddSheet({
                 </div>
               </>
             )}
-            {type === 'gratitude' && (
-              <div className="field">
-                <label>Grateful for (one per line)</label>
-                <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={4} />
-              </div>
-            )}
             {type === 'sticker' && (
               <div className="field">
                 <label>Choose a sticker</label>
@@ -491,7 +493,13 @@ export function AddSheet({
             )}
 
             {error && <div className="auth-error">{error}</div>}
-            <button className="cta" type="submit" disabled={busy || (type === 'sticker' && !stickerKey)}>{busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}</button>
+            <button
+              className="cta"
+              type="submit"
+              disabled={busy || (type === 'sticker' && !stickerKey) || ((type === 'note' || type === 'journal') && isHtmlEmpty(text))}
+            >
+              {busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}
+            </button>
             <button type="button" className="cancel" onClick={() => setType(null)}>Back</button>
           </form>
         )}
