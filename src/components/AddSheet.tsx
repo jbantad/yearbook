@@ -12,7 +12,7 @@ import type { Enums, Json } from '../lib/database.types'
 
 type BlockType = Enums<'block_type'>
 type Selection = BlockType | 'headline' | 'label'
-const TYPES: Selection[] = ['photo', 'note', 'place', 'meal', 'movie', 'gratitude', 'sticker', 'headline', 'label']
+const TYPES: Selection[] = ['photo', 'note', 'journal', 'place', 'meal', 'movie', 'gratitude', 'sticker', 'headline', 'label']
 
 type LibraryMovie = { id: string; title: string; poster_path: string | null; rating: number | null; capturedAt: string }
 
@@ -184,6 +184,7 @@ export function AddSheet({
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
       if (type === 'note') data = { text }
+      if (type === 'journal') data = { text, width: 220 }
       if (type === 'headline' || type === 'label') data = { style: type, content: text }
       if (type === 'meal') {
         data = { dish: text, description: secondary }
@@ -238,7 +239,7 @@ export function AddSheet({
         .single()
       if (blockErr) throw blockErr
 
-      if ((type === 'photo' || type === 'note') && taggedPersonIds.length > 0 && block) {
+      if ((type === 'photo' || type === 'note' || type === 'journal') && taggedPersonIds.length > 0 && block) {
         await supabase.from('block_people').insert(taggedPersonIds.map((person_id) => ({ block_id: block.id, person_id })))
       }
 
@@ -357,6 +358,15 @@ export function AddSheet({
                 <div className="field">
                   <label>Note</label>
                   <textarea value={text} onChange={(e) => setText(e.target.value)} required />
+                </div>
+                <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />
+              </>
+            )}
+            {type === 'journal' && (
+              <>
+                <div className="field">
+                  <label>Entry</label>
+                  <textarea value={text} onChange={(e) => setText(e.target.value)} required rows={8} />
                 </div>
                 <PeopleTagFields taggedIds={taggedPersonIds} onChange={setTaggedPersonIds} />
               </>

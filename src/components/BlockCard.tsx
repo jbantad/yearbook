@@ -149,6 +149,27 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     )
   }
 
+  if (block.type === 'journal') {
+    const journalColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.journal)
+    const transparent = data.transparent === true
+    const width = typeof data.width === 'number' ? data.width : 220
+    const journalFont = (data.font as string) === 'mono'
+      ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 13, lineHeight: 1.5 }
+      : undefined
+    return (
+      <div
+        className={`journal-card${transparent ? ' no-bg' : ''}`}
+        style={{
+          width, background: transparent ? 'none' : journalColor.soft, borderLeftColor: journalColor.fg,
+          transform: `rotate(${rot}deg)`,
+        }}
+      >
+        <div className="cap" style={journalFont}>{(data.text as string) || ''}</div>
+        {onEdit && <EditButton onEdit={onEdit} />}
+      </div>
+    )
+  }
+
   if (block.type === 'place') {
     const placeColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.place)
     const pinStyle = data.pin_style === 'pin' ? 'pin' : 'outline'

@@ -37,6 +37,8 @@
   --gold-soft: oklch(91% 0.04 85);
   --moss: oklch(56% 0.1 122);
   --moss-soft: oklch(90% 0.035 122);
+  --denim: oklch(55% 0.1 235);
+  --denim-soft: oklch(90% 0.03 235);
   --line: oklch(80% 0.02 70);
   /* Used instead of --line/--ink-faint wherever an element sits directly on the
      photographic craft-paper background (not a solid --card/--paper-alt surface) —
@@ -55,6 +57,7 @@
   --block-person: var(--teal); --block-person-soft: var(--teal-soft);
   --block-gratitude: var(--blush); --block-gratitude-soft: var(--blush-soft);
   --block-sticker: var(--moss); --block-sticker-soft: var(--moss-soft);
+  --block-journal: var(--denim); --block-journal-soft: var(--denim-soft);
   --font-body: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-hand: 'Caveat', 'Segoe Script', cursive;
 }
@@ -236,6 +239,13 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .scrap { padding: 14px 16px 14px; }
 .scrap .cap { font-size: 18px; margin-top: 2px; }
 .scrap.no-bg { box-shadow: none; padding: 6px 4px; }
+
+.journal-card {
+  position: relative; padding: 14px 16px; border-radius: 8px; border-left: 3px solid var(--block-journal);
+  box-shadow: 0 8px 18px oklch(30% 0.03 50 / 0.16), 0 1px 3px oklch(30% 0.03 50 / 0.12); flex-shrink: 0;
+}
+.journal-card.no-bg { box-shadow: none; border-left: none; padding: 6px 4px; }
+.journal-card .cap { font-size: 17px; white-space: pre-wrap; word-break: break-word; }
 
 .place { position: relative; display: flex; align-items: center; gap: 6px; white-space: nowrap; align-self: center; }
 .place svg { width: 18px; height: 18px; color: var(--block-place); flex-shrink: 0; }

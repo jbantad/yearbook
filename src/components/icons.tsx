@@ -148,6 +148,14 @@ export function StickerIcon() {
     </svg>
   )
 }
+export function JournalIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 19.5Z" />
+      <path d="M9 8h7M9 12h7M9 16h4" />
+    </svg>
+  )
+}
 export function TrashIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -165,6 +173,7 @@ export const BLOCK_ICONS: Record<string, () => React.ReactElement> = {
   person: PersonIcon,
   gratitude: GratitudeIcon,
   sticker: StickerIcon,
+  journal: JournalIcon,
   headline: HeadlineTypeIcon,
   label: LabelTypeIcon,
 }
@@ -178,6 +187,7 @@ export const BLOCK_COLORS: Record<string, { fg: string; soft: string }> = {
   person: { fg: 'var(--block-person)', soft: 'var(--block-person-soft)' },
   gratitude: { fg: 'var(--block-gratitude)', soft: 'var(--block-gratitude-soft)' },
   sticker: { fg: 'var(--block-sticker)', soft: 'var(--block-sticker-soft)' },
+  journal: { fg: 'var(--block-journal)', soft: 'var(--block-journal-soft)' },
   headline: { fg: 'var(--ink)', soft: 'var(--kraft-light)' },
   label: { fg: 'var(--ink)', soft: 'var(--kraft-light)' },
 }
@@ -191,6 +201,7 @@ export const BLOCK_LABELS: Record<string, string> = {
   person: 'Person',
   gratitude: 'Gratitude',
   sticker: 'Sticker',
+  journal: 'Journal',
   headline: 'Headline',
   label: 'Label',
 }

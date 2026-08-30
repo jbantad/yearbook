@@ -10,6 +10,7 @@ import { EditMealSheet } from './EditMealSheet'
 import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { EditStickerSheet } from './EditStickerSheet'
+import { EditJournalSheet } from './EditJournalSheet'
 import { PlusIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
@@ -18,7 +19,7 @@ import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
 
-const EDITABLE_TYPES = new Set(['photo', 'note', 'place', 'gratitude', 'text', 'meal', 'movie', 'sticker'])
+const EDITABLE_TYPES = new Set(['photo', 'note', 'journal', 'place', 'gratitude', 'text', 'meal', 'movie', 'sticker'])
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -36,7 +37,7 @@ function blockRotation(block: BlockWithJoins): number {
 // applied to a small one, leaves a wall of empty space below it before the
 // canvas ends. Approximate per type instead.
 function estimateBlockHeight(block: BlockWithJoins): number {
-  const data = (block.data ?? {}) as { frame?: string; photo_url?: string; sticker?: string }
+  const data = (block.data ?? {}) as { frame?: string; photo_url?: string; sticker?: string; text?: string; width?: number }
   switch (block.type) {
     case 'photo': {
       const frame = FRAME_SIZES[data.frame ?? 'classic'] ?? FRAME_SIZES.classic
@@ -46,6 +47,13 @@ function estimateBlockHeight(block: BlockWithJoins): number {
       const sticker = data.sticker ? STICKER_BY_KEY[data.sticker] : undefined
       const ratio = sticker ? sticker.h / sticker.w : 0.6
       return STICKER_BASE_WIDTH * ratio + 20
+    }
+    case 'journal': {
+      const text = data.text || ''
+      const width = typeof data.width === 'number' ? data.width : 220
+      const charsPerLine = Math.max(10, Math.floor(width / 8))
+      const wrappedLines = text.split('\n').reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / charsPerLine)), 0)
+      return Math.max(60, wrappedLines * 22 + 28)
     }
     case 'movie': return 300
     case 'meal': return data.photo_url ? 230 : 100
@@ -342,6 +350,9 @@ export function PageCanvas({
       )}
       {editingBlock?.type === 'note' && (
         <EditNoteSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
+      )}
+      {editingBlock?.type === 'journal' && (
+        <EditJournalSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
       )}
       {editingBlock?.type === 'place' && (
         <EditPlaceSheet block={editingBlock} onClose={() => setEditingBlock(null)} onSaved={() => { setEditingBlock(null); onReload() }} onDeleted={() => { setEditingBlock(null); onReload() }} />
