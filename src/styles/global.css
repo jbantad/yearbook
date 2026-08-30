@@ -614,7 +614,11 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 @media (min-width: 768px) {
   .app {
     max-width: none;
-    background: var(--kraft-light);
+    background-color: var(--ink);
+    background-image: url('../assets/starv2.png'), url('../assets/starv2.png');
+    background-repeat: repeat-y, repeat-y;
+    background-position: top left, top right;
+    background-size: 150px auto, 150px auto;
   }
   .screen {
     /* .screen is a flex item, and auto margins on a flex item's cross axis
