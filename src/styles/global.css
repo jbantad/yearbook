@@ -293,7 +293,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 .block-edit {
   position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%;
-  background: oklch(20% 0.02 50 / 0.55); color: oklch(99% 0.01 85); border: none;
+  /* Opaque with a light ring, not translucent — when two overlapping blocks'
+     buttons land near each other (e.g. a sticker dropped on a note), two
+     semi-transparent circles used to compound into one indistinct dark
+     blob. Opaque + a ring keeps each button a crisp, separate circle. */
+  background: oklch(20% 0.02 50); color: oklch(99% 0.01 85); border: 1.5px solid oklch(99% 0.01 85 / 0.55);
+  box-shadow: 0 1px 4px oklch(20% 0.02 50 / 0.35);
   display: flex; align-items: center; justify-content: center; z-index: 5;
   flex-shrink: 0;
 }
