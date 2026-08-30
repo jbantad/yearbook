@@ -5,8 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
 import { type BlockWithJoins } from '../components/BlockCard'
 import { PageCanvas } from '../components/PageCanvas'
+import { AddSheet } from '../components/AddSheet'
 import { getOrCreateDayPage, findPriorPageDates } from '../lib/pages'
-import { LockIcon, UnlockIcon } from '../components/icons'
+import { LockIcon, UnlockIcon, PlusIcon } from '../components/icons'
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -61,6 +62,9 @@ export function DayPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [exhausted, setExhausted] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [activeDate, setActiveDate] = useState<string | null>(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const dayElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
     let cancelled = false
@@ -158,7 +162,29 @@ export function DayPage() {
     return () => observer.disconnect()
   }, [exhausted, loadMore])
 
+  // Every day in the feed can add blocks, but the FAB is position:fixed —
+  // rendering one per day would stack them all in the same screen corner.
+  // Instead there's a single shared FAB that follows whichever day's header
+  // has scrolled to the top band of the viewport (a standard scrollspy).
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const d = entry.target.getAttribute('data-date')
+            if (d) setActiveDate(d)
+          }
+        }
+      },
+      { rootMargin: '-1px 0px -85% 0px', threshold: 0 },
+    )
+    dayElRefs.current.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [days])
+
   if (!date) return null
+
+  const activeEntry = days.find((d) => d.date === activeDate) ?? days[0]
 
   const entryDay = days[0]
 
@@ -179,7 +205,14 @@ export function DayPage() {
 
       {days.map((entry, i) => (
         (entry.pageId && (i === 0 || entry.blocks.length > 0)) ? (
-          <div key={entry.date}>
+          <div
+            key={entry.date}
+            data-date={entry.date}
+            ref={(el) => {
+              if (el) dayElRefs.current.set(entry.date, el)
+              else dayElRefs.current.delete(entry.date)
+            }}
+          >
             <div className="day-section-header" style={i === 0 ? { marginTop: 0 } : undefined}>
               <span>{formatDate(entry.date)}</span>
               <svg className="squiggle" viewBox="0 0 200 20" preserveAspectRatio="none">
@@ -201,7 +234,7 @@ export function DayPage() {
               emptyMessage="This page is empty so far. Tap + to add something."
               onReload={() => reloadDay(entry.date)}
               minHeight={i === 0 ? 420 : 120}
-              showFab={i === 0}
+              showFab={false}
             />
           </div>
         ) : null
@@ -214,6 +247,20 @@ export function DayPage() {
         <div className="scroll-prev-hint">that's everything so far</div>
       )}
       <div ref={bottomSentinelRef} style={{ height: 1 }} />
+
+      {activeEntry?.pageId && !activeEntry.locked && (
+        <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
+          <PlusIcon />
+        </button>
+      )}
+
+      {addOpen && activeEntry?.pageId && (
+        <AddSheet
+          pageId={activeEntry.pageId}
+          onClose={() => setAddOpen(false)}
+          onCreated={() => { setAddOpen(false); reloadDay(activeEntry.date) }}
+        />
+      )}
 
       <TabBar active="today" />
     </div>
