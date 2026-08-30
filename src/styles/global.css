@@ -583,3 +583,49 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
 .swatch { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; border: none; box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.1); }
 .swatch.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--ink); }
+
+/* ---- responsive: mobile is the base design above — everything in this
+   section only ever ADDS room back on wider screens, it never redesigns
+   the page itself. Nothing here changes anything below 768px. ---- */
+
+/* tablet: the page stops stretching to fill the screen and instead floats
+   on visible kraft "desk" space, with the bottom tab bar staying put
+   (already narrow + centered via .tabbar's own max-width, so no override
+   needed there). */
+@media (min-width: 768px) {
+  .app {
+    max-width: none;
+    background: var(--kraft-light);
+  }
+  .screen {
+    max-width: 460px;
+    margin: 28px auto 0;
+    background: var(--paper) url('../assets/craft-paper-fill.jpg') top left/220px repeat;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 var(--kraft-dark), 0 20px 40px oklch(30% 0.04 50 / 0.22);
+  }
+}
+
+/* desktop: the bottom tab bar becomes a left sidebar rail, and the page
+   gets centered in the remaining space instead of the full viewport —
+   .app's new padding-left (matching the rail's width) is what shifts that
+   centering point over, so .screen's own margin:auto (from the tablet
+   rule above) needs no further change. */
+@media (min-width: 1200px) {
+  .app { padding-left: 112px; }
+  .screen { padding-bottom: 40px; }
+
+  .tabbar-wrap { left: 0; right: auto; top: 0; bottom: 0; width: 112px; justify-content: flex-start; }
+  .tabbar {
+    max-width: none; width: 100%; height: 100%; flex-direction: column; gap: 4px;
+    border-top: none; border-right: 1px solid oklch(100% 0 0 / 0.08);
+    padding: 24px 0 0; box-shadow: none;
+  }
+  .tab { justify-content: center; padding-top: 0; }
+
+  .fab { right: calc(50vw - 266px); bottom: 32px; }
+
+  .sheet-backdrop { align-items: center; }
+  .sheet { border-radius: 20px; max-height: 84vh; }
+  .handle { display: none; }
+}
