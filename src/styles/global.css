@@ -320,6 +320,15 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 .block-lock svg { width: 13px; height: 13px; }
 .block-lock.is-locked { background: var(--amber); color: oklch(20% 0.02 50); border-color: oklch(20% 0.02 50 / 0.3); }
+.block-send-back {
+  position: absolute; top: 6px; right: 62px; width: 24px; height: 24px; border-radius: 50%;
+  background: oklch(20% 0.02 50); color: oklch(99% 0.01 85); border: 1.5px solid oklch(99% 0.01 85 / 0.55);
+  box-shadow: 0 1px 4px oklch(20% 0.02 50 / 0.35);
+  display: flex; align-items: center; justify-content: center; z-index: 5;
+  flex-shrink: 0;
+}
+.block-send-back svg { width: 13px; height: 13px; }
+.block-send-back.is-back { background: var(--denim); color: oklch(99% 0.01 85); border-color: oklch(99% 0.01 85 / 0.4); }
 /* Compact inline tags (place/person/headline/label) aren't boxy cards, so
    an absolute overlay sits right on top of the text — make it a normal
    flex sibling after the label instead. */

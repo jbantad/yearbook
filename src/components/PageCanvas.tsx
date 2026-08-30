@@ -10,7 +10,7 @@ import { EditMovieSheet } from './EditMovieSheet'
 import { EditTextSheet } from './EditTextSheet'
 import { EditStickerSheet } from './EditStickerSheet'
 import { EditJournalSheet } from './EditJournalSheet'
-import { PlusIcon, LockIcon, UnlockIcon, EditIcon } from './icons'
+import { PlusIcon, LockIcon, UnlockIcon, EditIcon, SendToBackIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
@@ -39,6 +39,11 @@ function blockRotation(block: BlockWithJoins): number {
 function blockLocked(block: BlockWithJoins): boolean {
   const layout = (block.layout ?? {}) as { locked?: boolean }
   return layout.locked === true
+}
+
+function blockSentBack(block: BlockWithJoins): boolean {
+  const layout = (block.layout ?? {}) as { back?: boolean }
+  return layout.back === true
 }
 
 // Card heights vary a lot by type — a photo frame needs real room, a place
@@ -84,6 +89,7 @@ function DraggableBlock({
   zIndex,
   pageLocked,
   blockLocked,
+  blockSentBack,
   onDrag,
   onMoved,
   onRotate,
@@ -91,6 +97,7 @@ function DraggableBlock({
   onFront,
   onEdit,
   onToggleLock,
+  onToggleSendBack,
   onMeasure,
 }: {
   block: BlockWithJoins
@@ -99,6 +106,7 @@ function DraggableBlock({
   zIndex: number
   pageLocked: boolean
   blockLocked: boolean
+  blockSentBack: boolean
   onDrag: (pos: Pos) => void
   onMoved: (id: string, pos: Pos) => void
   onRotate: (r: number) => void
@@ -106,6 +114,7 @@ function DraggableBlock({
   onFront: () => void
   onEdit?: () => void
   onToggleLock?: () => void
+  onToggleSendBack?: () => void
   onMeasure: (height: number) => void
 }) {
   const [dragging, setDragging] = useState(false)
@@ -229,6 +238,16 @@ function DraggableBlock({
       <BlockCard block={block} onEdit={(pageLocked || showButtonCluster) ? undefined : onEdit} rotationOverride={rotation} />
       {!pageLocked && showButtonCluster && (
         <>
+          {onToggleSendBack && (
+            <button
+              className={`block-send-back${blockSentBack ? ' is-back' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleSendBack() }}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label={blockSentBack ? 'Bring forward' : 'Send to back'}
+            >
+              <SendToBackIcon />
+            </button>
+          )}
           {onToggleLock && (
             <button
               className={`block-lock${blockLocked ? ' is-locked' : ''}`}
@@ -288,6 +307,7 @@ export function PageCanvas({
   const [positions, setPositions] = useState<Record<string, Pos>>({})
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [locks, setLocks] = useState<Record<string, boolean>>({})
+  const [sentBacks, setSentBacks] = useState<Record<string, boolean>>({})
   const [measuredHeights, setMeasuredHeights] = useState<Record<string, number>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
@@ -301,6 +321,7 @@ export function PageCanvas({
     setPositions(Object.fromEntries(blocks.map((b, i) => [b.id, blockPosition(b, i)])))
     setRotations(Object.fromEntries(blocks.map((b) => [b.id, blockRotation(b)])))
     setLocks(Object.fromEntries(blocks.map((b) => [b.id, blockLocked(b)])))
+    setSentBacks(Object.fromEntries(blocks.map((b) => [b.id, blockSentBack(b)])))
   }, [blocks])
 
   function bringToFront(id: string) {
@@ -317,7 +338,7 @@ export function PageCanvas({
     setRotations((prev) => ({ ...prev, [id]: r }))
   }
 
-  // Layout is a single JSON column ({x, y, r, locked}) — merge in just the
+  // Layout is a single JSON column ({x, y, r, locked, back}) — merge in just the
   // changed piece against that block's current layout, or a drag would wipe
   // out a rotation set elsewhere (and vice versa) instead of only updating
   // the field that actually changed. The block's own `layout` prop is a
@@ -326,17 +347,19 @@ export function PageCanvas({
   // reflects the other gesture's change, so fall back to the live
   // positions/rotations/locks state (updated on every gesture) instead of
   // that stale snapshot.
-  async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number; locked: boolean }>) {
+  async function persistLayout(id: string, patch: Partial<{ x: number; y: number; r: number; locked: boolean; back: boolean }>) {
     const block = blocks.find((b) => b.id === id)
     const currentLayout = (block?.layout ?? {}) as Record<string, unknown>
     const livePos = positions[id]
     const liveRot = rotations[id]
     const liveLock = locks[id]
+    const liveBack = sentBacks[id]
     const merged = {
       ...currentLayout,
       ...(livePos ? { x: livePos.x, y: livePos.y } : {}),
       ...(typeof liveRot === 'number' ? { r: liveRot } : {}),
       ...(typeof liveLock === 'boolean' ? { locked: liveLock } : {}),
+      ...(typeof liveBack === 'boolean' ? { back: liveBack } : {}),
       ...patch,
     }
     await supabase.from('blocks').update({ layout: merged }).eq('id', id)
@@ -354,6 +377,12 @@ export function PageCanvas({
     const next = !(locks[id] ?? false)
     setLocks((prev) => ({ ...prev, [id]: next }))
     await persistLayout(id, { locked: next })
+  }
+
+  async function handleToggleSendBack(id: string) {
+    const next = !(sentBacks[id] ?? false)
+    setSentBacks((prev) => ({ ...prev, [id]: next }))
+    await persistLayout(id, { back: next })
   }
 
   function handleMeasure(id: string, height: number) {
@@ -389,15 +418,23 @@ export function PageCanvas({
         {!loading && pageId && blocks.length === 0 && (
           <div className="empty-state">{emptyMessage}</div>
         )}
-        {blocks.map((b, i) => (
+        {blocks.map((b, i) => {
+          const isBack = sentBacks[b.id] ?? blockSentBack(b)
+          // Sent-to-back blocks stay behind everything else no matter what —
+          // ignoring the session's bring-to-front counter here (rather than
+          // just seeding a low starting value) is what keeps a later tap or
+          // drag from popping one back on top.
+          const zIndex = isBack ? -1000 + i : (zOrder[b.id] ?? i)
+          return (
           <DraggableBlock
             key={b.id}
             block={b}
             pos={positions[b.id] ?? blockPosition(b, i)}
             rotation={rotations[b.id] ?? blockRotation(b)}
-            zIndex={zOrder[b.id] ?? i}
+            zIndex={zIndex}
             pageLocked={locked}
             blockLocked={locks[b.id] ?? blockLocked(b)}
+            blockSentBack={isBack}
             onDrag={(pos) => handleDrag(b.id, pos)}
             onMoved={handleMoved}
             onRotate={(r) => handleRotate(b.id, r)}
@@ -405,6 +442,7 @@ export function PageCanvas({
             onFront={() => bringToFront(b.id)}
             onMeasure={(h) => handleMeasure(b.id, h)}
             onToggleLock={LOCKABLE_TYPES.has(b.type) ? () => handleToggleLock(b.id) : undefined}
+            onToggleSendBack={LOCKABLE_TYPES.has(b.type) ? () => handleToggleSendBack(b.id) : undefined}
             onEdit={EDITABLE_TYPES.has(b.type) ? () => {
               // Same staleness issue as persistLayout above: b.layout is a
               // snapshot from the last fetch, so if this block was dragged
@@ -424,7 +462,8 @@ export function PageCanvas({
               })
             } : undefined}
           />
-        ))}
+          )
+        })}
         {pageNumber != null && <div className="pagetag">PAGE {pageNumber}</div>}
       </div>
 

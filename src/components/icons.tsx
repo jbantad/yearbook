@@ -95,6 +95,14 @@ export function UnlockIcon() {
     </svg>
   )
 }
+export function SendToBackIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="11" height="11" rx="1.5" />
+      <path d="M9 15v2.5A2.5 2.5 0 0 0 11.5 20H17a3 3 0 0 0 3-3v-5.5a2.5 2.5 0 0 0-2.5-2.5H15" />
+    </svg>
+  )
+}
 export function StarIcon({ filled = true }: { filled?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
