@@ -199,6 +199,10 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   cursor: grabbing;
   z-index: 20;
 }
+/* A separate inner element (not .block-drag-wrap itself) for the desktop
+   size bump below — .block-drag-wrap's own transform is set inline (drag
+   positioning), which a CSS rule can never win against. */
+.block-scale-wrap { transform-origin: top left; }
 
 /* ---- cards ---- */
 
@@ -650,6 +654,13 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
     padding: 0; box-shadow: none;
   }
   .tab { flex: none; justify-content: center; padding: 14px 0; }
+
+  /* Blocks keep their original x/y (a literal pixel position tuned for the
+     narrower page) — scaling only the page container would just leave them
+     clustered in the corner with empty space around them. Scaling each
+     block itself (anchored top-left, matching its own positioning) makes
+     the page actually look bigger, not just wider. */
+  .block-scale-wrap { transform: scale(1.5); }
 
   .fab { right: calc(50vw - 269px); bottom: 32px; }
 

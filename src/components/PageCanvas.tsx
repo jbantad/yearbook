@@ -15,6 +15,7 @@ import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
+import { useDesktopBlockScale } from '../lib/useDesktopBlockScale'
 
 type Pos = { x: number; y: number }
 
@@ -176,7 +177,9 @@ function DraggableBlock({
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
     >
-      <BlockCard block={block} onEdit={locked ? undefined : onEdit} rotationOverride={rotation} />
+      <div className="block-scale-wrap">
+        <BlockCard block={block} onEdit={locked ? undefined : onEdit} rotationOverride={rotation} />
+      </div>
     </div>
   )
 }
@@ -215,6 +218,7 @@ export function PageCanvas({
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
+  const desktopScale = useDesktopBlockScale()
 
   // Positions/rotations are lifted up here (rather than kept local to each
   // dragged block) so the canvas-height calc below always sees where a
@@ -278,7 +282,7 @@ export function PageCanvas({
     const pos = positions[b.id] ?? blockPosition(b, i)
     const data = (b.data ?? {}) as { card_scale?: number }
     const scale = typeof data.card_scale === 'number' ? data.card_scale : 1
-    return Math.max(max, pos.y + estimateBlockHeight(b) * scale)
+    return Math.max(max, pos.y + estimateBlockHeight(b) * scale * desktopScale)
   }, minHeight)
 
   return (
