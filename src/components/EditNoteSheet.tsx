@@ -24,6 +24,7 @@ export function EditNoteSheet({
   const [color, setColor] = useState(data.color as string | undefined)
   const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
   const [transparent, setTransparent] = useState(data.transparent === true)
+  const [cardScale, setCardScale] = useState(typeof data.card_scale === 'number' ? (data.card_scale as number) : 1)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
   const [busy, setBusy] = useState(false)
@@ -40,7 +41,7 @@ export function EditNoteSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
-      const nextData = { ...data, text, color, font, transparent }
+      const nextData = { ...data, text, color, font, transparent, card_scale: cardScale }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -111,6 +112,23 @@ export function EditNoteSheet({
           )}
 
           <PeopleTagFields taggedIds={taggedIds} onChange={setTaggedIds} />
+
+          <div className="field">
+            <label>Size</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
+              <input
+                type="range"
+                min={0.6}
+                max={2}
+                step={0.05}
+                value={cardScale}
+                onChange={(e) => setCardScale(parseFloat(e.target.value))}
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
+            </div>
+          </div>
 
           <div className="field">
             <label>Rotation</label>
