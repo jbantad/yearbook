@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
-import { BackIcon, PlusIcon } from '../components/icons'
+import { PlusIcon } from '../components/icons'
 import type { Tables } from '../lib/database.types'
 
 type Album = Tables<'pages'>
@@ -55,16 +55,18 @@ export function AlbumsPage() {
 
   return (
     <div className="screen">
-      <div className="nav">
-        <button onClick={() => navigate(-1)}><BackIcon /></button>
-        <div className="title"><h1>Albums</h1></div>
-        <div style={{ width: 32 }} />
+      <div className="header">
+        <div className="row">
+          <h1>Albums</h1>
+          <div className="stat">{loading ? 'loading…' : `${albums.length} album${albums.length === 1 ? '' : 's'}`}</div>
+        </div>
+        <div className="sub">trips or projects that aren't tied to one day</div>
       </div>
 
       <div className="pile">
         {loading && <div className="empty-state">loading…</div>}
         {!loading && albums.length === 0 && !creating && (
-          <div className="empty-state">No albums yet — a good spot for a trip or a project that isn't tied to one day.</div>
+          <div className="empty-state">No albums yet.</div>
         )}
         {albums.map((a) => (
           <button key={a.id} className="prow" onClick={() => navigate(`/page/${a.id}`)}>
@@ -95,7 +97,7 @@ export function AlbumsPage() {
         )}
       </div>
 
-      <TabBar active="calendar" />
+      <TabBar active="albums" />
     </div>
   )
 }

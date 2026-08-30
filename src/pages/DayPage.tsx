@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { TabBar } from '../components/TabBar'
@@ -56,7 +56,6 @@ const MAX_EMPTY_BATCHES_PER_LOAD = 4
 export function DayPage() {
   const { date } = useParams<{ date: string }>()
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [days, setDays] = useState<DayEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -126,8 +125,6 @@ export function DayPage() {
     setDays((prev) => prev.map((d) => (d.date === entry.date ? { ...d, locked: next } : d)))
     await supabase.from('pages').update({ locked: next }).eq('id', entry.pageId)
   }
-
-  const goCalendar = () => navigate('/calendar')
 
   const bottomSentinelRef = useRef<HTMLDivElement>(null)
 
@@ -203,7 +200,6 @@ export function DayPage() {
               locked={entry.locked}
               emptyMessage="This page is empty so far. Tap + to add something."
               onReload={() => reloadDay(entry.date)}
-              onDoubleTap={goCalendar}
               minHeight={i === 0 ? 420 : 120}
               showFab={i === 0}
             />

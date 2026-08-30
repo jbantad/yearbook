@@ -74,7 +74,7 @@ export function AlbumPage() {
         <div className="page-canvas">
           <div className="empty-state">Couldn't find this album.</div>
         </div>
-        <TabBar active="calendar" />
+        <TabBar active="albums" />
       </div>
     )
   }
@@ -102,7 +102,7 @@ export function AlbumPage() {
         onReload={load}
       />
 
-      <TabBar active="calendar" />
+      <TabBar active="albums" />
     </div>
   )
 }
