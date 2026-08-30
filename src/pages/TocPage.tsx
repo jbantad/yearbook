@@ -108,7 +108,6 @@ export function TocPage() {
     <div className="screen">
       <div className="header">
         <div className="row"><h1>Table of Contents</h1></div>
-        <div className="sub">every day you've journaled — tap one to jump in</div>
       </div>
 
       <div className="pile">
