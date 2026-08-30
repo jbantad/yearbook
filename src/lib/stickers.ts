@@ -6,6 +6,9 @@ import arrow5 from '../assets/stickers/arrow-5.png'
 import arrow6 from '../assets/stickers/arrow-6.png'
 import arrow7 from '../assets/stickers/arrow-7.png'
 import speech1 from '../assets/stickers/speech-1.png'
+import plumbobPurple from '../assets/stickers/plumbob-purple.png'
+import plumbobOrange from '../assets/stickers/plumbob-orange.png'
+import plumbobGreen from '../assets/stickers/plumbob-green.png'
 
 // On-canvas width at card_scale 1 — each sticker's own aspect ratio (w/h,
 // captured from the source crop) then determines its rendered height.
@@ -20,6 +23,9 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
   { key: 'arrow-6', src: arrow6, w: 500, h: 214 },
   { key: 'arrow-7', src: arrow7, w: 500, h: 285 },
   { key: 'speech-1', src: speech1, w: 500, h: 377 },
+  { key: 'plumbob-purple', src: plumbobPurple, w: 250, h: 500 },
+  { key: 'plumbob-orange', src: plumbobOrange, w: 249, h: 500 },
+  { key: 'plumbob-green', src: plumbobGreen, w: 248, h: 500 },
 ]
 
 export const STICKER_BY_KEY: Record<string, { src: string; w: number; h: number }> =
