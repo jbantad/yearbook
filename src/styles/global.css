@@ -74,6 +74,12 @@ body {
      the whole page wider than the viewport instead of just clipping,
      leaving blank white space beyond the app's own background. */
   overflow-x: hidden;
+  /* Backstop for any sliver outside .app's own box — e.g. a desktop window
+     resized narrower than the 768px tablet breakpoint but still wider than
+     the 460px mobile page, where .app is back to a centered fixed-width
+     column and doesn't cover the full viewport itself. Without this the
+     browser's own white shows through instead of the desk color. */
+  background: var(--ink);
 }
 a { color: var(--amber); text-decoration: none; }
 a:hover { color: oklch(50% 0.14 55); }
