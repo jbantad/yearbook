@@ -15,7 +15,7 @@ export type CardInset = { top: number; right: number; bottom: number; left: numb
 // decoration like night-sky), so this is per-card rather than one constant.
 export const CARDS: { key: string; src: string; w: number; h: number; light: boolean; inset: CardInset }[] = [
   { key: 'night-sky', src: nightSky, w: 394, h: 700, light: true, inset: { top: 16, right: 14, bottom: 16, left: 14 } },
-  { key: 'rip-paper', src: ripPaper, w: 452, h: 700, light: false, inset: { top: 26, right: 12, bottom: 24, left: 12 } },
+  { key: 'rip-paper', src: ripPaper, w: 452, h: 700, light: false, inset: { top: 22, right: 9, bottom: 20, left: 9 } },
 ]
 
 export const CARD_BY_KEY: Record<string, { src: string; w: number; h: number; light: boolean; inset: CardInset }> =
