@@ -22,16 +22,16 @@ export const CARDS: Card[] = [
   { key: 'night-sky', src: nightSky, w: 394, h: 700, light: true, inset: { top: 16, right: 14, bottom: 16, left: 14 } },
   {
     key: 'rip-paper', src: ripPaper, w: 452, h: 700, light: false,
-    // Only the top needs the corner-float treatment — the big star sits
-    // right at the top-left, but the bottom-right cluster is small enough
-    // that a plain bottom margin clears it without wasting the rest of the
-    // width the way a full top margin would have.
-    inset: { top: 8, right: 11, bottom: 20, left: 27 },
-    // Percentages here are relative to the text box itself, which starts
-    // further right now (at the 27% left inset) — the float only needs to
-    // cover what's left of the star past that point, not the star's whole
-    // width, or the top lines would start with a lot of empty space.
-    cornerFloat: { width: 18, height: 22, margin: 4 },
+    // top/left here are just normal breathing room from the torn edge —
+    // clearing the star itself is entirely the corner-float's job below,
+    // not the inset's. The bottom-right cluster is small enough that a
+    // plain bottom margin clears it without wasting the rest of the width
+    // the way a full top margin would have.
+    inset: { top: 10, right: 11, bottom: 20, left: 10 },
+    // Percentages are relative to the text box (which starts at the 10%
+    // inset above), sized to reach the star's actual right/bottom edge —
+    // roughly 36%/21% of the *card's* own width/height.
+    cornerFloat: { width: 33, height: 16, margin: 4 },
   },
 ]
 
