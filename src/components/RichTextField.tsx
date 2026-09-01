@@ -37,6 +37,20 @@ export function RichTextField({
     onChange(ref.current?.innerHTML ?? '')
   }
 
+  // Dragging a text selection in from elsewhere on the page (e.g. an
+  // iOS long-press-drag between two blocks) is a separate browser event
+  // from paste, and skips its plain-text sanitization entirely — the
+  // browser inserts the dragged content's raw HTML, inline styles and all.
+  // That's how a block set to "Typed" font could leak a hardcoded
+  // font-family span into text dragged into a "Handwritten" block, so this
+  // needs the exact same plain-text-only handling as paste.
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    const text = e.dataTransfer.getData('text/plain')
+    document.execCommand('insertText', false, text)
+    onChange(ref.current?.innerHTML ?? '')
+  }
+
   return (
     <div className="rtf">
       <div className="rtf-toolbar">
@@ -56,6 +70,7 @@ export function RichTextField({
         contentEditable
         onInput={(e) => onChange(e.currentTarget.innerHTML)}
         onPaste={handlePaste}
+        onDrop={handleDrop}
         data-placeholder={placeholder}
         style={{ minHeight }}
       />
@@ -69,6 +84,18 @@ export function isHtmlEmpty(html: string): boolean {
   const tmp = document.createElement('div')
   tmp.innerHTML = html
   return !(tmp.textContent ?? '').trim()
+}
+
+// Belt-and-suspenders alongside the paste/drop handlers above: strip any
+// inline style="" that snuck into the content some other way (a browser
+// quirk neither of those covers, an old block saved before this existed)
+// before it's persisted, so a block's own font/color choice always wins
+// over whatever happened to be attached to a stray span.
+export function stripInlineStyles(html: string): string {
+  const tmp = document.createElement('div')
+  tmp.innerHTML = html
+  tmp.querySelectorAll('[style]').forEach((el) => el.removeAttribute('style'))
+  return tmp.innerHTML
 }
 
 export function AlignToggle({ align, onChange }: { align: string; onChange: (align: 'left' | 'center') => void }) {

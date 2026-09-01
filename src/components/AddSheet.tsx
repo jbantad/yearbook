@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { BLOCK_ICONS, BLOCK_LABELS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
-import { RichTextField, AlignToggle, isHtmlEmpty } from './RichTextField'
+import { RichTextField, AlignToggle, isHtmlEmpty, stripInlineStyles } from './RichTextField'
 import { STICKERS } from '../lib/stickers'
 import { todayISO } from '../lib/pages'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
@@ -185,8 +185,8 @@ export function AddSheet({
         layout = { r: photoRotation }
         if (photoFile) data.photo_url = await uploadToPhotos(photoFile)
       }
-      if (type === 'note') data = { text, align }
-      if (type === 'journal') data = { text, align, width: 220 }
+      if (type === 'note') data = { text: stripInlineStyles(text), align }
+      if (type === 'journal') data = { text: stripInlineStyles(text), align, width: 220 }
       if (type === 'headline' || type === 'label') data = { style: type, content: text }
       if (type === 'meal') {
         data = { dish: text, description: secondary }

@@ -5,7 +5,7 @@ import { TrashIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
 import { CardPicker } from './CardPicker'
 import { PeopleTagFields } from './PeopleTagFields'
-import { RichTextField, AlignToggle, isHtmlEmpty } from './RichTextField'
+import { RichTextField, AlignToggle, isHtmlEmpty, stripInlineStyles } from './RichTextField'
 import { RotationField } from './RotationField'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
@@ -48,7 +48,7 @@ export function EditJournalSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
-      const nextData = { ...data, text, align, color, font, transparent, width, card: cardKey }
+      const nextData = { ...data, text: stripInlineStyles(text), align, color, font, transparent, width, card: cardKey }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
