@@ -12,6 +12,7 @@ import plumbobGreen from '../assets/stickers/plumbob-green.png'
 import yellowOrangeBlock from '../assets/stickers/yellow-orange-block.png'
 import thoughtBubble from '../assets/stickers/thought-bubble.png'
 import starScatter from '../assets/stickers/star-scatter.png'
+import partyHat from '../assets/stickers/party-hat.png'
 
 // On-canvas width at card_scale 1 — each sticker's own aspect ratio (w/h,
 // captured from the source crop) then determines its rendered height.
@@ -32,6 +33,7 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
   { key: 'yellow-orange-block', src: yellowOrangeBlock, w: 500, h: 349 },
   { key: 'thought-bubble', src: thoughtBubble, w: 500, h: 271 },
   { key: 'star-scatter', src: starScatter, w: 378, h: 500 },
+  { key: 'party-hat', src: partyHat, w: 316, h: 500 },
 ]
 
 export const STICKER_BY_KEY: Record<string, { src: string; w: number; h: number }> =
