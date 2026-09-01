@@ -27,13 +27,14 @@ export const CARDS: Card[] = [
     // not the inset's. The bottom-right cluster is small enough that a
     // plain bottom margin clears it without wasting the rest of the width
     // the way a full top margin would have.
-    inset: { top: 10, right: 11, bottom: 20, left: 10 },
-    // Percentages are relative to the text box (which starts at the 10%
-    // inset above), sized to reach the star's actual right/bottom edge —
-    // measured directly off the source image at roughly 36%/34% of the
-    // *card's* own width/height (its lower-left arm reaches much further
-    // down than it first looks).
-    cornerFloat: { width: 33, height: 34, margin: 4 },
+    inset: { top: 10, right: 11, bottom: 20, left: 15 },
+    // Percentages are relative to the text box (recalculated whenever the
+    // inset above changes, since the box's own width/height changes too),
+    // sized to reach the star's actual right/bottom edge — measured
+    // directly off the source image at roughly 36%/34% of the *card's* own
+    // width/height (its lower-left arm reaches much further down than it
+    // first looks).
+    cornerFloat: { width: 28, height: 34, margin: 4 },
   },
 ]
 
