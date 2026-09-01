@@ -30,11 +30,11 @@ export const CARDS: Card[] = [
     inset: { top: 10, right: 11, bottom: 20, left: 15 },
     // Percentages are relative to the text box (recalculated whenever the
     // inset above changes, since the box's own width/height changes too),
-    // sized to reach the star's actual right/bottom edge — measured
-    // directly off the source image at roughly 36%/34% of the *card's* own
-    // width/height (its lower-left arm reaches much further down than it
-    // first looks).
-    cornerFloat: { width: 28, height: 34, margin: 4 },
+    // sized to reach the star's actual right/bottom edge — measured via a
+    // pixel-coordinate grid overlaid directly on the source image (not
+    // eyeballed) at ~42%/30% of the *card's* own width/height, plus a
+    // buffer since a star's point is thin and easy to clip by a pixel or two.
+    cornerFloat: { width: 39, height: 33, margin: 4 },
   },
 ]
 
