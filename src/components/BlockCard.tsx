@@ -157,7 +157,10 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         >
           <div
             className="cap card-bg-text"
-            style={{ ...noteFont, textAlign: align, color: card.light ? 'oklch(97% 0.01 85)' : undefined }}
+            style={{
+              ...noteFont, textAlign: align, color: card.light ? 'oklch(97% 0.01 85)' : undefined,
+              top: `${card.inset.top}%`, right: `${card.inset.right}%`, bottom: `${card.inset.bottom}%`, left: `${card.inset.left}%`,
+            }}
             dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
           />
         </div>
@@ -191,7 +194,10 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
         >
           <div
             className="cap card-bg-text"
-            style={{ ...journalFont, textAlign: align, color: journalCard.light ? 'oklch(97% 0.01 85)' : undefined }}
+            style={{
+              ...journalFont, textAlign: align, color: journalCard.light ? 'oklch(97% 0.01 85)' : undefined,
+              top: `${journalCard.inset.top}%`, right: `${journalCard.inset.right}%`, bottom: `${journalCard.inset.bottom}%`, left: `${journalCard.inset.left}%`,
+            }}
             dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
           />
         </div>
