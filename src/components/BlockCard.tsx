@@ -70,7 +70,7 @@ function EditButton({ onEdit }: { onEdit: () => void }) {
 // by the wrapper in PageCanvas), but editing is a deliberate act via this
 // small pencil button — a plain tap/drag release must never also pop the
 // edit sheet open.
-export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWithJoins; onEdit?: () => void; rotationOverride?: number }) {
+export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { block: BlockWithJoins; onEdit?: () => void; rotationOverride?: number; scaleOverride?: number }) {
   const layout = (block.layout ?? {}) as { r?: number }
   const rot = rotationOverride ?? (typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const data = (block.data ?? {}) as Record<string, unknown>
@@ -166,7 +166,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
   if (block.type === 'note') {
     const noteColor = resolveColor(data.color as string | undefined, BLOCK_COLORS.note)
     const transparent = data.transparent === true
-    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
+    const cardScale = scaleOverride ?? (typeof data.card_scale === 'number' ? data.card_scale : 1)
     const align = data.align === 'center' ? 'center' : 'left'
     const noteFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }
@@ -332,7 +332,7 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const key = data.sticker as string | undefined
     const sticker = key ? STICKER_BY_KEY[key] : undefined
     if (!sticker) return null
-    const cardScale = typeof data.card_scale === 'number' ? data.card_scale : 1
+    const cardScale = scaleOverride ?? (typeof data.card_scale === 'number' ? data.card_scale : 1)
     const height = STICKER_BASE_WIDTH * (sticker.h / sticker.w)
     return (
       <div

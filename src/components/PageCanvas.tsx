@@ -24,6 +24,21 @@ const EDITABLE_TYPES = new Set(['photo', 'note', 'journal', 'place', 'text', 'me
 // toggle on without it sitting on top of the text itself, so those two types
 // don't get the button. Locking is still honored for them if it's ever set.
 const LOCKABLE_TYPES = new Set(['photo', 'note', 'journal', 'meal', 'movie', 'sticker'])
+// Only these two have a card_scale field at all — pinch-to-resize rides the
+// same two-finger gesture as rotate (distance delta -> scale, angle delta
+// -> rotation, both live), so it only makes sense where there's something
+// for it to write to.
+const PINCHABLE_TYPES = new Set(['note', 'sticker'])
+const SCALE_BOUNDS: Record<string, [number, number]> = { note: [0.6, 2], sticker: [0.5, 4] }
+
+function blockScale(block: BlockWithJoins): number {
+  const data = (block.data ?? {}) as { card_scale?: number }
+  return typeof data.card_scale === 'number' ? data.card_scale : 1
+}
+
+function distanceOf(a: { x: number; y: number }, b: { x: number; y: number }) {
+  return Math.hypot(b.x - a.x, b.y - a.y)
+}
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
@@ -86,6 +101,7 @@ function DraggableBlock({
   block,
   pos,
   rotation,
+  scale,
   zIndex,
   pageLocked,
   blockLocked,
@@ -94,6 +110,8 @@ function DraggableBlock({
   onMoved,
   onRotate,
   onRotated,
+  onScale,
+  onScaled,
   onFront,
   onEdit,
   onToggleLock,
@@ -103,6 +121,7 @@ function DraggableBlock({
   block: BlockWithJoins
   pos: Pos
   rotation: number
+  scale: number
   zIndex: number
   pageLocked: boolean
   blockLocked: boolean
@@ -111,6 +130,8 @@ function DraggableBlock({
   onMoved: (id: string, pos: Pos) => void
   onRotate: (r: number) => void
   onRotated: (id: string, r: number) => void
+  onScale?: (s: number) => void
+  onScaled?: (id: string, s: number) => void
   onFront: () => void
   onEdit?: () => void
   onToggleLock?: () => void
@@ -122,10 +143,12 @@ function DraggableBlock({
   // Two fingers down at once switches from dragging to twist-to-rotate;
   // dropping back to one finger resumes dragging from wherever it is now.
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
-  const rotateRef = useRef<{ startAngle: number; base: number } | null>(null)
+  const rotateRef = useRef<{ startAngle: number; baseRotation: number; startDist: number; baseScale: number } | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const locked = pageLocked || blockLocked
   const showButtonCluster = LOCKABLE_TYPES.has(block.type)
+  const pinchable = PINCHABLE_TYPES.has(block.type) && !!onScale
+  const scaleBounds = SCALE_BOUNDS[block.type] ?? [0.5, 4]
 
   // estimateBlockHeight (used for the initial canvasHeight, before this can
   // measure anything) is a rough guess from the block's data — it was
@@ -145,11 +168,14 @@ function DraggableBlock({
     ro.observe(el)
     return () => ro.disconnect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rotation, block.data])
+  }, [rotation, scale, block.data])
 
   function beginRotate() {
     const pts = Array.from(pointersRef.current.values())
-    rotateRef.current = { startAngle: angleOf(pts[0], pts[1]), base: rotation }
+    rotateRef.current = {
+      startAngle: angleOf(pts[0], pts[1]), baseRotation: rotation,
+      startDist: distanceOf(pts[0], pts[1]), baseScale: scale,
+    }
   }
 
   function onPointerDown(e: React.PointerEvent) {
@@ -180,7 +206,13 @@ function DraggableBlock({
     if (pointersRef.current.size >= 2 && rotateRef.current) {
       const pts = Array.from(pointersRef.current.values())
       const delta = angleOf(pts[0], pts[1]) - rotateRef.current.startAngle
-      onRotate(rotateRef.current.base + delta)
+      onRotate(rotateRef.current.baseRotation + delta)
+      if (pinchable && onScale) {
+        const dist = distanceOf(pts[0], pts[1])
+        const ratio = dist / rotateRef.current.startDist
+        const next = Math.min(scaleBounds[1], Math.max(scaleBounds[0], rotateRef.current.baseScale * ratio))
+        onScale(next)
+      }
       return
     }
     if (dragRef.current) {
@@ -197,6 +229,7 @@ function DraggableBlock({
     if (rotateRef.current && pointersRef.current.size < 2) {
       rotateRef.current = null
       onRotated(block.id, rotation)
+      if (pinchable && onScaled) onScaled(block.id, scale)
     }
 
     if (pointersRef.current.size === 0) {
@@ -235,7 +268,7 @@ function DraggableBlock({
           card inside is doing. Compact inline types (place/text) don't get
           this treatment — they render their own edit button inline, since
           there's no boxy corner to anchor one to. */}
-      <BlockCard block={block} onEdit={(pageLocked || showButtonCluster) ? undefined : onEdit} rotationOverride={rotation} />
+      <BlockCard block={block} onEdit={(pageLocked || showButtonCluster) ? undefined : onEdit} rotationOverride={rotation} scaleOverride={pinchable ? scale : undefined} />
       {!pageLocked && showButtonCluster && (
         <>
           {onToggleSendBack && (
@@ -308,6 +341,7 @@ export function PageCanvas({
   const [rotations, setRotations] = useState<Record<string, number>>({})
   const [locks, setLocks] = useState<Record<string, boolean>>({})
   const [sentBacks, setSentBacks] = useState<Record<string, boolean>>({})
+  const [scales, setScales] = useState<Record<string, number>>({})
   const [measuredHeights, setMeasuredHeights] = useState<Record<string, number>>({})
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
@@ -322,6 +356,7 @@ export function PageCanvas({
     setRotations(Object.fromEntries(blocks.map((b) => [b.id, blockRotation(b)])))
     setLocks(Object.fromEntries(blocks.map((b) => [b.id, blockLocked(b)])))
     setSentBacks(Object.fromEntries(blocks.map((b) => [b.id, blockSentBack(b)])))
+    setScales(Object.fromEntries(blocks.map((b) => [b.id, blockScale(b)])))
   }, [blocks])
 
   function bringToFront(id: string) {
@@ -336,6 +371,16 @@ export function PageCanvas({
 
   function handleRotate(id: string, r: number) {
     setRotations((prev) => ({ ...prev, [id]: r }))
+  }
+
+  function handleScale(id: string, s: number) {
+    setScales((prev) => ({ ...prev, [id]: s }))
+  }
+
+  async function handleScaled(id: string, s: number) {
+    const block = blocks.find((b) => b.id === id)
+    const currentData = (block?.data ?? {}) as Record<string, unknown>
+    await supabase.from('blocks').update({ data: { ...currentData, card_scale: s } }).eq('id', id)
   }
 
   // Layout is a single JSON column ({x, y, r, locked, back}) — merge in just the
@@ -431,6 +476,7 @@ export function PageCanvas({
             block={b}
             pos={positions[b.id] ?? blockPosition(b, i)}
             rotation={rotations[b.id] ?? blockRotation(b)}
+            scale={scales[b.id] ?? blockScale(b)}
             zIndex={zIndex}
             pageLocked={locked}
             blockLocked={locks[b.id] ?? blockLocked(b)}
@@ -439,6 +485,8 @@ export function PageCanvas({
             onMoved={handleMoved}
             onRotate={(r) => handleRotate(b.id, r)}
             onRotated={handleRotated}
+            onScale={PINCHABLE_TYPES.has(b.type) ? (s) => handleScale(b.id, s) : undefined}
+            onScaled={PINCHABLE_TYPES.has(b.type) ? handleScaled : undefined}
             onFront={() => bringToFront(b.id)}
             onMeasure={(h) => handleMeasure(b.id, h)}
             onToggleLock={LOCKABLE_TYPES.has(b.type) ? () => handleToggleLock(b.id) : undefined}
@@ -451,13 +499,19 @@ export function PageCanvas({
               // revert that gesture. Seed it with the live values first.
               const livePos = positions[b.id]
               const liveRot = rotations[b.id]
+              const liveScale = scales[b.id]
               const currentLayout = (b.layout ?? {}) as Record<string, unknown>
+              const currentData = (b.data ?? {}) as Record<string, unknown>
               setEditingBlock({
                 ...b,
                 layout: {
                   ...currentLayout,
                   ...(livePos ? { x: livePos.x, y: livePos.y } : {}),
                   ...(typeof liveRot === 'number' ? { r: liveRot } : {}),
+                },
+                data: {
+                  ...currentData,
+                  ...(PINCHABLE_TYPES.has(b.type) && typeof liveScale === 'number' ? { card_scale: liveScale } : {}),
                 },
               })
             } : undefined}
