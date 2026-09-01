@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import type { BlockWithJoins } from './BlockCard'
 import { TrashIcon } from './icons'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
+import { CardPicker } from './CardPicker'
 import { PeopleTagFields } from './PeopleTagFields'
 import { RichTextField, AlignToggle, isHtmlEmpty } from './RichTextField'
 import { RotationField } from './RotationField'
@@ -29,6 +30,7 @@ export function EditJournalSheet({
   const [color, setColor] = useState(data.color as string | undefined)
   const [font, setFont] = useState((data.font as string) === 'mono' ? 'mono' : 'hand')
   const [transparent, setTransparent] = useState(data.transparent === true)
+  const [cardKey, setCardKey] = useState<string | undefined>(data.card as string | undefined)
   const [width, setWidth] = useState(typeof data.width === 'number' ? (data.width as number) : 220)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [taggedIds, setTaggedIds] = useState<string[]>((block.people ?? []).map((p) => p.id))
@@ -46,7 +48,7 @@ export function EditJournalSheet({
         const { error: insErr } = await supabase.from('block_people').insert(taggedIds.map((person_id) => ({ block_id: block.id, person_id })))
         if (insErr) throw insErr
       }
-      const nextData = { ...data, text, align, color, font, transparent, width }
+      const nextData = { ...data, text, align, color, font, transparent, width, card: cardKey }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -104,21 +106,30 @@ export function EditJournalSheet({
             </div>
           </div>
 
-          <div className="toggle-row">
-            <div>
-              <div className="lbl">Remove background</div>
-              <div className="hint">just the writing, no paper card</div>
-            </div>
-            <button type="button" className={`switch${transparent ? ' on' : ''}`} onClick={() => setTransparent((t) => !t)} aria-label="Toggle background">
-              <div className="knob" />
-            </button>
+          <div className="field">
+            <label>Card</label>
+            <CardPicker value={cardKey} onChange={setCardKey} />
           </div>
 
-          {!transparent && (
-            <div className="field">
-              <label>Color</label>
-              <ColorSwatchPicker value={color} onChange={setColor} />
-            </div>
+          {!cardKey && (
+            <>
+              <div className="toggle-row">
+                <div>
+                  <div className="lbl">Remove background</div>
+                  <div className="hint">just the writing, no paper card</div>
+                </div>
+                <button type="button" className={`switch${transparent ? ' on' : ''}`} onClick={() => setTransparent((t) => !t)} aria-label="Toggle background">
+                  <div className="knob" />
+                </button>
+              </div>
+
+              {!transparent && (
+                <div className="field">
+                  <label>Color</label>
+                  <ColorSwatchPicker value={color} onChange={setColor} />
+                </div>
+              )}
+            </>
           )}
 
           <PeopleTagFields taggedIds={taggedIds} onChange={setTaggedIds} />

@@ -4,6 +4,7 @@ import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
+import { CARD_BY_KEY } from '../lib/cards'
 import pinPhoto from '../assets/pin-trimmed.png'
 import starIcon from '../assets/star.png'
 import type { Tables } from '../lib/database.types'
@@ -145,6 +146,23 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const noteFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 10, letterSpacing: '-0.03em', wordSpacing: '-0.15em' }
       : undefined
+    const card = data.card ? CARD_BY_KEY[data.card as string] : undefined
+    if (card) {
+      const width = 168
+      const height = width * (card.h / card.w)
+      return (
+        <div
+          className="card-bg"
+          style={{ width, height, backgroundImage: `url(${card.src})`, transform: `rotate(${rot}deg) scale(${cardScale})`, borderRadius: 6 }}
+        >
+          <div
+            className="cap card-bg-text"
+            style={{ ...noteFont, textAlign: align, color: card.light ? 'oklch(97% 0.01 85)' : undefined }}
+            dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
+          />
+        </div>
+      )
+    }
     return (
       <div
         className={`card scrap${transparent ? ' no-bg' : ''}`}
@@ -163,6 +181,22 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
     const journalFont = (data.font as string) === 'mono'
       ? { fontFamily: 'var(--font-body)', fontStyle: 'italic' as const, fontSize: 13, lineHeight: 1.5 }
       : undefined
+    const journalCard = data.card ? CARD_BY_KEY[data.card as string] : undefined
+    if (journalCard) {
+      const height = width * (journalCard.h / journalCard.w)
+      return (
+        <div
+          className="card-bg"
+          style={{ width, height, backgroundImage: `url(${journalCard.src})`, transform: `rotate(${rot}deg)`, borderRadius: 6 }}
+        >
+          <div
+            className="cap card-bg-text"
+            style={{ ...journalFont, textAlign: align, color: journalCard.light ? 'oklch(97% 0.01 85)' : undefined }}
+            dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
+          />
+        </div>
+      )
+    }
     return (
       <div
         className={`journal-card${transparent ? ' no-bg' : ''}`}

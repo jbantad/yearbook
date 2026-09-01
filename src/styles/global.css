@@ -643,6 +643,27 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .swatch { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; border: none; box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.1); }
 .swatch.sel { box-shadow: 0 0 0 2px var(--card), 0 0 0 3.5px var(--ink); }
 
+/* ---- card backgrounds (note/journal) ---- */
+.card-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.card-swatch {
+  width: 44px; height: 62px; border-radius: 6px; flex-shrink: 0; border: 1.5px solid var(--line);
+  background-size: cover; background-position: center; box-shadow: 0 1px 3px oklch(30% 0.03 50 / 0.15);
+}
+.card-swatch.sel { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.card-swatch-none {
+  display: flex; align-items: center; justify-content: center; background: var(--paper-alt);
+  font-size: 10px; color: var(--ink-soft); font-family: var(--font-body); font-style: italic;
+}
+
+/* A card image is always shown at its own natural aspect ratio (the block's
+   height is derived from its width via the card's own w/h — see BlockCard),
+   so background-size here never has to stretch or crop anything. Text sits
+   inset from the edges to clear whatever decoration the card art has there,
+   and is clipped rather than scrolled past the card's own bounds — same as
+   writing on a real card, you're bounded by its size. */
+.card-bg { position: relative; background-size: 100% 100%; background-repeat: no-repeat; overflow: hidden; }
+.card-bg-text.cap { position: absolute; inset: 16%; margin: 0; padding: 0; overflow: hidden; }
+
 /* ---- responsive: mobile is the base design above — everything in this
    section only ever ADDS room back on wider screens, it never redesigns
    the page itself. Nothing here changes anything below 768px. ---- */
