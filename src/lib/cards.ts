@@ -26,7 +26,7 @@ export const CARDS: Card[] = [
     // right at the top-left, but the bottom-right cluster is small enough
     // that a plain bottom margin clears it without wasting the rest of the
     // width the way a full top margin would have.
-    inset: { top: 8, right: 9, bottom: 20, left: 13 },
+    inset: { top: 8, right: 11, bottom: 20, left: 19 },
     cornerFloat: { width: 42, height: 22, margin: 4 },
   },
 ]
