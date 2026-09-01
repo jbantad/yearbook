@@ -30,8 +30,10 @@ export const CARDS: Card[] = [
     inset: { top: 10, right: 11, bottom: 20, left: 10 },
     // Percentages are relative to the text box (which starts at the 10%
     // inset above), sized to reach the star's actual right/bottom edge —
-    // roughly 36%/21% of the *card's* own width/height.
-    cornerFloat: { width: 33, height: 16, margin: 4 },
+    // measured directly off the source image at roughly 36%/34% of the
+    // *card's* own width/height (its lower-left arm reaches much further
+    // down than it first looks).
+    cornerFloat: { width: 33, height: 34, margin: 4 },
   },
 ]
 
