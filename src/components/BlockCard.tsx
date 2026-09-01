@@ -4,7 +4,7 @@ import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
-import { CARD_BY_KEY } from '../lib/cards'
+import { CARD_BY_KEY, type Card } from '../lib/cards'
 import pinPhoto from '../assets/pin-trimmed.png'
 import starIcon from '../assets/star.png'
 import type { Tables } from '../lib/database.types'
@@ -26,6 +26,31 @@ export const HIDDEN_BLOCK_TYPES = new Set(['gratitude', 'person'])
 
 function StarPng({ filled }: { filled: boolean }) {
   return <img src={starIcon} alt="" style={filled ? undefined : { filter: 'grayscale(1) opacity(0.35)' }} />
+}
+
+// The rich text is always in its own child div (dangerouslySetInnerHTML
+// can't share an element with other React children) — a plain <div> like
+// that doesn't establish its own formatting context, so it still wraps
+// around the corner-float sibling above it, regardless of whatever mix of
+// <div>/<br> the rich text editor produced.
+function CardText({ card, style, html }: { card: Card; style: CSSProperties; html: string }) {
+  return (
+    <div
+      className="cap card-bg-text"
+      style={{
+        ...style,
+        top: `${card.inset.top}%`, right: `${card.inset.right}%`, bottom: `${card.inset.bottom}%`, left: `${card.inset.left}%`,
+      }}
+    >
+      {card.cornerFloat && (
+        <span
+          className="card-corner-float"
+          style={{ width: `${card.cornerFloat.width}%`, height: `${card.cornerFloat.height}%`, shapeMargin: `${card.cornerFloat.margin}%` } as CSSProperties}
+        />
+      )}
+      <div dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  )
 }
 
 function EditButton({ onEdit }: { onEdit: () => void }) {
@@ -155,13 +180,10 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           className="card-bg"
           style={{ width, height, backgroundImage: `url(${card.src})`, transform: `rotate(${rot}deg) scale(${cardScale})`, borderRadius: 6 }}
         >
-          <div
-            className="cap card-bg-text"
-            style={{
-              ...noteFont, textAlign: align, color: card.light ? 'oklch(97% 0.01 85)' : undefined,
-              top: `${card.inset.top}%`, right: `${card.inset.right}%`, bottom: `${card.inset.bottom}%`, left: `${card.inset.left}%`,
-            }}
-            dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
+          <CardText
+            card={card}
+            style={{ ...noteFont, textAlign: align, color: card.light ? 'oklch(97% 0.01 85)' : undefined }}
+            html={(data.text as string) || ''}
           />
         </div>
       )
@@ -192,13 +214,10 @@ export function BlockCard({ block, onEdit, rotationOverride }: { block: BlockWit
           className="card-bg"
           style={{ width, height, backgroundImage: `url(${journalCard.src})`, transform: `rotate(${rot}deg)`, borderRadius: 6 }}
         >
-          <div
-            className="cap card-bg-text"
-            style={{
-              ...journalFont, textAlign: align, color: journalCard.light ? 'oklch(97% 0.01 85)' : undefined,
-              top: `${journalCard.inset.top}%`, right: `${journalCard.inset.right}%`, bottom: `${journalCard.inset.bottom}%`, left: `${journalCard.inset.left}%`,
-            }}
-            dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }}
+          <CardText
+            card={journalCard}
+            style={{ ...journalFont, textAlign: align, color: journalCard.light ? 'oklch(97% 0.01 85)' : undefined }}
+            html={(data.text as string) || ''}
           />
         </div>
       )

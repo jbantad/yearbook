@@ -663,6 +663,7 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
    writing on a real card, you're bounded by its size. */
 .card-bg { position: relative; background-size: 100% 100%; background-repeat: no-repeat; overflow: hidden; }
 .card-bg-text.cap { position: absolute; margin: 0; padding: 0; overflow: hidden; }
+.card-corner-float { float: left; shape-outside: margin-box; }
 
 /* ---- responsive: mobile is the base design above — everything in this
    section only ever ADDS room back on wider screens, it never redesigns
