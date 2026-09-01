@@ -26,8 +26,12 @@ export const CARDS: Card[] = [
     // right at the top-left, but the bottom-right cluster is small enough
     // that a plain bottom margin clears it without wasting the rest of the
     // width the way a full top margin would have.
-    inset: { top: 8, right: 11, bottom: 20, left: 19 },
-    cornerFloat: { width: 42, height: 22, margin: 4 },
+    inset: { top: 8, right: 11, bottom: 20, left: 27 },
+    // Percentages here are relative to the text box itself, which starts
+    // further right now (at the 27% left inset) — the float only needs to
+    // cover what's left of the star past that point, not the star's whole
+    // width, or the top lines would start with a lot of empty space.
+    cornerFloat: { width: 18, height: 22, margin: 4 },
   },
 ]
 
