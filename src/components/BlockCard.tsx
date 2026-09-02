@@ -5,6 +5,7 @@ import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 import { CARD_BY_KEY, type Card } from '../lib/cards'
+import { renderStudBullets } from '../lib/studBullets'
 import pinPhoto from '../assets/pin-trimmed.png'
 import starIcon from '../assets/star.png'
 import type { Tables } from '../lib/database.types'
@@ -48,7 +49,7 @@ function CardText({ card, style, html }: { card: Card; style: CSSProperties; htm
           style={{ width: `${card.cornerFloat.width}%`, height: `${card.cornerFloat.height}%`, shapeMargin: `${card.cornerFloat.margin}%` } as CSSProperties}
         />
       )}
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <div dangerouslySetInnerHTML={{ __html: renderStudBullets(html) }} />
     </div>
   )
 }
@@ -193,7 +194,7 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
         className={`card scrap${transparent ? ' no-bg' : ''}`}
         style={{ width: 168, background: transparent ? 'none' : noteColor.soft, transform: `rotate(${rot}deg) scale(${cardScale})`, borderRadius: 6 }}
       >
-        <div className="cap" style={{ ...noteFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
+        <div className="cap" style={{ ...noteFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: renderStudBullets((data.text as string) || '') }} />
       </div>
     )
   }
@@ -230,7 +231,7 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
           transform: `rotate(${rot}deg)`,
         }}
       >
-        <div className="cap" style={{ ...journalFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: (data.text as string) || '' }} />
+        <div className="cap" style={{ ...journalFont, textAlign: align }} dangerouslySetInnerHTML={{ __html: renderStudBullets((data.text as string) || '') }} />
       </div>
     )
   }
