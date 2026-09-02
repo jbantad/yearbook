@@ -103,6 +103,7 @@ function DraggableBlock({
   rotation,
   scale,
   zIndex,
+  active,
   pageLocked,
   blockLocked,
   blockSentBack,
@@ -123,6 +124,7 @@ function DraggableBlock({
   rotation: number
   scale: number
   zIndex: number
+  active: boolean
   pageLocked: boolean
   blockLocked: boolean
   blockSentBack: boolean
@@ -179,7 +181,13 @@ function DraggableBlock({
   }
 
   function onPointerDown(e: React.PointerEvent) {
-    if (locked) return
+    if (locked) {
+      // Dragging/rotating/pinching a locked block is disabled below, but it
+      // still needs to become the active block on tap — otherwise its own
+      // unlock button (only shown while active) can never be reached again.
+      onFront()
+      return
+    }
     // Without this, a mouse-drag starting on the <img> inside a photo block
     // can also kick off the browser's own native image-drag gesture, which
     // races our pointer-capture drag below and can leave its ghost preview
@@ -253,7 +261,7 @@ function DraggableBlock({
       ref={wrapRef}
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
       style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none', transform: 'translateZ(0)' }}
-      onPointerDown={locked ? undefined : onPointerDown}
+      onPointerDown={onPointerDown}
       onPointerMove={locked ? undefined : onPointerMove}
       onPointerUp={locked ? undefined : onPointerUp}
       onPointerCancel={locked ? undefined : onPointerUp}
@@ -269,7 +277,7 @@ function DraggableBlock({
           this treatment — they render their own edit button inline, since
           there's no boxy corner to anchor one to. */}
       <BlockCard block={block} onEdit={(pageLocked || showButtonCluster) ? undefined : onEdit} rotationOverride={rotation} scaleOverride={pinchable ? scale : undefined} />
-      {!pageLocked && showButtonCluster && (
+      {!pageLocked && showButtonCluster && active && (
         <>
           {onToggleSendBack && (
             <button
@@ -343,6 +351,12 @@ export function PageCanvas({
   const [sentBacks, setSentBacks] = useState<Record<string, boolean>>({})
   const [scales, setScales] = useState<Record<string, number>>({})
   const [measuredHeights, setMeasuredHeights] = useState<Record<string, number>>({})
+  // Overlapping blocks (e.g. a decorative sticker behind a note) each used
+  // to show their own edit/lock/send-to-back cluster all the time, so the
+  // clusters collided wherever two blocks overlapped. Only the selected
+  // block's cluster shows now — tap a block to select it, tap empty canvas
+  // to deselect.
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
@@ -360,6 +374,7 @@ export function PageCanvas({
   }, [blocks])
 
   function bringToFront(id: string) {
+    setActiveBlockId(id)
     zCounter.current += 1
     const z = zCounter.current
     setZOrder((prev) => (prev[id] === z ? prev : { ...prev, [id]: z }))
@@ -456,7 +471,10 @@ export function PageCanvas({
       <div
         className="page-canvas"
         style={{ minHeight: canvasHeight }}
-        onPointerDown={swipe.onPointerDown}
+        onPointerDown={(e) => {
+          if (e.target === e.currentTarget) setActiveBlockId(null)
+          swipe.onPointerDown(e)
+        }}
         onPointerUp={swipe.onPointerUp}
       >
         {loading && <div className="empty-state">loading…</div>}
@@ -478,6 +496,7 @@ export function PageCanvas({
             rotation={rotations[b.id] ?? blockRotation(b)}
             scale={scales[b.id] ?? blockScale(b)}
             zIndex={zIndex}
+            active={activeBlockId === b.id}
             pageLocked={locked}
             blockLocked={locks[b.id] ?? blockLocked(b)}
             blockSentBack={isBack}
