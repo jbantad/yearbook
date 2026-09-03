@@ -8,6 +8,7 @@ import { PageCanvas } from '../components/PageCanvas'
 import { AddSheet } from '../components/AddSheet'
 import { getOrCreateDayPage, findPriorPageDates } from '../lib/pages'
 import { LockIcon, UnlockIcon, PlusIcon } from '../components/icons'
+import { useHideOnScroll } from '../lib/useHideOnScroll'
 
 function formatDate(iso: string) {
   const d = new Date(iso + 'T00:00:00')
@@ -72,6 +73,7 @@ export function DayPage() {
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
   const dayElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const fabVisible = useHideOnScroll()
 
   useEffect(() => {
     let cancelled = false
@@ -275,7 +277,7 @@ export function DayPage() {
       <div ref={bottomSentinelRef} style={{ height: 1 }} />
 
       {activeEntry?.pageId && !activeEntry.locked && (
-        <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
+        <button className={`fab${fabVisible ? '' : ' fab-hidden'}`} onClick={() => setAddOpen(true)} aria-label="Add a moment">
           <PlusIcon />
         </button>
       )}

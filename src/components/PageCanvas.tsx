@@ -15,6 +15,7 @@ import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
 import { STICKER_BASE_WIDTH, stickerSelectionFromData, stickerSelectionImage } from '../lib/stickers'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
+import { useHideOnScroll } from '../lib/useHideOnScroll'
 
 type Pos = { x: number; y: number }
 
@@ -406,6 +407,7 @@ export function PageCanvas({
   // block's cluster shows now — tap a block to select it, tap empty canvas
   // to deselect.
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
+  const fabVisible = useHideOnScroll()
   const zCounter = useRef(0)
   const swipe = useSwipeGesture({ onSwipeLeft, onSwipeRight, onDoubleTap, ignoreSelector: '.block-drag-wrap' })
 
@@ -591,7 +593,7 @@ export function PageCanvas({
       </div>
 
       {pageId && !locked && showFab && (
-        <button className="fab" onClick={() => setAddOpen(true)} aria-label="Add a moment">
+        <button className={`fab${fabVisible ? '' : ' fab-hidden'}`} onClick={() => setAddOpen(true)} aria-label="Add a moment">
           <PlusIcon />
         </button>
       )}

@@ -368,8 +368,14 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .fab svg { width: 26px; height: 26px; color: var(--paper); }
+/* Hidden while the page is actively scrolling (see useHideOnScroll) so it
+   isn't sitting on top of whatever content just scrolled underneath it —
+   translateZ(0) has to stay in this transform too, not just the plain one
+   above, or the button loses its own compositor layer the moment it hides. */
+.fab.fab-hidden { opacity: 0; transform: translateY(14px) scale(0.85) translateZ(0); pointer-events: none; }
 
 /* ---- bottom sheet ---- */
 
