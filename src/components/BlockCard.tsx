@@ -1,7 +1,7 @@
 import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
-import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameOverlayStyle, frameContainerStyle } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
 import { CARD_BY_KEY, type Card } from '../lib/cards'
@@ -136,9 +136,9 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
     return (
       <div
         className={`card polaroid polaroid-${frameKey}`}
-        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})` }}
+        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})`, ...frameContainerStyle(frameKey) }}
       >
-        <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
+        <div className="frame-img" style={frameOverlayStyle(frameKey)} />
         <div
           className="photo-art"
           style={{

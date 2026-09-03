@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
-import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameChromeStyle, frameOverlayStyle, frameContainerStyle } from '../lib/frames'
 import { RotationField } from './RotationField'
 
 const FRAMES: { key: string; label: string }[] = [
   { key: 'classic', label: 'Classic' },
   { key: 'tall', label: 'Tall' },
   { key: 'square', label: 'Square' },
+  { key: 'white', label: 'White' },
   { key: 'triptych', label: 'Triptych' },
 ]
 
@@ -245,7 +246,7 @@ export function PhotoFields({
                 className={`frame-opt${frame === f.key ? ' sel' : ''}`}
                 onClick={() => onFrameChange(f.key)}
               >
-                <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
+                <div className="sw" style={frameChromeStyle(f.key)} />
                 <span>{f.label}</span>
               </button>
             ))}
@@ -263,12 +264,9 @@ export function PhotoFields({
   return (
     <>
       <div className="field">
-        <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
+        <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto', ...frameContainerStyle(frame) }}>
           <div
-            style={{
-              position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
-              backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
-            }}
+            style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', ...frameOverlayStyle(frame) }}
           />
           <div
             ref={previewBoxRef}
@@ -361,7 +359,7 @@ export function PhotoFields({
               className={`frame-opt${frame === f.key ? ' sel' : ''}`}
               onClick={() => onFrameChange(f.key)}
             >
-              <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
+              <div className="sw" style={frameChromeStyle(f.key)} />
               <span>{f.label}</span>
             </button>
           ))}
