@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameChromeStyle, frameOverlayStyle, frameContainerStyle } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
 import { RotationField } from './RotationField'
 
 const FRAMES: { key: string; label: string }[] = [
@@ -9,26 +9,6 @@ const FRAMES: { key: string; label: string }[] = [
   { key: 'white', label: 'Lrg. Square' },
   { key: 'triptych', label: 'Triptych' },
 ]
-
-// The illustrated frames' own PNGs draw a flat gray "photo" rectangle
-// inside their border, which is what makes them read as a frame icon
-// rather than a blank swatch. "White" has no PNG to borrow that look from
-// — painting it as a plain filled square (frameChromeStyle's normal job,
-// fine for a real photo behind it) looked like a stray blob next to the
-// others here, so this draws the same two-tone shape by hand instead: a
-// light mat with its own window rect positioned by the frame's real inset.
-function FrameSwatch({ frameKey }: { frameKey: string }) {
-  if (frameKey !== 'white') return <div className="sw" style={frameChromeStyle(frameKey)} />
-  const win = FRAME_WINDOWS.white
-  return (
-    <div className="sw sw-white">
-      <div
-        className="sw-white-window"
-        style={{ left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%` }}
-      />
-    </div>
-  )
-}
 
 // The image is rendered at scale(zoom * PHOTO_BASE_SCALE); baking in a
 // small always-on overscan means there's a little room to reposition even
@@ -266,7 +246,7 @@ export function PhotoFields({
                 className={`frame-opt${frame === f.key ? ' sel' : ''}`}
                 onClick={() => onFrameChange(f.key)}
               >
-                <FrameSwatch frameKey={f.key} />
+                <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
                 <span>{f.label}</span>
               </button>
             ))}
@@ -284,9 +264,12 @@ export function PhotoFields({
   return (
     <>
       <div className="field">
-        <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto', ...frameContainerStyle(frame) }}>
+        <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
           <div
-            style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', ...frameOverlayStyle(frame) }}
+            style={{
+              position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
+              backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
+            }}
           />
           <div
             ref={previewBoxRef}
@@ -379,7 +362,7 @@ export function PhotoFields({
               className={`frame-opt${frame === f.key ? ' sel' : ''}`}
               onClick={() => onFrameChange(f.key)}
             >
-              <FrameSwatch frameKey={f.key} />
+              <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
               <span>{f.label}</span>
             </button>
           ))}
