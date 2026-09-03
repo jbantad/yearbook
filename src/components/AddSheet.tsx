@@ -6,7 +6,8 @@ import { BLOCK_ICONS, BLOCK_LABELS, StarIcon } from './icons'
 import { PhotoFields } from './PhotoFields'
 import { PeopleTagFields } from './PeopleTagFields'
 import { RichTextField, AlignToggle, isHtmlEmpty, stripInlineStyles } from './RichTextField'
-import { STICKERS } from '../lib/stickers'
+import { stickerSelectionToData, type StickerSelection } from '../lib/stickers'
+import { StickerPicker } from './StickerPicker'
 import { todayISO } from '../lib/pages'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import type { Enums, Json } from '../lib/database.types'
@@ -56,7 +57,7 @@ export function AddSheet({
   const [showTitle, setShowTitle] = useState(true)
   const [mealPhotoFile, setMealPhotoFile] = useState<File | null>(null)
   const [mealPhotoPreview, setMealPhotoPreview] = useState<string | null>(null)
-  const [stickerKey, setStickerKey] = useState<string | null>(null)
+  const [sticker, setSticker] = useState<StickerSelection | null>(null)
   const [taggedPersonIds, setTaggedPersonIds] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -167,7 +168,7 @@ export function AddSheet({
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     if (!type || !user) return
-    if (type === 'sticker' && !stickerKey) return
+    if (type === 'sticker' && !sticker) return
     setBusy(true)
     setError(null)
     try {
@@ -192,7 +193,7 @@ export function AddSheet({
         data = { dish: text, description: secondary }
         if (mealPhotoFile) data.photo_url = await uploadToPhotos(mealPhotoFile)
       }
-      if (type === 'sticker') data = { sticker: stickerKey, card_scale: 1 }
+      if (type === 'sticker' && sticker) data = { ...stickerSelectionToData(sticker), card_scale: 1 }
 
       if (type === 'place') {
         const placeName = text.trim()
@@ -460,23 +461,7 @@ export function AddSheet({
                 </div>
               </>
             )}
-            {type === 'sticker' && (
-              <div className="field">
-                <label>Choose a sticker</label>
-                <div className="sticker-grid">
-                  {STICKERS.map((s) => (
-                    <button
-                      type="button"
-                      key={s.key}
-                      className={`sticker-opt${stickerKey === s.key ? ' sel' : ''}`}
-                      onClick={() => setStickerKey(s.key)}
-                    >
-                      <img src={s.src} alt="" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {type === 'sticker' && <StickerPicker value={sticker} onChange={setSticker} />}
             {(type === 'headline' || type === 'label') && (
               <div className="field">
                 <label>Text</label>
@@ -496,7 +481,7 @@ export function AddSheet({
             <button
               className="cta"
               type="submit"
-              disabled={busy || (type === 'sticker' && !stickerKey) || ((type === 'note' || type === 'journal') && isHtmlEmpty(text))}
+              disabled={busy || (type === 'sticker' && !sticker) || ((type === 'note' || type === 'journal') && isHtmlEmpty(text))}
             >
               {busy ? 'Saving…' : pageId ? 'Add to page' : 'Add to pile'}
             </button>

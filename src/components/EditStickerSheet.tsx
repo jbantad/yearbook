@@ -5,7 +5,8 @@ import { TrashIcon } from './icons'
 import type { Json } from '../lib/database.types'
 import { hashRotation } from '../lib/hash'
 import { RotationField } from './RotationField'
-import { STICKERS, STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
+import { STICKER_BASE_WIDTH, stickerSelectionFromData, stickerSelectionImage, stickerSelectionToData, type StickerSelection } from '../lib/stickers'
+import { StickerPicker } from './StickerPicker'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 export function EditStickerSheet({
@@ -22,19 +23,20 @@ export function EditStickerSheet({
   useBodyScrollLock()
   const data = (block.data ?? {}) as Record<string, unknown>
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
-  const [stickerKey, setStickerKey] = useState((data.sticker as string) || STICKERS[0].key)
+  const [sticker, setSticker] = useState<StickerSelection | null>(stickerSelectionFromData(data))
   const [cardScale, setCardScale] = useState(typeof data.card_scale === 'number' ? (data.card_scale as number) : 1)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const previewSticker = STICKER_BY_KEY[stickerKey]
+  const previewSticker = stickerSelectionImage(sticker)
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
+    if (!sticker) return
     setBusy(true)
     setError(null)
     try {
-      const nextData = { ...data, sticker: stickerKey, card_scale: cardScale }
+      const nextData = { ...data, ...stickerSelectionToData(sticker), card_scale: cardScale }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -90,21 +92,7 @@ export function EditStickerSheet({
             </div>
           )}
 
-          <div className="field">
-            <label>Sticker</label>
-            <div className="sticker-grid">
-              {STICKERS.map((s) => (
-                <button
-                  type="button"
-                  key={s.key}
-                  className={`sticker-opt${stickerKey === s.key ? ' sel' : ''}`}
-                  onClick={() => setStickerKey(s.key)}
-                >
-                  <img src={s.src} alt="" />
-                </button>
-              ))}
-            </div>
-          </div>
+          <StickerPicker value={sticker} onChange={setSticker} />
 
           <div className="field">
             <label>Size</label>
@@ -129,7 +117,7 @@ export function EditStickerSheet({
           </div>
 
           {error && <div className="auth-error">{error}</div>}
-          <button className="cta" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
+          <button className="cta" type="submit" disabled={busy || !sticker}>{busy ? 'Saving…' : 'Save changes'}</button>
         </form>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>

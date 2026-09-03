@@ -44,3 +44,39 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
 
 export const STICKER_BY_KEY: Record<string, { src: string; w: number; h: number }> =
   Object.fromEntries(STICKERS.map((s) => [s.key, s]))
+
+// A sticker block's picture can come from this file's own bundled set
+// (`local`) or from a GIPHY search result saved by url (`remote`) — the
+// same StickerPicker UI hands back either shape, and both render through
+// the same <img>, so nothing downstream needs to care which one it is.
+export type StickerSelection = { kind: 'local'; key: string } | { kind: 'remote'; url: string; w: number; h: number }
+
+export function stickerSelectionImage(sel: StickerSelection | null | undefined): { src: string; w: number; h: number } | null {
+  if (!sel) return null
+  if (sel.kind === 'local') {
+    const s = STICKER_BY_KEY[sel.key]
+    return s ? { src: s.src, w: s.w, h: s.h } : null
+  }
+  return { src: sel.url, w: sel.w, h: sel.h }
+}
+
+// A block's stored `data` only ever has one of `sticker` (a local key) or
+// `sticker_url`/`sticker_w`/`sticker_h` (a remote pick) set at a time —
+// this reads whichever is present back into the shared selection shape the
+// picker and save logic both work with.
+export function stickerSelectionFromData(data: { sticker?: unknown; sticker_url?: unknown; sticker_w?: unknown; sticker_h?: unknown }): StickerSelection | null {
+  if (typeof data.sticker_url === 'string' && typeof data.sticker_w === 'number' && typeof data.sticker_h === 'number') {
+    return { kind: 'remote', url: data.sticker_url, w: data.sticker_w, h: data.sticker_h }
+  }
+  if (typeof data.sticker === 'string') return { kind: 'local', key: data.sticker }
+  return null
+}
+
+// The flip side of stickerSelectionFromData — spreads the right fields into
+// a block's `data` for saving, and clears out whichever kind isn't
+// selected so switching from one to the other doesn't leave a stale field
+// behind (e.g. an old sticker_url still set after picking a local sticker).
+export function stickerSelectionToData(sel: StickerSelection): { sticker?: string; sticker_url?: string; sticker_w?: number; sticker_h?: number } {
+  if (sel.kind === 'local') return { sticker: sel.key, sticker_url: undefined, sticker_w: undefined, sticker_h: undefined }
+  return { sticker: undefined, sticker_url: sel.url, sticker_w: sel.w, sticker_h: sel.h }
+}

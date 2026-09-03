@@ -3,7 +3,7 @@ import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameOverlayStyle, frameContainerStyle } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
-import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
+import { STICKER_BASE_WIDTH, stickerSelectionFromData, stickerSelectionImage } from '../lib/stickers'
 import { CARD_BY_KEY, type Card } from '../lib/cards'
 import { renderStudBullets } from '../lib/studBullets'
 import pinPhoto from '../assets/pin-trimmed.png'
@@ -330,8 +330,7 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
   }
 
   if (block.type === 'sticker') {
-    const key = data.sticker as string | undefined
-    const sticker = key ? STICKER_BY_KEY[key] : undefined
+    const sticker = stickerSelectionImage(stickerSelectionFromData(data))
     if (!sticker) return null
     const cardScale = scaleOverride ?? (typeof data.card_scale === 'number' ? data.card_scale : 1)
     const height = STICKER_BASE_WIDTH * (sticker.h / sticker.w)

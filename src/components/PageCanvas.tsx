@@ -13,7 +13,7 @@ import { EditJournalSheet } from './EditJournalSheet'
 import { PlusIcon, LockIcon, UnlockIcon, EditIcon, SendToBackIcon } from './icons'
 import { defaultBlockPosition, hashRotation } from '../lib/hash'
 import { FRAME_SIZES } from '../lib/frames'
-import { STICKER_BASE_WIDTH, STICKER_BY_KEY } from '../lib/stickers'
+import { STICKER_BASE_WIDTH, stickerSelectionFromData, stickerSelectionImage } from '../lib/stickers'
 import { useSwipeGesture } from '../lib/useSwipeGesture'
 
 type Pos = { x: number; y: number }
@@ -81,14 +81,14 @@ function blockSentBack(block: BlockWithJoins): boolean {
 // applied to a small one, leaves a wall of empty space below it before the
 // canvas ends. Approximate per type instead.
 function estimateBlockHeight(block: BlockWithJoins): number {
-  const data = (block.data ?? {}) as { frame?: string; photo_url?: string; sticker?: string; text?: string; width?: number }
+  const data = (block.data ?? {}) as { frame?: string; photo_url?: string; text?: string; width?: number }
   switch (block.type) {
     case 'photo': {
       const frame = FRAME_SIZES[data.frame ?? 'classic'] ?? FRAME_SIZES.classic
       return frame.h + 30
     }
     case 'sticker': {
-      const sticker = data.sticker ? STICKER_BY_KEY[data.sticker] : undefined
+      const sticker = stickerSelectionImage(stickerSelectionFromData(block.data as Record<string, unknown> ?? {}))
       const ratio = sticker ? sticker.h / sticker.w : 0.6
       return STICKER_BASE_WIDTH * ratio + 20
     }
