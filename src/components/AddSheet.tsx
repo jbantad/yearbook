@@ -462,17 +462,21 @@ export function AddSheet({
               </>
             )}
             {type === 'sticker' && <StickerPicker value={sticker} onChange={setSticker} />}
-            {(type === 'headline' || type === 'label') && (
+            {type === 'headline' && (
               <div className="field">
                 <label>Text</label>
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={type === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'}
-                  required
-                />
+                <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Lake Weekend" rows={2} required />
                 <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>
-                  {type === 'label' ? 'short — shows as label-maker tiles' : 'a title for this page'}
+                  a title for this page — press Return to start a new line
+                </div>
+              </div>
+            )}
+            {type === 'label' && (
+              <div className="field">
+                <label>Text</label>
+                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="CAMPFIRE NIGHT" required />
+                <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>
+                  short — shows as label-maker tiles
                 </div>
               </div>
             )}

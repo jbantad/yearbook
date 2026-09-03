@@ -71,7 +71,14 @@ export function EditTextSheet({
         <form onSubmit={save}>
           <div className="field">
             <label>Text</label>
-            <input value={content} onChange={(e) => setContent(e.target.value)} placeholder={style === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'} required />
+            {style === 'headline' ? (
+              <>
+                <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Lake Weekend" rows={2} required />
+                <div style={{ fontSize: 11, color: 'var(--ink-faint)', marginTop: 6, fontStyle: 'italic' }}>press Return to start a new line</div>
+              </>
+            ) : (
+              <input value={content} onChange={(e) => setContent(e.target.value)} placeholder="CAMPFIRE NIGHT" required />
+            )}
           </div>
 
           {style === 'headline' && (

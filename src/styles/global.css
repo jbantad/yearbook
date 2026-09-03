@@ -280,9 +280,13 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .ticket .cap { font-size: 17px; color: var(--block-meal); }
 
 .headline-el {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--font-hand); font-style: normal; font-size: 38px; font-weight: 600; line-height: 1;
-  color: var(--ink); white-space: nowrap; padding: 0; text-align: left;
+  display: inline-flex; align-items: flex-end; gap: 8px;
+  font-family: var(--font-hand); font-style: normal; font-size: 38px; font-weight: 600; line-height: 1.15;
+  color: var(--ink); padding: 0; text-align: left;
+  /* Preserves a manual line break (a plain "\n" in the stored text — see
+     EditTextSheet's textarea) while still never auto-wrapping on its own,
+     since this element has no constrained width to wrap against. */
+  white-space: pre-line;
 }
 .label-el {
   display: inline-flex; align-items: center; gap: 6px;
