@@ -261,10 +261,19 @@ function DraggableBlock({
       ref={wrapRef}
       className={`block-drag-wrap${dragging ? ' dragging' : ''}`}
       style={{ left: pos.x, top: pos.y, zIndex, touchAction: 'none', transform: 'translateZ(0)' }}
+      // These three always stay bound (never gated on `locked`, unlike
+      // onPointerDown above) — pointersRef/dragRef only ever get populated
+      // by onPointerDown's non-locked branch, so a block that's already
+      // locked when a pointer lands on it never has anything for move/up to
+      // act on. But a block LOCKED MID-DRAG (lock toggled by some other
+      // input while a gesture is in flight) would, if these were gated too,
+      // never fire its own cleanup — leaving dragRef/pointersRef and the
+      // `dragging` class stuck permanently on, with pointer capture held and
+      // this element still swallowing that pointer's events.
       onPointerDown={onPointerDown}
-      onPointerMove={locked ? undefined : onPointerMove}
-      onPointerUp={locked ? undefined : onPointerUp}
-      onPointerCancel={locked ? undefined : onPointerUp}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
       {/* Photo/note/journal/meal/movie/sticker cards apply their own
           rotate+scale transform for the drag/resize gestures — an edit or
