@@ -4,43 +4,53 @@ import { STUDS } from './studs'
 // block, only the HTML handed to dangerouslySetInnerHTML for display, so
 // re-opening the entry to edit it still shows the plain "-" you typed.
 //
-// contentEditable puts each visual line in its own top-level <div> once
-// you've pressed Enter at least once; a single-line entry has no wrapper
-// div at all, so its content sits directly on the container. Both are
-// treated as "one line" here.
+// A "line" here means: the start of a top-level <div> (contentEditable
+// wraps each Enter-separated paragraph in one), OR right after a <br>
+// (a Shift+Enter soft break *inside* a paragraph — "Items to bring:" then
+// "-laptop" on the next line of the same paragraph is exactly this case,
+// and needs its own bullet just like a line in its own <div> would).
 export function renderStudBullets(html: string): string {
   if (!html.includes('-')) return html
   const tmp = document.createElement('div')
   tmp.innerHTML = html
-  let lines = Array.from(tmp.children).filter((el): el is HTMLElement => el.tagName === 'DIV')
-  if (lines.length === 0) {
-    // No line-wrapping <div> at all (a single-line entry, before the first
-    // Enter press) — wrap everything in one so the flex-layout class added
-    // below actually survives serialization. A class added straight to
-    // `tmp` wouldn't: only tmp's *children* get serialized via innerHTML.
-    const wrapper = document.createElement('div')
-    while (tmp.firstChild) wrapper.appendChild(tmp.firstChild)
-    tmp.appendChild(wrapper)
-    lines = [wrapper]
-  }
+  let containers = Array.from(tmp.children).filter((el): el is HTMLElement => el.tagName === 'DIV')
+  if (containers.length === 0) containers = [tmp]
 
   let colorIndex = 0
-  for (const line of lines) {
-    const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT)
-    const firstText = walker.nextNode() as Text | null
-    if (!firstText?.textContent) continue
-    const match = firstText.textContent.match(/^-\s?/)
-    if (!match) continue
 
-    firstText.textContent = firstText.textContent.slice(match[0].length)
-    const stud = STUDS[colorIndex % STUDS.length]
-    colorIndex++
-    const img = document.createElement('img')
-    img.src = stud.src
-    img.alt = ''
-    img.className = 'stud-bullet'
-    line.insertBefore(img, line.firstChild)
-    line.classList.add('stud-bullet-line')
+  for (const container of containers) {
+    let lineStart: 'container' | Element = 'container'
+    let atLineStart = true
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT)
+    let node: Node | null
+    while ((node = walker.nextNode())) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if ((node as Element).tagName === 'BR') {
+          atLineStart = true
+          lineStart = node as Element
+        }
+        continue
+      }
+      if (!atLineStart) continue
+      atLineStart = false
+      const text = node as Text
+      if (!text.textContent) continue
+      const match = text.textContent.match(/^-\s?/)
+      if (!match) continue
+
+      text.textContent = text.textContent.slice(match[0].length)
+      const stud = STUDS[colorIndex % STUDS.length]
+      colorIndex++
+      const img = document.createElement('img')
+      img.src = stud.src
+      img.alt = ''
+      img.className = 'stud-bullet'
+      if (lineStart === 'container') {
+        container.insertBefore(img, container.firstChild)
+      } else {
+        lineStart.parentNode?.insertBefore(img, lineStart.nextSibling)
+      }
+    }
   }
   return tmp.innerHTML
 }

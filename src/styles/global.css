@@ -246,8 +246,10 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 }
 
 .cap { font-family: var(--font-hand); font-style: normal; font-size: 16px; line-height: 1.15; color: var(--ink); margin-top: 8px; padding: 0 3px; }
-.stud-bullet-line { display: flex; align-items: center; gap: 6px; }
-.stud-bullet { width: 11px; height: 11px; flex-shrink: 0; filter: drop-shadow(0 1px 1.5px oklch(20% 0.02 50 / 0.35)); }
+.stud-bullet {
+  display: inline-block; width: 11px; height: 11px; vertical-align: -1px; margin-right: 6px;
+  filter: drop-shadow(0 1px 1.5px oklch(20% 0.02 50 / 0.35));
+}
 
 .scrap { padding: 14px 16px 14px; }
 .scrap .cap { font-size: 18px; margin-top: 2px; }
