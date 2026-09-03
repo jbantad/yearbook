@@ -9,8 +9,12 @@ export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> 
   square: { w: 130, h: 154, src: polaroidSquare },
   triptych: { w: 140, h: 433, src: polaroidTriptych },
   // Shown to users as "Lrg. Square" — the same square-polaroid artwork,
-  // just rendered bigger (2x its w/h), not a distinct frame design.
-  white: { w: 260, h: 308, src: polaroidSquare },
+  // just rendered bigger, not a distinct frame design. At 2x "square"'s own
+  // w/h the bottom caption margin came out to ~70px of mostly-empty white
+  // space below a short caption — trimmed the height down (keeping the
+  // photo window and top/side margins the same absolute size, see the
+  // matching bottom% in FRAME_WINDOWS below) so there's less dead space.
+  white: { w: 260, h: 273, src: polaroidSquare },
 }
 
 // Each frame PNG cuts its photo window at a different spot, so the
@@ -23,8 +27,10 @@ export const FRAME_WINDOWS: Record<string, { left: number; right: number; top: n
   classic: { left: 4.0, right: 3.4, top: 7.9, bottom: 18.2 },
   tall: { left: 8.5, right: 8.9, top: 4.8, bottom: 13.8 },
   square: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
-  // Same artwork as "square", so the same window.
-  white: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
+  // Same artwork as "square" (so the same left/right/top), but with the
+  // bottom margin trimmed to roughly half its share of the shorter card
+  // above — same window height in absolute pixels either way.
+  white: { left: 7.5, right: 7.3, top: 7.2, bottom: 12.8 },
 }
 
 // The triptych frame has three separate photo windows stacked in one strip,
