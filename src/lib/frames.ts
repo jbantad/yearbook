@@ -16,10 +16,11 @@ export const FRAME_SIZES: Record<string, { w: number; h: number; visibleH?: numb
   square: { w: 130, h: 154, src: polaroidSquare },
   triptych: { w: 140, h: 433, src: polaroidTriptych },
   // Shown to users as "Lrg. Square" — the same square-polaroid artwork, at
-  // 2x its own w/h, just cropped shorter (see visibleH) so the resulting
-  // ~70px caption margin isn't mostly empty space. The photo window and
-  // border are otherwise identical to "square", just twice the size.
-  white: { w: 260, h: 308, visibleH: 273, src: polaroidSquare },
+  // 2x its own w/h, just cropped shorter (see visibleH) so there's only
+  // just enough margin below the photo for one caption line, not the full
+  // ~70px the uncropped artwork would carry. The photo window and border
+  // are otherwise identical to "square", just twice the size.
+  white: { w: 260, h: 308, visibleH: 262, src: polaroidSquare },
 }
 
 // Each frame PNG cuts its photo window at a different spot, so the
