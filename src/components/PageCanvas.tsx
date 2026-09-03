@@ -35,11 +35,16 @@ const SCALE_BOUNDS: Record<string, [number, number]> = { note: [0.6, 2], sticker
 // stopped a drag from going negative, which pushes the block up out of its
 // own canvas (page-canvas has no overflow clipping) into the space of
 // whatever renders above it — the previous day's section in the main feed.
-// The block's date never actually changes (that's fixed by which page/day
-// it belongs to, untouched by dragging), but a block sitting there looks
-// like it belongs to the wrong day. Clamping to 0 keeps it inside its own
-// section no matter how far up it's dragged.
+// Clamping to 0 keeps a block inside its own section no matter how far up
+// it's dragged — unless the caller wired up onMoveToPreviousDay (below),
+// in which case dragging past the top is instead the intentional gesture
+// for re-filing the block under the previous (more recent) day.
 const MIN_BLOCK_Y = 0
+// How far past its own canvas's top edge a block has to be dragged before
+// releasing it counts as "move this to the previous day" rather than just
+// snapping back inside — deliberately larger than a stray few pixels so it
+// isn't triggered by simply nudging something up near the top.
+const LEAVE_TOP_THRESHOLD = -70
 
 function blockScale(block: BlockWithJoins): number {
   const data = (block.data ?? {}) as { card_scale?: number }
@@ -128,6 +133,7 @@ function DraggableBlock({
   onToggleLock,
   onToggleSendBack,
   onMeasure,
+  onLeaveTop,
 }: {
   block: BlockWithJoins
   pos: Pos
@@ -149,6 +155,7 @@ function DraggableBlock({
   onToggleLock?: () => void
   onToggleSendBack?: () => void
   onMeasure: (height: number) => void
+  onLeaveTop?: () => void
 }) {
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<{ startX: number; startY: number; origin: Pos } | null>(null)
@@ -161,6 +168,7 @@ function DraggableBlock({
   const showButtonCluster = LOCKABLE_TYPES.has(block.type)
   const pinchable = PINCHABLE_TYPES.has(block.type) && !!onScale
   const scaleBounds = SCALE_BOUNDS[block.type] ?? [0.5, 4]
+  const canLeaveTop = !!onLeaveTop
 
   // estimateBlockHeight (used for the initial canvasHeight, before this can
   // measure anything) is a rough guess from the block's data — it was
@@ -235,7 +243,12 @@ function DraggableBlock({
     }
     if (dragRef.current) {
       const { startX, startY, origin } = dragRef.current
-      onDrag({ x: origin.x + (e.clientX - startX), y: Math.max(MIN_BLOCK_Y, origin.y + (e.clientY - startY)) })
+      const rawY = origin.y + (e.clientY - startY)
+      // A block that can be re-filed to the previous day is allowed to
+      // visually drift above its own canvas's top edge while dragging —
+      // that's the whole affordance, showing it lifting into the section
+      // above. Anything else stays clamped inside its own canvas.
+      onDrag({ x: origin.x + (e.clientX - startX), y: canLeaveTop ? rawY : Math.max(MIN_BLOCK_Y, rawY) })
     }
   }
 
@@ -251,7 +264,18 @@ function DraggableBlock({
     }
 
     if (pointersRef.current.size === 0) {
-      if (dragRef.current) onMoved(block.id, pos)
+      if (dragRef.current) {
+        if (canLeaveTop && pos.y <= LEAVE_TOP_THRESHOLD) {
+          onLeaveTop?.()
+        } else {
+          // Either this block can't leave the top at all, or it drifted
+          // above 0 without crossing the threshold — settle it back inside
+          // its own canvas either way.
+          const settled = { x: pos.x, y: Math.max(MIN_BLOCK_Y, pos.y) }
+          if (settled.y !== pos.y) onDrag(settled)
+          onMoved(block.id, settled)
+        }
+      }
       dragRef.current = null
       setDragging(false)
     } else if (pointersRef.current.size === 1) {
@@ -347,6 +371,7 @@ export function PageCanvas({
   onDoubleTap,
   minHeight = 420,
   showFab = true,
+  onMoveBlockToPreviousDay,
 }: {
   pageId: string | null
   pageNumber: number | null
@@ -360,6 +385,11 @@ export function PageCanvas({
   onDoubleTap?: () => void
   minHeight?: number
   showFab?: boolean
+  // Dragging a block up past the top of its own canvas re-files it under
+  // the previous (more recent) day instead of just snapping back — only
+  // offered when the caller can actually name that day's page (see DayPage,
+  // which knows the feed order this component doesn't).
+  onMoveBlockToPreviousDay?: (blockId: string) => void
 }) {
   const [editingBlock, setEditingBlock] = useState<BlockWithJoins | null>(null)
   const [addOpen, setAddOpen] = useState(false)
@@ -527,6 +557,7 @@ export function PageCanvas({
             onScaled={PINCHABLE_TYPES.has(b.type) ? handleScaled : undefined}
             onFront={() => bringToFront(b.id)}
             onMeasure={(h) => handleMeasure(b.id, h)}
+            onLeaveTop={onMoveBlockToPreviousDay ? () => onMoveBlockToPreviousDay(b.id) : undefined}
             onToggleLock={LOCKABLE_TYPES.has(b.type) ? () => handleToggleLock(b.id) : undefined}
             onToggleSendBack={LOCKABLE_TYPES.has(b.type) ? () => handleToggleSendBack(b.id) : undefined}
             onEdit={EDITABLE_TYPES.has(b.type) ? () => {

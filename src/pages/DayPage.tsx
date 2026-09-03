@@ -137,6 +137,20 @@ export function DayPage() {
     await supabase.from('pages').update({ locked: next }).eq('id', entry.pageId)
   }
 
+  // Dragging a block up past the top of its own day re-files it under the
+  // previous (more recent) day in the feed, rather than just visually
+  // drifting there — clearing layout entirely lets it fall back to a fresh
+  // default spot on arrival instead of carrying over a position tuned for
+  // its old page.
+  async function moveBlockToPreviousDay(fromDate: string, blockId: string) {
+    const idx = days.findIndex((d) => d.date === fromDate)
+    if (idx <= 0) return
+    const target = days[idx - 1]
+    if (!target.pageId || target.locked) return
+    await supabase.from('blocks').update({ page_id: target.pageId, layout: {} }).eq('id', blockId)
+    await Promise.all([reloadDay(fromDate), reloadDay(target.date)])
+  }
+
   const bottomSentinelRef = useRef<HTMLDivElement>(null)
 
   // On a short page — or any viewport taller than the loaded content, which
@@ -242,6 +256,11 @@ export function DayPage() {
               onReload={() => reloadDay(entry.date)}
               minHeight={i === 0 ? 420 : 120}
               showFab={false}
+              onMoveBlockToPreviousDay={
+                i > 0 && days[i - 1].pageId && !days[i - 1].locked
+                  ? (blockId) => moveBlockToPreviousDay(entry.date, blockId)
+                  : undefined
+              }
             />
           </div>
         ) : null
