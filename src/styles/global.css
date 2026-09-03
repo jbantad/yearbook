@@ -358,6 +358,16 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
   position: fixed; right: max(20px, calc(50% - 210px)); bottom: calc(100px + var(--safe-bottom)); width: 58px; height: 58px; border-radius: 50%;
   background: var(--ink); display: flex; align-items: center; justify-content: center;
   box-shadow: 0 10px 20px oklch(30% 0.05 50 / 0.35); border: none; z-index: 20;
+  /* Mobile Safari's layout viewport (what `position: fixed` is pinned to)
+     briefly lags behind the larger visual viewport while its address-bar
+     chrome is animating away on scroll — without its own compositor layer,
+     a fixed element can end up positioned against the stale, smaller
+     viewport for a frame, clipping or shifting until layout catches up.
+     Same fix as .block-drag-wrap's WebKit repaint issue elsewhere in this
+     file: promote it to its own layer so it tracks the real viewport. */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .fab svg { width: 26px; height: 26px; color: var(--paper); }
 
@@ -481,7 +491,15 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 
 /* ---- tab bar ---- */
 
-.tabbar-wrap { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; z-index: 25; }
+.tabbar-wrap {
+  position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; z-index: 25;
+  /* See the comment on .fab above — same fixed-position-during-chrome-resize
+     glitch, which is what shows up as a sliver of the page peeking out below
+     the bar when Safari's toolbar is mid-animation. */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 .tabbar {
   position: relative; width: 100%; max-width: 460px; height: calc(84px + var(--safe-bottom)); background: var(--ink); border-top: 1px solid oklch(100% 0 0 / 0.08);
   display: flex; align-items: stretch; justify-content: space-around; padding: 0 6px var(--safe-bottom);
