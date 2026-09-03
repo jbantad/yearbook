@@ -3,18 +3,23 @@ import polaroidTall from '../assets/polaroid-frame-tall.png'
 import polaroidSquare from '../assets/polaroid-frame-square.png'
 import polaroidTriptych from '../assets/polaroid-frame-triptych.png'
 
-export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> = {
+// `h` is the frame's natural height at that width — the reference the PNG's
+// own art and FRAME_WINDOWS below are measured against. `visibleH`, when
+// set, crops the rendered card down to something shorter than `h` (see
+// frameCapBottomPercent) instead of squeezing the whole thing to fit —
+// stretching a shorter box via background-size would shrink the photo
+// window right along with the border, not just trim the empty margin below
+// the caption.
+export const FRAME_SIZES: Record<string, { w: number; h: number; visibleH?: number; src: string }> = {
   classic: { w: 323, h: 255, src: polaroidClassic },
   tall: { w: 132, h: 186, src: polaroidTall },
   square: { w: 130, h: 154, src: polaroidSquare },
   triptych: { w: 140, h: 433, src: polaroidTriptych },
-  // Shown to users as "Lrg. Square" — the same square-polaroid artwork,
-  // just rendered bigger, not a distinct frame design. At 2x "square"'s own
-  // w/h the bottom caption margin came out to ~70px of mostly-empty white
-  // space below a short caption — trimmed the height down (keeping the
-  // photo window and top/side margins the same absolute size, see the
-  // matching bottom% in FRAME_WINDOWS below) so there's less dead space.
-  white: { w: 260, h: 273, src: polaroidSquare },
+  // Shown to users as "Lrg. Square" — the same square-polaroid artwork, at
+  // 2x its own w/h, just cropped shorter (see visibleH) so the resulting
+  // ~70px caption margin isn't mostly empty space. The photo window and
+  // border are otherwise identical to "square", just twice the size.
+  white: { w: 260, h: 308, visibleH: 273, src: polaroidSquare },
 }
 
 // Each frame PNG cuts its photo window at a different spot, so the
@@ -27,10 +32,24 @@ export const FRAME_WINDOWS: Record<string, { left: number; right: number; top: n
   classic: { left: 4.0, right: 3.4, top: 7.9, bottom: 18.2 },
   tall: { left: 8.5, right: 8.9, top: 4.8, bottom: 13.8 },
   square: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
-  // Same artwork as "square" (so the same left/right/top), but with the
-  // bottom margin trimmed to roughly half its share of the shorter card
-  // above — same window height in absolute pixels either way.
-  white: { left: 7.5, right: 7.3, top: 7.2, bottom: 12.8 },
+  // Same artwork as "square", so the same window — cropping (see visibleH
+  // above) doesn't move where the window is, only how much of the margin
+  // below it stays visible.
+  white: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
+}
+
+// A cropped frame's caption sits within whatever margin is left below the
+// window once visibleH clips the rest away, not the frame's full bottom
+// margin — measured against the *cropped* height, not FRAME_WINDOWS.bottom
+// (which is measured against the full, uncropped `h`). Uncropped frames get
+// their plain FRAME_WINDOWS.bottom back unchanged.
+export function frameCapBottomPercent(key: string): number {
+  const frame = FRAME_SIZES[key] ?? FRAME_SIZES.classic
+  const win = FRAME_WINDOWS[key] ?? FRAME_WINDOWS.classic
+  const visibleH = frame.visibleH ?? frame.h
+  if (visibleH === frame.h) return win.bottom
+  const windowBottomFromTop = (1 - win.bottom / 100) * frame.h
+  return ((visibleH - windowBottomFromTop) / visibleH) * 100
 }
 
 // The triptych frame has three separate photo windows stacked in one strip,

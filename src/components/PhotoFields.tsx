@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameCapBottomPercent } from '../lib/frames'
 import { RotationField } from './RotationField'
 
 const FRAMES: { key: string; label: string }[] = [
@@ -75,7 +75,12 @@ export function PhotoFields({
   const frameSize = FRAME_SIZES[frame] ?? FRAME_SIZES.classic
   const win = FRAME_WINDOWS[frame] ?? FRAME_WINDOWS.classic
   const previewW = 190
-  const previewFrame = { w: previewW, h: previewW * (frameSize.h / frameSize.w), src: frameSize.src }
+  const previewScale = previewW / frameSize.w
+  // .h is the full, uncropped reference the art and window are positioned
+  // against (see frames.ts); .visibleH, when set, is what actually shows —
+  // matches the same crop-not-squeeze treatment BlockCard renders with.
+  const previewFrame = { w: previewW, h: frameSize.h * previewScale, src: frameSize.src }
+  const previewVisibleH = (frameSize.visibleH ?? frameSize.h) * previewScale
 
   function handleZoom(v: number) {
     onZoomChange(v)
@@ -264,48 +269,54 @@ export function PhotoFields({
   return (
     <>
       <div className="field">
-        <div style={{ position: 'relative', width: previewFrame.w, height: previewFrame.h, margin: '0 auto' }}>
-          <div
-            style={{
-              position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
-              backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
-            }}
-          />
-          <div
-            ref={previewBoxRef}
-            style={{
-              position: 'absolute', overflow: 'hidden', touchAction: 'none', zIndex: 1,
-              left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
-              background: preview ? '#000' : 'var(--paper-alt)',
-            }}
-            onPointerDown={onDragStart}
-            onPointerMove={onDragMove}
-            onPointerUp={onDragEnd}
-            onPointerCancel={onDragEnd}
-          >
-            {preview ? (
-              <img
-                src={preview}
-                alt=""
-                draggable={false}
-                style={{
-                  position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                  transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom * PHOTO_BASE_SCALE})`,
-                  cursor: 'grab', pointerEvents: 'none',
-                }}
-              />
-            ) : (
-              <label style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic', textAlign: 'center', padding: '0 6px' }}>tap to add a photo</span>
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onPickPhoto(e.target.files?.[0])} />
-              </label>
-            )}
+        <div style={{ position: 'relative', width: previewFrame.w, height: previewVisibleH, margin: '0 auto', overflow: previewVisibleH === previewFrame.h ? undefined : 'hidden' }}>
+          {/* previewFrame.h (the frame's full, uncropped reference), not
+              previewVisibleH — same reasoning as BlockCard: the art and its
+              window are positioned against the full size, then the box
+              above just crops off whatever falls past previewVisibleH. */}
+          <div style={{ position: 'absolute', top: 0, left: 0, width: previewFrame.w, height: previewFrame.h }}>
+            <div
+              style={{
+                position: 'absolute', inset: 0, backgroundImage: `url(${previewFrame.src})`,
+                backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', zIndex: 2, pointerEvents: 'none',
+              }}
+            />
+            <div
+              ref={previewBoxRef}
+              style={{
+                position: 'absolute', overflow: 'hidden', touchAction: 'none', zIndex: 1,
+                left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+                background: preview ? '#000' : 'var(--paper-alt)',
+              }}
+              onPointerDown={onDragStart}
+              onPointerMove={onDragMove}
+              onPointerUp={onDragEnd}
+              onPointerCancel={onDragEnd}
+            >
+              {preview ? (
+                <img
+                  src={preview}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                    transform: `translate(${offsetX}%, ${offsetY}%) scale(${zoom * PHOTO_BASE_SCALE})`,
+                    cursor: 'grab', pointerEvents: 'none',
+                  }}
+                />
+              ) : (
+                <label style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 11.5, color: 'var(--ink-soft)', fontStyle: 'italic', textAlign: 'center', padding: '0 6px' }}>tap to add a photo</span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onPickPhoto(e.target.files?.[0])} />
+                </label>
+              )}
+            </div>
           </div>
           {caption && (
             <div
               className="cap"
               style={{
-                position: 'absolute', left: '7%', right: '7%', bottom: 0, top: `calc(100% - ${win.bottom}%)`,
+                position: 'absolute', left: '7%', right: '7%', bottom: 0, top: `calc(100% - ${frameCapBottomPercent(frame)}%)`,
                 margin: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
                 color: 'oklch(24% 0.02 50)', fontSize: 15, lineHeight: 1.15, zIndex: 3,
               }}
@@ -316,7 +327,7 @@ export function PhotoFields({
           {preview && (
             <label
               style={{
-                position: 'absolute', right: `calc(${win.right}% + 6px)`, bottom: `calc(${win.bottom}% + 6px)`, background: 'oklch(20% 0 0 / 0.55)', color: '#fff',
+                position: 'absolute', right: `calc(${win.right}% + 6px)`, bottom: `calc(${frameCapBottomPercent(frame)}% + 6px)`, background: 'oklch(20% 0 0 / 0.55)', color: '#fff',
                 fontSize: 10.5, fontWeight: 600, padding: '3px 8px', borderRadius: 20, cursor: 'pointer', zIndex: 4,
               }}
               onPointerDown={(e) => e.stopPropagation()}

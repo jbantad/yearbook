@@ -86,7 +86,7 @@ function estimateBlockHeight(block: BlockWithJoins): number {
   switch (block.type) {
     case 'photo': {
       const frame = FRAME_SIZES[data.frame ?? 'classic'] ?? FRAME_SIZES.classic
-      return frame.h + 30
+      return (frame.visibleH ?? frame.h) + 30
     }
     case 'sticker': {
       const sticker = stickerSelectionImage(stickerSelectionFromData(block.data as Record<string, unknown> ?? {}))

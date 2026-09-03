@@ -1,7 +1,7 @@
 import { hashRotation } from '../lib/hash'
 import { PlaceIcon, BLOCK_COLORS, EditIcon } from './icons'
 import { resolveColor } from '../lib/colorPresets'
-import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS } from '../lib/frames'
+import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameCapBottomPercent } from '../lib/frames'
 import { PHOTO_BASE_SCALE } from './PhotoFields'
 import { STICKER_BASE_WIDTH, stickerSelectionFromData, stickerSelectionImage } from '../lib/stickers'
 import { CARD_BY_KEY, type Card } from '../lib/cards'
@@ -133,33 +133,44 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
     const zoom = typeof data.photo_zoom === 'number' ? data.photo_zoom : 1
     const px = typeof data.photo_x === 'number' ? data.photo_x : 0
     const py = typeof data.photo_y === 'number' ? data.photo_y : 0
+    const visibleH = frame.visibleH ?? frame.h
     return (
       <div
         className={`card polaroid polaroid-${frameKey}`}
-        style={{ width: frame.w, height: frame.h, transform: `rotate(${rot}deg) scale(${cardScale})` }}
+        style={{
+          width: frame.w, height: visibleH, transform: `rotate(${rot}deg) scale(${cardScale})`,
+          ...(frame.visibleH ? { overflow: 'hidden' } : {}),
+        }}
       >
-        <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
-        <div
-          className="photo-art"
-          style={{
-            left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
-            ...(!photoUrl ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` } : {}),
-          }}
-        >
-          {photoUrl && (
-            <img
-              src={photoUrl}
-              alt=""
-              draggable={false}
-              style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                transform: `translate(${px}%, ${py}%) scale(${zoom * PHOTO_BASE_SCALE})`,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
+        {/* frame.h (not visibleH) here and below — the art and its window
+            are positioned against the frame's full, natural size, then the
+            card above just crops off whatever falls past visibleH. Sizing
+            this to the cropped height instead would squeeze the window
+            down along with the border, shrinking the photo itself. */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: frame.w, height: frame.h }}>
+          <div className="frame-img" style={{ backgroundImage: `url(${frame.src})` }} />
+          <div
+            className="photo-art"
+            style={{
+              left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%`,
+              ...(!photoUrl ? { background: `linear-gradient(160deg, oklch(60% 0.1 ${(hashRotation(block.id, 360) + 180).toFixed(0)}), oklch(30% 0.06 ${(hashRotation(block.id + '2', 360) + 180).toFixed(0)}))` } : {}),
+            }}
+          >
+            {photoUrl && (
+              <img
+                src={photoUrl}
+                alt=""
+                draggable={false}
+                style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                  transform: `translate(${px}%, ${py}%) scale(${zoom * PHOTO_BASE_SCALE})`,
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </div>
         </div>
-        {caption && <div className="cap" style={{ '--cap-bottom': `${win.bottom}%` } as CSSProperties}>{caption}</div>}
+        {caption && <div className="cap" style={{ '--cap-bottom': `${frameCapBottomPercent(frameKey)}%` } as CSSProperties}>{caption}</div>}
       </div>
     )
   }
