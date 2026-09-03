@@ -568,10 +568,14 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 /* ---- people ---- */
 
 .plist { padding: 18px 18px 10px; display: flex; flex-direction: column; gap: 10px; }
-.prow { display: flex; align-items: center; gap: 13px; background: var(--card); border-radius: 14px; padding: 12px 14px; box-shadow: 0 5px 13px oklch(30% 0.03 50 / 0.1); border: none; text-align: left; width: 100%; }
+/* No explicit `color` here left the weekday name in a <button> falling back
+   to WebKit's default control-label tint (the system accent blue) on iOS
+   Safari, instead of the app's own palette — background/border get reset
+   above but color doesn't inherit that same treatment automatically. */
+.prow { display: flex; align-items: center; gap: 13px; background: var(--card); border-radius: 14px; padding: 12px 14px; box-shadow: 0 5px 13px oklch(30% 0.03 50 / 0.1); border: none; text-align: left; width: 100%; color: var(--ink); }
 .prow .av { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-hand); font-style: normal; font-size: 22px; font-weight: 600; box-shadow: inset 0 0 0 1.5px oklch(100% 0 0 / 0.5); }
 .prow .body { flex: 1; }
-.prow .nm { font-size: 16px; font-weight: 600; }
+.prow .nm { font-size: 16px; font-weight: 600; color: var(--amber); }
 .prow .meta { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
 .padd { display: flex; align-items: center; gap: 13px; padding: 12px 14px; border: 1.5px dashed var(--line); border-radius: 14px; color: var(--ink-soft); margin-top: 2px; background: none; width: 100%; }
 .padd .plus { width: 48px; height: 48px; border-radius: 50%; border: 1.5px dashed var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
