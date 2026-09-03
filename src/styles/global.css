@@ -427,6 +427,12 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .frame-opt.sel .sw { border-color: var(--amber); background-color: var(--amber-soft); }
 .frame-opt span { font-size: 10.5px; color: var(--ink-soft); }
 .frame-opt.sel span { color: var(--amber); font-weight: 600; }
+/* Triptych's own art is much taller than it is wide (140x433) — "contain"
+   (used by every other frame swatch) shrinks it down to a thin sliver in
+   this same square icon box, out of step with how chunky the rest look.
+   "cover" crops it to fill the box instead, at the cost of not showing the
+   whole strip — still reads as a frame icon, just not the full shape. */
+.frame-opt .sw.sw-triptych { background-size: cover; }
 
 .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .sticker-opt {

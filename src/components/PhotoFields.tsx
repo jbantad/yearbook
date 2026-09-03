@@ -246,7 +246,7 @@ export function PhotoFields({
                 className={`frame-opt${frame === f.key ? ' sel' : ''}`}
                 onClick={() => onFrameChange(f.key)}
               >
-                <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
+                <div className={`sw${f.key === 'triptych' ? ' sw-triptych' : ''}`} style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
                 <span>{f.label}</span>
               </button>
             ))}
@@ -362,7 +362,7 @@ export function PhotoFields({
               className={`frame-opt${frame === f.key ? ' sel' : ''}`}
               onClick={() => onFrameChange(f.key)}
             >
-              <div className="sw" style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
+              <div className={`sw${f.key === 'triptych' ? ' sw-triptych' : ''}`} style={{ backgroundImage: `url(${FRAME_SIZES[f.key].src})` }} />
               <span>{f.label}</span>
             </button>
           ))}
