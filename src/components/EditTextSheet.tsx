@@ -23,6 +23,7 @@ export function EditTextSheet({
   const layout = (block.layout ?? {}) as { x?: number; y?: number; r?: number }
   const style = (data.style as string) || 'headline'
   const [content, setContent] = useState((data.content as string) || '')
+  const [cardScale, setCardScale] = useState(typeof data.card_scale === 'number' ? (data.card_scale as number) : 1)
   const [rotation, setRotation] = useState(typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,7 +33,7 @@ export function EditTextSheet({
     setBusy(true)
     setError(null)
     try {
-      const nextData = { ...data, content }
+      const nextData = { ...data, content, ...(style === 'headline' ? { card_scale: cardScale } : {}) }
       const nextLayout = { ...layout, r: rotation }
       const { error: updateErr } = await supabase
         .from('blocks')
@@ -72,6 +73,25 @@ export function EditTextSheet({
             <label>Text</label>
             <input value={content} onChange={(e) => setContent(e.target.value)} placeholder={style === 'label' ? 'CAMPFIRE NIGHT' : 'Lake Weekend'} required />
           </div>
+
+          {style === 'headline' && (
+            <div className="field">
+              <label>Size</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 15, color: 'var(--ink-soft)' }}>−</span>
+                <input
+                  type="range"
+                  min={0.5}
+                  max={2.5}
+                  step={0.05}
+                  value={cardScale}
+                  onChange={(e) => setCardScale(parseFloat(e.target.value))}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontSize: 17, color: 'var(--ink-soft)' }}>+</span>
+              </div>
+            </div>
+          )}
 
           <div className="field">
             <label>Rotation</label>

@@ -321,8 +321,11 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
   if (block.type === 'text') {
     const style = (data.style as string) || 'headline'
     const content = (data.content as string) || (style === 'label' ? 'LABEL' : 'headline')
+    // Only headlines get a size control (see EditTextSheet) — labels are
+    // meant to look like uniform label-maker tiles, so their size stays fixed.
+    const cardScale = style === 'headline' && typeof data.card_scale === 'number' ? data.card_scale : 1
     return (
-      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg) translateZ(0)`, position: 'relative' }}>
+      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg) scale(${cardScale}) translateZ(0)`, position: 'relative' }}>
         {style === 'label' ? ` ${content} ` : content}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
