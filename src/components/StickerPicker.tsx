@@ -31,7 +31,8 @@ export function StickerPicker({ value, onChange }: { value: StickerSelection | n
       try {
         // GIPHY's search wants an actual query — an empty box falls back to
         // "sticker"/"gif" so the grid isn't just blank before you type.
-        const r = await searchGiphy(kind, query.trim() || kind.slice(0, -1))
+        // 50 is GIPHY's own per-request cap on the free tier.
+        const r = await searchGiphy(kind, query.trim() || kind.slice(0, -1), 50)
         if (requestId !== requestIdRef.current) return
         setResults(r)
       } catch (err) {
