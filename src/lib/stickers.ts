@@ -14,6 +14,7 @@ import thoughtBubble from '../assets/stickers/thought-bubble.png'
 import starScatter from '../assets/stickers/star-scatter.png'
 import partyHat from '../assets/stickers/party-hat.png'
 import cucumber from '../assets/stickers/cucumber.png'
+import monopolyMoney from '../assets/stickers/monopoly-money.png'
 
 // On-canvas width at card_scale 1 — each sticker's own aspect ratio (w/h,
 // captured from the source crop) then determines its rendered height.
@@ -36,6 +37,7 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
   { key: 'star-scatter', src: starScatter, w: 378, h: 500 },
   { key: 'party-hat', src: partyHat, w: 316, h: 500 },
   { key: 'cucumber', src: cucumber, w: 500, h: 486 },
+  { key: 'monopoly-money', src: monopolyMoney, w: 344, h: 333 },
 ]
 
 export const STICKER_BY_KEY: Record<string, { src: string; w: number; h: number }> =
