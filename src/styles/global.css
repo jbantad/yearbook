@@ -427,6 +427,11 @@ input, textarea, select { font-family: inherit; font-style: inherit; }
 .frame-opt.sel .sw { border-color: var(--amber); background-color: var(--amber-soft); }
 .frame-opt span { font-size: 10.5px; color: var(--ink-soft); }
 .frame-opt.sel span { color: var(--amber); font-weight: 600; }
+/* "Lrg. Square" has no PNG to preview, unlike the other frame swatches —
+   drawn by hand instead so it still reads as a frame icon (a mat with its
+   own photo-window rectangle) rather than a plain filled block. */
+.sw-white { position: relative; background: #fdfdfc; }
+.sw-white-window { position: absolute; background: oklch(85% 0.015 70); border-radius: 1px; }
 
 .sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .sticker-opt {

@@ -9,9 +9,10 @@ export const FRAME_SIZES: Record<string, { w: number; h: number; src: string }> 
   tall: { w: 132, h: 186, src: polaroidTall },
   square: { w: 130, h: 154, src: polaroidSquare },
   triptych: { w: 140, h: 433, src: polaroidTriptych },
-  // No illustrated PNG — "white" is just a plain mat, painted by
-  // frameChromeStyle below instead of an image asset.
-  white: { w: 300, h: 300, src: '' },
+  // No illustrated PNG — "white" (shown to users as "Lrg. Square") is a
+  // plain mat, painted by frameChromeStyle below instead of an image asset.
+  // Same proportions as the "square" polaroid, just bigger — 2x its w/h.
+  white: { w: 260, h: 308, src: '' },
 }
 
 // Each frame PNG cuts its photo window at a different spot, so the
@@ -24,11 +25,8 @@ export const FRAME_WINDOWS: Record<string, { left: number; right: number; top: n
   classic: { left: 4.0, right: 3.4, top: 7.9, bottom: 18.2 },
   tall: { left: 8.5, right: 8.9, top: 4.8, bottom: 13.8 },
   square: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
-  // A slim, even mat on three sides with a little extra room at the bottom
-  // for an optional caption — unlike the others, there's no illustrated
-  // border to hide the photo's edge under, so the margin itself is the
-  // whole look.
-  white: { left: 6, right: 6, top: 6, bottom: 13 },
+  // Same window as "square" — same shape, just plain and bigger.
+  white: { left: 7.5, right: 7.3, top: 6.4, bottom: 22.8 },
 }
 
 // For a standalone preview with no photo underneath it (the frame-picker

@@ -6,9 +6,29 @@ const FRAMES: { key: string; label: string }[] = [
   { key: 'classic', label: 'Classic' },
   { key: 'tall', label: 'Tall' },
   { key: 'square', label: 'Square' },
-  { key: 'white', label: 'White' },
+  { key: 'white', label: 'Lrg. Square' },
   { key: 'triptych', label: 'Triptych' },
 ]
+
+// The illustrated frames' own PNGs draw a flat gray "photo" rectangle
+// inside their border, which is what makes them read as a frame icon
+// rather than a blank swatch. "White" has no PNG to borrow that look from
+// — painting it as a plain filled square (frameChromeStyle's normal job,
+// fine for a real photo behind it) looked like a stray blob next to the
+// others here, so this draws the same two-tone shape by hand instead: a
+// light mat with its own window rect positioned by the frame's real inset.
+function FrameSwatch({ frameKey }: { frameKey: string }) {
+  if (frameKey !== 'white') return <div className="sw" style={frameChromeStyle(frameKey)} />
+  const win = FRAME_WINDOWS.white
+  return (
+    <div className="sw sw-white">
+      <div
+        className="sw-white-window"
+        style={{ left: `${win.left}%`, right: `${win.right}%`, top: `${win.top}%`, bottom: `${win.bottom}%` }}
+      />
+    </div>
+  )
+}
 
 // The image is rendered at scale(zoom * PHOTO_BASE_SCALE); baking in a
 // small always-on overscan means there's a little room to reposition even
@@ -246,7 +266,7 @@ export function PhotoFields({
                 className={`frame-opt${frame === f.key ? ' sel' : ''}`}
                 onClick={() => onFrameChange(f.key)}
               >
-                <div className="sw" style={frameChromeStyle(f.key)} />
+                <FrameSwatch frameKey={f.key} />
                 <span>{f.label}</span>
               </button>
             ))}
@@ -359,7 +379,7 @@ export function PhotoFields({
               className={`frame-opt${frame === f.key ? ' sel' : ''}`}
               onClick={() => onFrameChange(f.key)}
             >
-              <div className="sw" style={frameChromeStyle(f.key)} />
+              <FrameSwatch frameKey={f.key} />
               <span>{f.label}</span>
             </button>
           ))}
