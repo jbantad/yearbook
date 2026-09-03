@@ -30,6 +30,16 @@ const LOCKABLE_TYPES = new Set(['photo', 'note', 'journal', 'meal', 'movie', 'st
 // for it to write to.
 const PINCHABLE_TYPES = new Set(['note', 'sticker'])
 const SCALE_BOUNDS: Record<string, [number, number]> = { note: [0.6, 2], sticker: [0.5, 4] }
+// A block's x/y is relative to its OWN day's canvas box, not the screen —
+// y=0 is that canvas's own top edge, right below that day's header. Nothing
+// stopped a drag from going negative, which pushes the block up out of its
+// own canvas (page-canvas has no overflow clipping) into the space of
+// whatever renders above it — the previous day's section in the main feed.
+// The block's date never actually changes (that's fixed by which page/day
+// it belongs to, untouched by dragging), but a block sitting there looks
+// like it belongs to the wrong day. Clamping to 0 keeps it inside its own
+// section no matter how far up it's dragged.
+const MIN_BLOCK_Y = 0
 
 function blockScale(block: BlockWithJoins): number {
   const data = (block.data ?? {}) as { card_scale?: number }
@@ -42,7 +52,7 @@ function distanceOf(a: { x: number; y: number }, b: { x: number; y: number }) {
 
 function blockPosition(block: BlockWithJoins, index: number): Pos {
   const layout = (block.layout ?? {}) as { x?: number; y?: number }
-  if (typeof layout.x === 'number' && typeof layout.y === 'number') return { x: layout.x, y: layout.y }
+  if (typeof layout.x === 'number' && typeof layout.y === 'number') return { x: layout.x, y: Math.max(MIN_BLOCK_Y, layout.y) }
   return defaultBlockPosition(block.id, index)
 }
 
@@ -225,7 +235,7 @@ function DraggableBlock({
     }
     if (dragRef.current) {
       const { startX, startY, origin } = dragRef.current
-      onDrag({ x: origin.x + (e.clientX - startX), y: origin.y + (e.clientY - startY) })
+      onDrag({ x: origin.x + (e.clientX - startX), y: Math.max(MIN_BLOCK_Y, origin.y + (e.clientY - startY)) })
     }
   }
 
