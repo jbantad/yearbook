@@ -18,6 +18,7 @@ import monopolyMoney from '../assets/stickers/monopoly-money.png'
 import eggSoup from '../assets/stickers/egg-soup.png'
 import washiTapePurple from '../assets/stickers/washi-tape-purple.png'
 import purpleStars from '../assets/stickers/purple-stars.png'
+import lavenderStarField from '../assets/stickers/lavender-star-field.png'
 
 // On-canvas width at card_scale 1 — each sticker's own aspect ratio (w/h,
 // captured from the source crop) then determines its rendered height.
@@ -44,6 +45,7 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
   { key: 'egg-soup', src: eggSoup, w: 500, h: 459 },
   { key: 'washi-tape-purple', src: washiTapePurple, w: 457, h: 144 },
   { key: 'purple-stars', src: purpleStars, w: 324, h: 336 },
+  { key: 'lavender-star-field', src: lavenderStarField, w: 500, h: 354 },
 ]
 
 export const STICKER_BY_KEY: Record<string, { src: string; w: number; h: number }> =
