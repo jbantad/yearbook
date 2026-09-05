@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { FRAME_SIZES, FRAME_WINDOWS, TRIPTYCH_WINDOWS, frameCapBottomPercent } from '../lib/frames'
 import { RotationField } from './RotationField'
+import { shareImageToDevice } from '../lib/shareImage'
 
 const FRAMES: { key: string; label: string }[] = [
   { key: 'classic', label: 'Classic' },
@@ -69,6 +70,8 @@ export function PhotoFields({
   const previewBoxRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
   const [selectedSlot, setSelectedSlot] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const triBoxRefs = useRef<(HTMLDivElement | null)[]>([null, null, null])
   const triDragRef = useRef<{ index: number; x: number; y: number; ox: number; oy: number } | null>(null)
 
@@ -81,6 +84,22 @@ export function PhotoFields({
   // matches the same crop-not-squeeze treatment BlockCard renders with.
   const previewFrame = { w: previewW, h: frameSize.h * previewScale, src: frameSize.src }
   const previewVisibleH = (frameSize.visibleH ?? frameSize.h) * previewScale
+
+  async function handleSaveToDevice() {
+    if (!preview) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const shared = await shareImageToDevice(preview)
+      if (!shared) setSaveError("Your browser can't share files — long-press the photo instead to save it.")
+    } catch (err) {
+      // AbortError just means the person closed the share sheet without picking anything.
+      if (err instanceof Error && err.name === 'AbortError') return
+      setSaveError('Could not save this photo.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   function handleZoom(v: number) {
     onZoomChange(v)
@@ -356,6 +375,19 @@ export function PhotoFields({
           </>
         )}
         {preview && <div className="sub" style={{ marginTop: 4 }}>drag the photo to reposition it, use the slider to zoom</div>}
+        {preview && (
+          <div style={{ textAlign: 'center', marginTop: 4 }}>
+            <button
+              type="button"
+              onClick={handleSaveToDevice}
+              disabled={saving}
+              style={{ background: 'none', border: 'none', color: 'var(--amber)', fontSize: 12.5, fontWeight: 600, padding: 4 }}
+            >
+              {saving ? 'Saving…' : 'Save a copy to Photos'}
+            </button>
+            {saveError && <div style={{ fontSize: 11, color: 'var(--rose)', fontStyle: 'italic' }}>{saveError}</div>}
+          </div>
+        )}
       </div>
 
       <div className="field">
