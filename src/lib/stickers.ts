@@ -17,7 +17,6 @@ import cucumber from '../assets/stickers/cucumber.png'
 import monopolyMoney from '../assets/stickers/monopoly-money.png'
 import eggSoup from '../assets/stickers/egg-soup.png'
 import washiTapePurple from '../assets/stickers/washi-tape-purple.png'
-import purpleStars from '../assets/stickers/purple-stars.png'
 import lavenderStarField from '../assets/stickers/lavender-star-field.png'
 import servingCloche from '../assets/stickers/serving-cloche.png'
 
@@ -45,7 +44,6 @@ export const STICKERS: { key: string; src: string; w: number; h: number }[] = [
   { key: 'monopoly-money', src: monopolyMoney, w: 344, h: 333 },
   { key: 'egg-soup', src: eggSoup, w: 500, h: 459 },
   { key: 'washi-tape-purple', src: washiTapePurple, w: 457, h: 144 },
-  { key: 'purple-stars', src: purpleStars, w: 324, h: 336 },
   { key: 'lavender-star-field', src: lavenderStarField, w: 500, h: 354 },
   { key: 'serving-cloche', src: servingCloche, w: 399, h: 435 },
 ]
