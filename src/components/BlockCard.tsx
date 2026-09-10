@@ -72,7 +72,7 @@ function EditButton({ onEdit }: { onEdit: () => void }) {
 // small pencil button — a plain tap/drag release must never also pop the
 // edit sheet open.
 export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { block: BlockWithJoins; onEdit?: () => void; rotationOverride?: number; scaleOverride?: number }) {
-  const layout = (block.layout ?? {}) as { r?: number }
+  const layout = (block.layout ?? {}) as { r?: number; x?: number }
   const rot = rotationOverride ?? (typeof layout.r === 'number' ? layout.r : hashRotation(block.id))
   const data = (block.data ?? {}) as Record<string, unknown>
 
@@ -335,8 +335,22 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
     // Only headlines get a size control (see EditTextSheet) — labels are
     // meant to look like uniform label-maker tiles, so their size stays fixed.
     const cardScale = style === 'headline' && typeof data.card_scale === 'number' ? data.card_scale : 1
+    // A long, un-broken headline (or one enlarged with the Size slider) has
+    // nothing else limiting its width, so it can render wider than the
+    // space left on the page from its own x position to the right edge —
+    // the page itself clips there instead of scrolling, chopping off
+    // whatever ran past it. Capping width to what's actually left (in
+    // pre-scale units, since the scale transform below still enlarges it
+    // afterward) lets `white-space: pre-line` wrap it onto another line
+    // instead. 28 matches .page-canvas's own left+right side margins.
+    const x = typeof layout.x === 'number' ? layout.x : 0
+    const pageWidth = typeof window !== 'undefined' ? window.innerWidth : 390
+    const maxWidth = Math.max(120, (pageWidth - 28 - x - 8) / cardScale)
     return (
-      <div className={style === 'label' ? 'label-el' : 'headline-el'} style={{ transform: `rotate(${rot}deg) scale(${cardScale}) translateZ(0)`, position: 'relative' }}>
+      <div
+        className={style === 'label' ? 'label-el' : 'headline-el'}
+        style={{ transform: `rotate(${rot}deg) scale(${cardScale}) translateZ(0)`, position: 'relative', maxWidth }}
+      >
         {style === 'label' ? ` ${content} ` : content}
         {onEdit && <EditButton onEdit={onEdit} />}
       </div>
