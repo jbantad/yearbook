@@ -13,6 +13,26 @@ type Shelf = 'movie' | 'place' | 'meal' | 'person'
 type Block = Tables<'blocks'> & { place?: { name: string } | null; movie?: { title: string; poster_path: string | null; rating: number | null } | null; page?: { id: string } | null }
 type Person = Tables<'people'> & { count: number }
 
+// One card per movie watched, not one per place it's been dropped. Among a
+// movie's rows, prefer one with no page — that's the shelf-only log entry,
+// so tapping its card opens the rating editor instead of jumping to whatever
+// day page happened to come first.
+function dedupeByMovie(rows: Block[]): Block[] {
+  const byMovie = new Map<string, Block>()
+  const order: string[] = []
+  for (const row of rows) {
+    const key = row.movie_id ?? row.id
+    const existing = byMovie.get(key)
+    if (!existing) {
+      byMovie.set(key, row)
+      order.push(key)
+    } else if (existing.page_id && !row.page_id) {
+      byMovie.set(key, row)
+    }
+  }
+  return order.map((key) => byMovie.get(key)!)
+}
+
 export function ShelvesPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -36,7 +56,13 @@ export function ShelvesPage() {
       .eq('user_id', user.id)
       .eq('type', shelf)
       .order('captured_at', { ascending: false })
-    setBlocks((data ?? []) as unknown as Block[])
+    const rows = (data ?? []) as unknown as Block[]
+    // A movie can be dropped onto more than one day page (or logged once on
+    // the shelf and again on a page) — each of those is its own `blocks`
+    // row sharing one `movie_id`, since the block itself is a placement, not
+    // the watch record. The shelf lists movies watched, not places a movie
+    // was placed, so collapse repeats down to one card per movie here.
+    setBlocks(shelf === 'movie' ? dedupeByMovie(rows) : rows)
     setLoading(false)
   }
 
