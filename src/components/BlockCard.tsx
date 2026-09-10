@@ -343,9 +343,19 @@ export function BlockCard({ block, onEdit, rotationOverride, scaleOverride }: { 
     // pre-scale units, since the scale transform below still enlarges it
     // afterward) lets `white-space: pre-line` wrap it onto another line
     // instead. 28 matches .page-canvas's own left+right side margins.
+    //
+    // The edit-pencil button that can follow the text is reserved here
+    // whether or not `onEdit` is actually set (a locked page hides it) —
+    // otherwise the exact same headline wraps one word later the moment
+    // the button disappears, since it's no longer there eating into the
+    // same max-width budget, which had been the difference between fitting
+    // and clipping. ROTATION_SLACK covers the bit of extra room a rotated
+    // box's axis-aligned footprint needs beyond its own unrotated width.
+    const EDIT_BUTTON_ALLOWANCE = 28
+    const ROTATION_SLACK = 24
     const x = typeof layout.x === 'number' ? layout.x : 0
     const pageWidth = typeof window !== 'undefined' ? window.innerWidth : 390
-    const maxWidth = Math.max(120, (pageWidth - 28 - x - 8) / cardScale)
+    const maxWidth = Math.max(120, (pageWidth - 28 - x - EDIT_BUTTON_ALLOWANCE - ROTATION_SLACK) / cardScale)
     return (
       <div
         className={style === 'label' ? 'label-el' : 'headline-el'}
